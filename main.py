@@ -1,5 +1,11 @@
 from ytmusicapi import YTMusic
-youtube_auth = YTMusic('headers_auth.json')
+import sys
+
+youtube_auth = None
+try:
+    youtube_auth = YTMusic('headers_auth.json')
+except KeyError:
+    sys.exit('Cookie invalid. Did you paste your cookie into headers_auth.json?')
 
 while True:
     uploaded_albums = youtube_auth.get_library_upload_albums()
@@ -17,4 +23,4 @@ while True:
         except (AttributeError, TypeError):
             pass
 
-print('Finished deleting albums!')
+print('Finished deleting uploaded albums!')
