@@ -13,5 +13,5 @@ Brief, brief instructions until I flesh this out:
 1. Install latest [Python](https://www.python.org/downloads/). Make sure it is available on your PATH.
 1. From a command line, run `pip install ytmusicapi`. Use a virtual environment if you're familiar with the process. If not, it's fine.
 1. Clone this repository to your computer and open a command prompt window inside the `ytmusic-deleter` folder.
-1. Obtain your YTMusic cookie and paste it into `headers_auth.json` in the spot indicated. To obtain your cookie use the instructions [in this link](https://ytmusicapi.readthedocs.io/en/latest/setup.html) under "Copy authentication headers". It is a very long line of text that starts with "VISITOR_INFO".
+1. Obtain your YTMusic cookie and paste it into `headers_auth.json` in the spot indicated. To obtain your cookie use the instructions from the [ytmusicapi docs](https://ytmusicapi.readthedocs.io/en/latest/setup.html) under "Copy authentication headers". Your cookie should be a very long line of text that starts with "VISITOR_INFO". Don't share your cookie with me or anyone else.
 1. From the ytmusic-deleter directory you cloned, run `python main.py`
