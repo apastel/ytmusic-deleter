@@ -1,3 +1,4 @@
 wheel
 ytmusicapi
+click
 pyinstaller
