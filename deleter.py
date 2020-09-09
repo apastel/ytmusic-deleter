@@ -9,7 +9,17 @@ def setup():
     except KeyError:
         sys.exit('Cookie invalid. Did you paste your cookie into headers_auth.json?')
 
-@click.command()
+
+youtube_auth = setup()
+
+
+@click.group()
+def cli():
+    """This will do the things you want
+    """
+
+
+@cli.command()
 @click.option('--add-to-library', '-l', is_flag=True, help='Add corresponding albums to your library before deleting them from uploads.')
 def delete_all_uploaded_albums(add_to_library):
     albums_deleted = 0
@@ -26,7 +36,7 @@ def delete_all_uploaded_albums(add_to_library):
             print(f'{artist} - {title}')
             if add_to_library:
                 click.echo('Searching for album in online catalog...')
-                album_found = search_for_album(artist, title)
+                album_found = add_album_to_library(artist, title)
                 if not album_found:
                     print('No match for uploaded album found in online catalog. Will not delete.')
                     continue
@@ -43,7 +53,8 @@ def delete_all_uploaded_albums(add_to_library):
     print(f'Deleted {albums_deleted} out of {len(uploaded_albums)} uploaded albums.')
     return albums_deleted
 
-def search_for_album(artist, title):
+
+def add_album_to_library(artist, title):
     search_results = youtube_auth.search(f'{artist} {title}')
     for result in search_results:
         if result['resultType'] == 'album' and str(artist).lower() in str(result['artist']).lower() and str(title).lower() in str(result['title']).lower():
@@ -55,6 +66,7 @@ def search_for_album(artist, title):
             return True
     return False
 
+
 def delete_albumless_songs():
     songs_deleted = 0
     try:
@@ -64,10 +76,10 @@ def delete_albumless_songs():
         return songs_deleted
     if not uploaded_songs:
         return songs_deleted
-    
+
     # Filter for songs that don't have an album, otherwise songs that were skipped in the first batch would get deleted here
     uploaded_songs = [song for song in uploaded_songs if not song['album']]
-    
+
     for song in uploaded_songs:
         try:
             artist = song.get('artist')[0].get('name') if len(song.get('artist')) > 0 else "Unknown Artist"
@@ -86,10 +98,25 @@ def delete_albumless_songs():
     return songs_deleted
 
 
-if __name__ == "__main__":
-    print('Begin cookie validation...')
-    youtube_auth = setup()
-    print('Cookie validated.')
-    albums_deleted = delete_all_uploaded_albums()
-    songs_deleted = delete_albumless_songs()
-    print(f'Finished. Deleted {albums_deleted + songs_deleted} total albums.')
+@cli.command()
+def remove_albums_from_library():
+    albums_removed = 0
+    while True:
+        albums = youtube_auth.get_library_albums(100)
+        if not albums:
+            songs = youtube_auth.get_library_songs(100)
+            if not songs:
+                return albums_removed
+            filtered_songs = list({v['album']['id']: v for v in songs}.values())
+            for song in filtered_songs:
+                album = youtube_auth.get_album(song['album']['id'])
+                artist = album['artist'][0]['name'] if len(album['artist']) > 0 else "Unknown Artist"
+                title = album['title']
+                print(f'Removing {artist} - {title} from your library.')
+                response = youtube_auth.rate_playlist(album['playlistId'], 'INDIFFERENT')
+        for album in albums:
+            playlist_album = youtube_auth.get_album(album['browseId'])
+            artist = playlist_album['artist'][0]['name'] if len(playlist_album['artist']) > 0 else "Unknown Artist"
+            title = playlist_album['title']
+            print(f'Removing {artist} - {title} from your library.')
+            response = youtube_auth.rate_playlist(playlist_album['playlistId'], 'INDIFFERENT')

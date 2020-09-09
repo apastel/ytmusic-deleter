@@ -1,4 +1,0 @@
-wheel
-ytmusicapi
-click
-pyinstaller
