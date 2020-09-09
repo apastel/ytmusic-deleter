@@ -24,31 +24,31 @@ def cli():
 def delete_all_uploaded_albums(add_to_library):
     albums_deleted = 0
     print('Retrieving all uploaded albums...')
-    uploaded_albums = youtube_auth.get_library_upload_albums()
-    if not uploaded_albums:
-        print('No uploaded albums found.')
-        return albums_deleted
-    print(f'{len(uploaded_albums)} uploaded albums found.')
-    for album in uploaded_albums:
-        try:
-            artist = album.get('artists')[0].get('name') if len(album.get('artists')) > 0 else "Unknown Artist"
-            title = album.get("title")
-            print(f'{artist} - {title}')
-            if add_to_library:
-                click.echo('Searching for album in online catalog...')
-                album_found = add_album_to_library(artist, title)
-                if not album_found:
-                    print('No match for uploaded album found in online catalog. Will not delete.')
-                    continue
-            response = youtube_auth.delete_upload_entity(album['browseId'])
-            if response == 'STATUS_SUCCEEDED':
-                print('    Deleted album')
-                albums_deleted += 1
-            else:
-                print('    Failed to delete album')
-        except (AttributeError, TypeError) as e:
-            print(e)
-            continue
+    while True:
+        uploaded_albums = youtube_auth.get_library_upload_albums()
+        if not uploaded_albums:
+            print('No uploaded albums found.')
+            return albums_deleted
+        for album in uploaded_albums:
+            try:
+                artist = album.get('artists')[0].get('name') if len(album.get('artists')) > 0 else "Unknown Artist"
+                title = album.get("title")
+                print(f'{artist} - {title}')
+                if add_to_library:
+                    click.echo('Searching for album in online catalog...')
+                    album_found = add_album_to_library(artist, title)
+                    if not album_found:
+                        print('No match for uploaded album found in online catalog. Will not delete.')
+                        continue
+                response = youtube_auth.delete_upload_entity(album['browseId'])
+                if response == 'STATUS_SUCCEEDED':
+                    print('    Deleted album')
+                    albums_deleted += 1
+                else:
+                    print('    Failed to delete album')
+            except (AttributeError, TypeError) as e:
+                print(e)
+                continue
 
     print(f'Deleted {albums_deleted} out of {len(uploaded_albums)} uploaded albums.')
     return albums_deleted
