@@ -178,3 +178,11 @@ def remove_album(browseId):
     else:
         logging.error(f"\tFailed to remove {artist} - {title} from your library.")
         return False
+
+
+@cli.command()
+@click.pass_context
+def delete_all(ctx):
+    """Executes delete-uploads and remove-library"""
+    ctx.invoke(delete_uploads)
+    ctx.invoke(remove_library)
