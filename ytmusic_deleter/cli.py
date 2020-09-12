@@ -1,9 +1,9 @@
 from ytmusicapi import YTMusic
-import src.constants as const
-from src.utils import get_project_root as root
+from ytmusic_deleter import constants as const
 import click
 import logging
 import sys
+import os
 import enlighten
 
 logging.basicConfig(level=logging.INFO,
@@ -15,9 +15,11 @@ logging.basicConfig(level=logging.INFO,
 
 def setup():
     try:
-        return YTMusic(str(root()) + "/headers_auth.json")
+        return YTMusic(os.path.join(__package__, "headers_auth.json"))
     except KeyError:
         sys.exit("Cookie invalid. Did you paste your cookie into headers_auth.json?")
+    except AttributeError:
+        sys.exit("Headers not found. Most likely the headers_auth.json file could not be located.")
 
 
 youtube_auth = setup()

@@ -1,6 +1,6 @@
 import unittest
 from click.testing import CliRunner
-import src.cli as cli
+import ytmusic_deleter.cli as cli
 
 
 class TestCli(unittest.TestCase):
