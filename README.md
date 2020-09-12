@@ -58,7 +58,7 @@ or
 'ytmusic-deleter' is not recognized as an internal or external command,
 operable program or batch file.
 ```
-Make sure you are running the command from inside the project folder that you downloaded from GitHub. Also make sure that you ran `pip install .` to install ytmusic-deleter.
+Make sure you are running the command from inside the project folder that you downloaded from GitHub. Also make sure that you ran `pip install .` to install ytmusic-deleter. If you're still getting this error, try closing and re-opening your command prompt.
 
 ---
 ```
