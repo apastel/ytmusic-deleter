@@ -170,7 +170,8 @@ def remove_album(browseId):
     try:
         album = youtube_auth.get_album(browseId)
     except Exception:
-        logging.exception("\tFailed to remove album from your library, as it could not be retrieved.")
+        logging.exception(
+            f"\tFailed to remove album with ID {browseId} from your library, as it could not be retrieved.")
         return False
     artist = album["artist"][0]["name"] if len(album["artist"]) > 0 else "Unknown Artist"
     title = album["title"]
