@@ -167,7 +167,11 @@ def remove_library_albums_by_song(songs, progress_bar):
 
 
 def remove_album(browseId):
-    album = youtube_auth.get_album(browseId)
+    try:
+        album = youtube_auth.get_album(browseId)
+    except Exception:
+        logging.exception("\tFailed to remove album from your library, as it could not be retrieved.")
+        return False
     artist = album["artist"][0]["name"] if len(album["artist"]) > 0 else "Unknown Artist"
     title = album["title"]
     logging.info(f"Processing album: {artist} - {title}")
