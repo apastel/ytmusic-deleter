@@ -134,18 +134,25 @@ def remove_library():
     """Remove all tracks that you have added to your library from within YouTube Music.
     """
     logging.info("Retrieving all library albums...")
-    library_albums = youtube_auth.get_library_albums(sys.maxsize)
-    progress_bar = manager.counter(total=len(library_albums),
-                                   desc="Albums Processed",
-                                   unit="albums")
+    try:
+        library_albums = youtube_auth.get_library_albums(sys.maxsize)
+        logging.info(f"Retrieved {len(library_albums)} albums from your library.")
+    except Exception:
+        logging.exception("Failed to get library albums.")
+        library_albums = []
+    progress_bar = manager.counter(total=len(library_albums), desc="Albums Processed", unit="albums")
     albums_removed = remove_library_albums(library_albums, progress_bar)
+
     logging.info("Retrieving all singles...")
-    library_songs = youtube_auth.get_library_songs(sys.maxsize)
+    try:
+        library_songs = youtube_auth.get_library_songs(sys.maxsize)
+        logging.info(f"Retrieved {len(library_songs)} singles from your library.")
+    except Exception:
+        logging.exception("Failed to get library singles.")
+        library_songs = []
     # Filter for unique album IDs
     filtered_songs = list({v["album"]["id"]: v for v in library_songs}.values())
-    progress_bar = manager.counter(total=len(filtered_songs),
-                                   desc="Singles Processed",
-                                   unit="singles")
+    progress_bar = manager.counter(total=len(filtered_songs), desc="Singles Processed", unit="singles")
     albums_removed += remove_library_albums_by_song(filtered_songs, progress_bar)
     logging.info(
         f"Removed {albums_removed} out of {len(library_albums) + len(filtered_songs)} albums from your library.")
