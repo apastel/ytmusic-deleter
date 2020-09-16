@@ -1,4 +1,4 @@
-# ytmustic-deleter
+# ytmusic-deleter
 The YouTube Music interface does not yet have an option to delete your music library, whether it's your uploaded songs or songs that you've added to your library from within YouTube Music.
 
 Enter `ytmusic-deleter`: A command-line interface for performing batch delete operations on your YouTube Music library. You can use this to remove items from both your library and from your uploads.
@@ -12,14 +12,15 @@ Until I can package this as an .exe file for people of all skill levels, you wil
 1. Obtain your YTMusic cookie and paste it into `ytmusic_deleter/headers_auth.json` in the spot indicated. To obtain your cookie use the instructions from the [ytmusicapi docs](https://ytmusicapi.readthedocs.io/en/latest/setup.html) under "Copy authentication headers". Your cookie should be a very long line of text that starts with "VISITOR_INFO". Don't share your cookie with me or anyone else.
 
 # Usage
-After running the above setup steps, Type `ytmusic-deleter` to see the usage information. There are currently two commands available:
+After running the above setup steps, Type `ytmusic-deleter` to see the usage information. There are currently three commands available:
 
 `delete-uploads`:&nbsp;&nbsp;&nbsp;&nbsp;Delete all tracks that you have uploaded to your YT Music library.  
 
 >Use the `--add-to-library` or `-a` option to add each album or song to your library from YouTube Music's online catalog before deleting it from your uploads. If a match could not be found, the album or song will remain in your uploads. Note that each track that gets added to your library this way will have a thumbs up "Like" in your library due to how the [ytmusicapi](https://github.com/sigma67/ytmusicapi/) works.
 
-`remove-library`:&nbsp;&nbsp;&nbsp;&nbsp;Remove all tracks that you have added to your library from within YouTube Music.
+`remove-library`:&nbsp;&nbsp;&nbsp;&nbsp;Remove all tracks that you have added to your library from within YouTube Music.  
 
+`delete-all`:&nbsp;&nbsp;&nbsp;&nbsp;Combo command that will run both `delete-uploads` and `remove-library`.
 ## Examples
 
 Getting help:
