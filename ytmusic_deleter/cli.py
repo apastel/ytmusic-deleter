@@ -59,7 +59,7 @@ def delete_uploaded_albums(add_to_library):
     progress_bar = manager.counter(total=len(uploaded_albums), desc="Albums Processed", unit="albums")
     for album in uploaded_albums:
         try:
-            artist = album["artists"][0]["name"] if len(album["artists"]) > 0 else "Unknown Artist"
+            artist = album["artists"][0]["name"] if len(album["artists"]) is not None else "Unknown Artist"
             title = album["title"]
             logging.info(f"Processing album: {artist} - {title}")
             if add_to_library and not add_album_to_library(artist, title):
@@ -98,7 +98,7 @@ def delete_uploaded_songs():
 
     for song in uploaded_songs:
         try:
-            artist = song["artist"][0]["name"] if len(song["artist"]) > 0 else "Unknown Artist"
+            artist = song["artist"][0]["name"] if song["artist"] is not None else "Unknown Artist"
             title = song["title"]
             response = youtube_auth.delete_upload_entity(song["entityId"])
             if response == "STATUS_SUCCEEDED":
