@@ -59,7 +59,7 @@ def delete_uploaded_albums(add_to_library):
     progress_bar = manager.counter(total=len(uploaded_albums), desc="Albums Processed", unit="albums")
     for album in uploaded_albums:
         try:
-            artist = album["artists"][0]["name"] if len(album["artists"]) is not None else "Unknown Artist"
+            artist = album["artists"][0]["name"] if album["artists"] is not None else "Unknown Artist"
             title = album["title"]
             logging.info(f"Processing album: {artist} - {title}")
             if add_to_library and not add_album_to_library(artist, title):
