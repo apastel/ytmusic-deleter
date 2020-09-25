@@ -1,14 +1,9 @@
 # ytmusic-deleter
-The YouTube Music interface does not yet have an option to delete your music library, whether it's your uploaded songs or songs that you've added to your library from within YouTube Music.
-
-Enter `ytmusic-deleter`: A command-line interface for performing batch delete operations on your YouTube Music library. You can use this to remove items from both your library and from your uploads.
+A command-line interface for performing batch delete operations on your YouTube Music library. You can use this to remove items from both your library and from your uploads.
 
 ## Setup
-Until I can package this as an .exe file for people of all skill levels, you will have to run this manually on a command prompt using Python.
-
 1. Install [Python](https://www.python.org/downloads/). Make sure it is available on your PATH.
-1. Clone this repository to your computer and open a command prompt window inside the project's folder.
-1. Run `pip install .` (the dot is important). Use a virtual environment if you're familiar with the process. If not, it's fine.
+1. Run `pip install ytmusic-deleter`. Use a virtual environment if you're familiar with the process. If not, it's fine.
 1. Obtain your YTMusic cookie and paste it into `ytmusic_deleter/headers_auth.json` in the spot indicated. To obtain your cookie use the instructions from the [ytmusicapi docs](https://ytmusicapi.readthedocs.io/en/latest/setup.html) under "Copy authentication headers". Your cookie should be a very long line of text that starts with "VISITOR_INFO". Don't share your cookie with me or anyone else.
 
 # Usage
