@@ -22,7 +22,8 @@ develop_reqs = [
     "pre-commit",
     "flake8",
     "yapf",
-    "coverage"
+    "coverage",
+    "rope"
 ]
 
 with open("README.md", "rb") as f:
@@ -40,7 +41,6 @@ setup(
     url="https://github.com/apastel/ytmusic-deleter",
     cmdclass=get_cmdclass(),
     packages=find_packages(),
-    include_package_data=True,
     install_requires=install_reqs,
     python_requires=">=3.5",
     extras_require={"dev": develop_reqs},

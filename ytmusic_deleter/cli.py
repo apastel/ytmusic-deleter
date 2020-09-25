@@ -3,7 +3,6 @@ from ytmusic_deleter import constants as const
 import click
 import logging
 import sys
-import os
 import enlighten
 
 logging.basicConfig(level=logging.INFO,
@@ -13,16 +12,18 @@ logging.basicConfig(level=logging.INFO,
                               logging.StreamHandler(sys.stdout)])
 
 
-def setup():
+def get_auth_obj():
+    auth_obj = None
     try:
-        return YTMusic(os.path.join(__package__, "headers_auth.json"))
-    except KeyError:
-        sys.exit("Cookie invalid. Did you paste your cookie into headers_auth.json?")
-    except AttributeError:
-        sys.exit("Headers not found. Most likely the headers_auth.json file could not be located.")
+        auth_obj = YTMusic(const.HEADERS_FILE)
+    except (KeyError, AttributeError):
+        logging.info(f"Creating {const.HEADERS_FILE} file...")
+        auth_obj = YTMusic(YTMusic.setup(filepath=const.HEADERS_FILE))
+
+    return auth_obj
 
 
-youtube_auth = setup()
+youtube_auth = get_auth_obj()
 manager = enlighten.get_manager()
 
 
@@ -81,12 +82,7 @@ def delete_uploaded_albums(add_to_library):
 def delete_uploaded_songs():
     logging.info("Retrieving all uploaded songs that are not part of an album...")
     songs_deleted = 0
-    uploaded_songs = None
-    # Have to catch exception when there are no uploaded songs. Fixed in next release of ytmusicapi.
-    try:
-        uploaded_songs = youtube_auth.get_library_upload_songs(sys.maxsize)
-    except KeyError:
-        uploaded_songs = []
+    uploaded_songs = youtube_auth.get_library_upload_songs(sys.maxsize)
     if not uploaded_songs:
         return (songs_deleted, 0)
 
