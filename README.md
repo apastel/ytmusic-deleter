@@ -6,7 +6,7 @@ A command-line interface for performing batch delete operations on your YouTube 
 1. Open a command prompt and type `pip install ytmusic-deleter`. Use a [virtual environment](https://virtualenv.pypa.io/en/latest/) if you're familiar with the process.
 1. Run ytmusic-deleter by simply entering `ytmusic-deleter` at the command line.
 1. The first time you run ytmusic-deleter, you will be asked to paste your request headers from Firefox. This allows ytmusic-deleter to make requests against your music library. To copy your request headers follow the instructions from the [ytmusicapi docs](https://ytmusicapi.readthedocs.io/en/latest/setup.html) under "Copy authentication headers".
-1. Press `Enter` after pasting the headers, then press Ctrl-D to continue. The next time you run ytmusic-deleter, it will reuse your headers from the `headers_auth.json` file that it generated.
+1. Press `Enter` after pasting the headers, then press Ctrl-D to continue (Ctrl-Z then Enter again on Windows). The next time you run ytmusic-deleter, it will reuse your headers from the `headers_auth.json` file that it generated.
 
 # Usage
 Type `ytmusic-deleter` to see the usage information. There are currently three commands available:
