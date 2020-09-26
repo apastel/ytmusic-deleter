@@ -3,11 +3,13 @@ A command-line interface for performing batch delete operations on your YouTube 
 
 ## Setup
 1. Install [Python](https://www.python.org/downloads/). Make sure it is available on your PATH.
-1. Run `pip install ytmusic-deleter`. Use a virtual environment if you're familiar with the process. If not, it's fine.
-1. Obtain your YTMusic cookie and paste it into `ytmusic_deleter/headers_auth.json` in the spot indicated. To obtain your cookie use the instructions from the [ytmusicapi docs](https://ytmusicapi.readthedocs.io/en/latest/setup.html) under "Copy authentication headers". Your cookie should be a very long line of text that starts with "VISITOR_INFO". Don't share your cookie with me or anyone else.
+1. Open a command prompt and type `pip install ytmusic-deleter`. Use a [virtual environment](https://virtualenv.pypa.io/en/latest/) if you're familiar with the process.
+1. Run ytmusic-deleter by simply entering `ytmusic-deleter` at the command line.
+1. The first time you run ytmusic-deleter, you will be asked to paste your request headers from Firefox. This allows ytmusic-deleter to make requests against your music library. To copy your request headers follow the instructions from the [ytmusicapi docs](https://ytmusicapi.readthedocs.io/en/latest/setup.html) under "Copy authentication headers".
+1. Press `Enter` after pasting the headers, then press Ctrl-D to continue. The next time you run ytmusic-deleter, it will reuse your headers from the `headers_auth.json` file that it generated.
 
 # Usage
-After running the above setup steps, Type `ytmusic-deleter` to see the usage information. There are currently three commands available:
+Type `ytmusic-deleter` to see the usage information. There are currently three commands available:
 
 `delete-uploads`:&nbsp;&nbsp;&nbsp;&nbsp;Delete all tracks that you have uploaded to your YT Music library.  
 
@@ -54,17 +56,13 @@ or
 'ytmusic-deleter' is not recognized as an internal or external command,
 operable program or batch file.
 ```
-Make sure you are running the command from inside the project folder that you downloaded from GitHub. Also make sure that you ran `pip install .` to install ytmusic-deleter. If you're still getting this error, try closing and re-opening your command prompt.
-
----
-```
-Cookie invalid. Did you paste your cookie into headers_auth.json?
-```
-If you see this message, be sure to follow the steps in the Setup section of this README to paste your cookie into headers_auth.json.
+Make sure you ran `pip install ytmusic-deleter` to install ytmusic-deleter. If you're still getting this error, try closing and re-opening your command prompt.
 
 ---
 ```
 Failed loading provided credentials. Make sure to provide a string or a file path. Reason: Expecting value: line 1 column 1 (char 0)
-Headers not found. Most likely the headers_auth.json file could not be located.
 ```
-As the error message says, the headers_auth.json file containing your cookie could not be found. Make sure you are running the `ytmusic-deleter` command from the `ytmusic-deleter` folder, and not from the source code folder `ytmusic_deleter`.
+You will see this printed by the [ytmusicapi](https://github.com/sigma67/ytmusicapi) the first time you run. This means that your existing request headers file (headers_auth.json) could not be found. The next few lines will prompt you to paste your request headers so this file can be generated.
+
+---
+Other various exceptions may occur while running ytmusic-deleter because there is a wide swath of possible metadata on your library, and the YouTube Music backend is changing rapidly. Most errors deleting albums have been accounted for and you may just have to delete a couple albums manually that got left behind. If there are any errors that halt the entire program in the middle of deletion, please create an Issue and post the full error.
