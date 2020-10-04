@@ -45,7 +45,8 @@ def delete_uploads(add_to_library):
     logging.info(f"Deleted {albums_deleted} out of {albums_total} uploaded albums.")
     if (add_to_library) and albums_total - albums_deleted > 0:
         logging.info(
-            f"\tRemaining {albums_total - albums_deleted} did not have a match in YouTube Music's online catalog.")
+            f"\tRemaining {albums_total - albums_deleted} albums did not have a match in YouTube Music's online catalog."
+        )
 
     (songs_deleted, songs_total) = delete_uploaded_songs()
     logging.info(f"Deleted {songs_deleted} out of {songs_total} uploaded songs that are not part of an album.")
@@ -114,15 +115,25 @@ def add_album_to_library(artist, title):
     search_results = youtube_auth.search(f"{artist} {title}")
     for result in search_results:
         # Find the first album for which the artist and album title are substrings
-        if result["resultType"] == "album" and artist.lower() in str(result["artist"]).lower() and title.lower() in str(
-                result["title"]).lower():
+        if match_found(result, artist, title):
             catalog_album = youtube_auth.get_album(result["browseId"])
-            logging.info(f"\tFound matching album \"{catalog_album['title']}\" in YouTube Music. Adding to library...")
-            for track in catalog_album["tracks"]:
-                youtube_auth.rate_song(track["videoId"], const.LIKE)
-            logging.info("\tAdded album to library.")
+            logging.info(
+                f"\tFound matching album \"{catalog_album['artist'][0]['name'] if catalog_album['artist'] else ''} - {catalog_album['title']}\" in YouTube Music. Adding to library..."
+            )
+            # for track in catalog_album["tracks"]:
+            # youtube_auth.rate_song(track["videoId"], const.LIKE)
+            success = youtube_auth.rate_playlist(catalog_album["playlistId"], const.LIKE)
+            if success:
+                logging.info("\tAdded album to library.")
+            else:
+                logging.error("\tFailed to add album to library")
             return True
     return False
+
+
+def match_found(albumToCheck, artist, title):
+    return albumToCheck["resultType"] == "album" and artist.lower() in str(
+        albumToCheck["artist"]).lower() and title.lower() in str(albumToCheck["title"]).lower()
 
 
 @cli.command()
