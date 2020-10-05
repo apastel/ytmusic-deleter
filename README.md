@@ -9,7 +9,7 @@ A command-line interface for performing batch delete operations on your YouTube 
 1. Press `Enter` after pasting the headers, then press Ctrl-D to continue (Ctrl-Z then Enter again on Windows). The next time you run ytmusic-deleter, it will reuse your headers from the `headers_auth.json` file that it generated.
 
 # Usage
-Type `ytmusic-deleter` to see the usage information. There are currently three commands available:
+Type `ytmusic-deleter` to see the usage information. There are currently four commands available:
 
 `delete-uploads`:&nbsp;&nbsp;&nbsp;&nbsp;Delete all tracks that you have uploaded to your YT Music library.  
 
@@ -17,7 +17,9 @@ Type `ytmusic-deleter` to see the usage information. There are currently three c
 
 `remove-library`:&nbsp;&nbsp;&nbsp;&nbsp;Remove all tracks that you have added to your library from within YouTube Music.  
 
-`delete-all`:&nbsp;&nbsp;&nbsp;&nbsp;Combo command that will run both `delete-uploads` and `remove-library`.
+`unlike-all`:&nbsp;&nbsp;&nbsp;&nbsp;Reset all Thumbs Up ratings back to neutral.  
+
+`delete-all`:&nbsp;&nbsp;&nbsp;&nbsp;Combo command that will run `delete-uploads`, `remove-library`, and `unlike-all`.
 ## Examples
 
 Getting help:
@@ -42,7 +44,11 @@ Remove all your library tracks (not uploads):
 ```
 ytmusic-deleter remove-library
 ```
-Remove everything (uploads and library tracks):
+Reset all Thumbs Up ratings back to neutral:
+```
+ytmusic-deleter unlike-all
+```
+Remove everything (uploads, library tracks, and unlike all songs):
 ```
 ytmusic-deleter delete-all
 ```

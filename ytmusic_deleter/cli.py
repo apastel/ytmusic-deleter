@@ -224,8 +224,31 @@ def remove_album(browseId):
 
 
 @cli.command()
+def unlike_all():
+    """Reset all Thumbs Up ratings back to neutral
+    """
+    logging.info("Retrieving all your liked songs...")
+    your_likes = youtube_auth.get_liked_songs(sys.maxsize)
+    logging.info(f"\tRetrieved {your_likes['trackCount']} liked songs.")
+    logging.info("Begin unliking songs...")
+    progress_bar = manager.counter(total=your_likes['trackCount'], desc="Songs Unliked", unit="songs")
+    for track in your_likes["tracks"]:
+        artist = track["artists"][0]["name"] if track["artists"] else const.UNKNOWN_ARTIST
+        title = track["title"]
+        logging.info(f"Processing track: {artist} - {title}")
+        if track["album"] is None:
+            logging.info("\tSkipping deletion as this might be a YouTube video and not a YouTube Music song.")
+        else:
+            logging.info("\tRemoved track from Likes.")
+            youtube_auth.rate_song(track["videoId"], const.INDIFFERENT)
+        progress_bar.update()
+    logging.info("Finished unliking all songs.")
+
+
+@cli.command()
 @click.pass_context
 def delete_all(ctx):
-    """Executes delete-uploads and remove-library"""
+    """Executes delete-uploads, remove-library, and unlike-all"""
     ctx.invoke(delete_uploads)
     ctx.invoke(remove_library)
+    ctx.invoke(unlike_all)

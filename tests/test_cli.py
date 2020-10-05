@@ -13,3 +13,8 @@ class TestCli(unittest.TestCase):
         runner = CliRunner()
         result = runner.invoke(cli.remove_library)
         assert result.exit_code == 0
+
+    def test_unlike_all_songs(self):
+        runner = CliRunner()
+        result = runner.invoke(cli.unlike_all)
+        assert result.exit_code == 0
