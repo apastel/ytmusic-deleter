@@ -3,6 +3,7 @@ from ytmusic_deleter import constants as const
 import click
 import logging
 import sys
+import re
 import enlighten
 
 logging.basicConfig(level=logging.INFO,
@@ -61,13 +62,18 @@ def delete_uploaded_albums(add_to_library):
     progress_bar = manager.counter(total=len(uploaded_albums), desc="Albums Processed", unit="albums")
     for album in uploaded_albums:
         try:
-            artist = album["artists"][0]["name"] if album["artists"] else "Unknown Artist"
+            artist = album["artists"][0]["name"] if album["artists"] else const.UNKNOWN_ARTIST
             title = album["title"]
             logging.info(f"Processing album: {artist} - {title}")
-            if add_to_library and not add_album_to_library(artist, title):
-                logging.warn("\tNo match for uploaded album found in online catalog. Will not delete.")
-                progress_bar.update()
-                continue
+            if add_to_library:
+                if artist == const.UNKNOWN_ARTIST:
+                    logging.warn("\tAlbum is missing artist metadata. Skipping match search and will not delete.")
+                    progress_bar.update()
+                    continue
+                elif not add_album_to_library(artist, title):
+                    logging.warn("\tNo match for uploaded album found in online catalog. Will not delete.")
+                    progress_bar.update()
+                    continue
             response = youtube_auth.delete_upload_entity(album["browseId"])
             if response == "STATUS_SUCCEEDED":
                 logging.info("\tDeleted album from uploads.")
@@ -75,7 +81,7 @@ def delete_uploaded_albums(add_to_library):
             else:
                 logging.error("\tFailed to delete album from uploads")
         except (AttributeError, TypeError, KeyError) as e:
-            logging.error(e)
+            logging.error(f"\tEncountered exception processing album attribute: {e}")
         progress_bar.update()
     return (albums_deleted, len(uploaded_albums))
 
@@ -95,7 +101,7 @@ def delete_uploaded_songs():
 
     for song in uploaded_songs:
         try:
-            artist = song["artist"][0]["name"] if song["artist"] else "Unknown Artist"
+            artist = song["artist"][0]["name"] if song["artist"] else const.UNKNOWN_ARTIST
             title = song["title"]
             response = youtube_auth.delete_upload_entity(song["entityId"])
             if response == "STATUS_SUCCEEDED":
@@ -115,13 +121,11 @@ def add_album_to_library(artist, title):
     search_results = youtube_auth.search(f"{artist} {title}")
     for result in search_results:
         # Find the first album for which the artist and album title are substrings
-        if match_found(result, artist, title):
+        if result["resultType"] == "album" and match_found(result, artist, title):
             catalog_album = youtube_auth.get_album(result["browseId"])
             logging.info(
                 f"\tFound matching album \"{catalog_album['artist'][0]['name'] if catalog_album['artist'] else ''} - {catalog_album['title']}\" in YouTube Music. Adding to library..."
             )
-            # for track in catalog_album["tracks"]:
-            # youtube_auth.rate_song(track["videoId"], const.LIKE)
             success = youtube_auth.rate_playlist(catalog_album["playlistId"], const.LIKE)
             if success:
                 logging.info("\tAdded album to library.")
@@ -131,9 +135,25 @@ def add_album_to_library(artist, title):
     return False
 
 
-def match_found(albumToCheck, artist, title):
-    return albumToCheck["resultType"] == "album" and artist.lower() in str(
-        albumToCheck["artist"]).lower() and title.lower() in str(albumToCheck["title"]).lower()
+def match_found(result, artist, title):
+    try:
+        resultArtist = str(result["artist"]).lower()
+    except KeyError:
+        resultArtist = str(result["artists"][0] if result["artists"] else "").lower()
+    try:
+        resultTitle = str(result["title"]).lower()
+    except KeyError:
+        resultTitle = ""
+    artist = artist.lower()
+    title = title.lower()
+
+    if artist in resultArtist and title in resultTitle:
+        return True
+    else:
+        # Try again but strip out parentheticals and quotes
+        resultTitle = re.sub(r"\(.*?\)|\[.*?\]|\"|\'", "", resultTitle).strip()
+        title = re.sub(r"\(.*?\)|\[.*?\]|\"|\'", "", title).strip()
+        return artist in resultArtist and title in resultTitle
 
 
 @cli.command()
@@ -190,7 +210,7 @@ def remove_album(browseId):
         logging.exception(
             f"\tFailed to remove album with ID {browseId} from your library, as it could not be retrieved.")
         return False
-    artist = album["artist"][0]["name"] if album["artist"] else "Unknown Artist"
+    artist = album["artist"][0]["name"] if album["artist"] else const.UNKNOWN_ARTIST
     title = album["title"]
     logging.info(f"Processing album: {artist} - {title}")
     response = youtube_auth.rate_playlist(album["playlistId"], const.INDIFFERENT)
