@@ -49,8 +49,8 @@ def delete_uploads(add_to_library):
             f"\tRemaining {albums_total - albums_deleted} albums did not have a match in YouTube Music's online catalog."
         )
 
-    (songs_deleted, songs_total) = delete_uploaded_songs()
-    logging.info(f"Deleted {songs_deleted} out of {songs_total} uploaded songs that are not part of an album.")
+    (singles_deleted, singles_total) = delete_uploaded_singles()
+    logging.info(f"Deleted {singles_deleted} out of {singles_total} uploaded singles.")
 
 
 def delete_uploaded_albums(add_to_library):
@@ -86,34 +86,34 @@ def delete_uploaded_albums(add_to_library):
     return (albums_deleted, len(uploaded_albums))
 
 
-def delete_uploaded_songs():
-    logging.info("Retrieving all uploaded songs that are not part of an album...")
-    songs_deleted = 0
-    uploaded_songs = youtube_auth.get_library_upload_songs(sys.maxsize)
-    if not uploaded_songs:
-        return (songs_deleted, 0)
+def delete_uploaded_singles():
+    logging.info("Retrieving all uploaded singles...")
+    singles_deleted = 0
+    uploaded_singles = youtube_auth.get_library_upload_songs(sys.maxsize)
+    if not uploaded_singles:
+        return (singles_deleted, 0)
 
-    # Filter for songs that don"t have an album, otherwise songs that
+    # Filter for songs that don't have an album, otherwise songs that
     # were skipped in the first batch would get deleted here
-    uploaded_songs = [song for song in uploaded_songs if not song["album"]]
+    uploaded_singles = [single for single in uploaded_singles if not single["album"]]
 
-    progress_bar = manager.counter(total=len(uploaded_songs), desc="Songs Processed", unit="songs")
+    progress_bar = manager.counter(total=len(uploaded_singles), desc="Singles Processed", unit="singles")
 
-    for song in uploaded_songs:
+    for single in uploaded_singles:
         try:
-            artist = song["artist"][0]["name"] if song["artist"] else const.UNKNOWN_ARTIST
-            title = song["title"]
-            response = youtube_auth.delete_upload_entity(song["entityId"])
+            artist = single["artist"][0]["name"] if single["artist"] else const.UNKNOWN_ARTIST
+            title = single["title"]
+            response = youtube_auth.delete_upload_entity(single["entityId"])
             if response == "STATUS_SUCCEEDED":
                 logging.info(f"\tDeleted {artist} - {title}")
-                songs_deleted += 1
+                singles_deleted += 1
             else:
                 logging.error(f"\tFailed to delete {artist} - {title}")
         except (AttributeError, TypeError) as e:
             logging.error(e)
         progress_bar.update()
 
-    return (songs_deleted, len(uploaded_songs))
+    return (singles_deleted, len(uploaded_singles))
 
 
 def add_album_to_library(artist, title):
@@ -171,13 +171,14 @@ def remove_library():
     albums_removed = remove_library_albums(library_albums, progress_bar)
 
     logging.info("Retrieving all singles...")
+    # Aside from actual singles, these might also be individual songs from an album that were added to your library
     try:
         library_songs = youtube_auth.get_library_songs(sys.maxsize)
         logging.info(f"Retrieved {len(library_songs)} singles from your library.")
     except Exception:
         logging.exception("Failed to get library singles.")
         library_songs = []
-    # Filter for unique album IDs
+    # Filter for unique album IDs so that for each song, we can just remove the album its a part of
     filtered_songs = list({v["album"]["id"]: v for v in library_songs}.values())
     progress_bar = manager.counter(total=len(filtered_songs), desc="Singles Processed", unit="singles")
     albums_removed += remove_library_albums_by_song(filtered_songs, progress_bar)
