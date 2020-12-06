@@ -251,6 +251,7 @@ def delete_playlists():
     """
     logging.info("Retrieving all your playlists...")
     library_playlists = youtube_auth.get_library_playlists(sys.maxsize)
+    # Can't delete "Your Likes" playlist
     library_playlists = list(filter(lambda playlist: playlist["playlistId"] != "LM", library_playlists))
     logging.info(f"\tRetrieved {len(library_playlists)} playlists.")
     logging.info(f"Begin deleting playlists...")
@@ -268,7 +269,8 @@ def delete_playlists():
 @cli.command()
 @click.pass_context
 def delete_all(ctx):
-    """Executes delete-uploads, remove-library, and unlike-all"""
+    """Executes delete-uploads, remove-library, unlike-all, and delete_playlists"""
     ctx.invoke(delete_uploads)
     ctx.invoke(remove_library)
     ctx.invoke(unlike_all)
+    ctx.invoke(delete_playlists)
