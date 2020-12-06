@@ -228,10 +228,14 @@ def unlike_all():
     """Reset all Thumbs Up ratings back to neutral
     """
     logging.info("Retrieving all your liked songs...")
-    your_likes = youtube_auth.get_liked_songs(sys.maxsize)
-    logging.info(f"\tRetrieved {your_likes['trackCount']} liked songs.")
+    try:
+        your_likes = youtube_auth.get_liked_songs(sys.maxsize)
+    except Exception:
+        logging.exception(f"\tNo liked songs found.")
+        return False
+    logging.info(f"\tRetrieved {len(your_likes['tracks'])} liked songs.")
     logging.info("Begin unliking songs...")
-    progress_bar = manager.counter(total=your_likes['trackCount'], desc="Songs Unliked", unit="songs")
+    progress_bar = manager.counter(total=len(your_likes['tracks']), desc="Songs Unliked", unit="songs")
     for track in your_likes["tracks"]:
         artist = track["artists"][0]["name"] if track["artists"] else const.UNKNOWN_ARTIST
         title = track["title"]
