@@ -19,7 +19,9 @@ Type `ytmusic-deleter` to see the usage information. There are currently four co
 
 `unlike-all`:&nbsp;&nbsp;&nbsp;&nbsp;Reset all Thumbs Up ratings back to neutral.  
 
-`delete-all`:&nbsp;&nbsp;&nbsp;&nbsp;Combo command that will run `delete-uploads`, `remove-library`, and `unlike-all`.
+`delete-playlists`:&nbsp;&nbsp;&nbsp;&nbsp;Delete all manually created YT Music playlists.  
+
+`delete-all`:&nbsp;&nbsp;&nbsp;&nbsp;Combo command that will run `delete-uploads`, `remove-library`, `unlike-all`, and `delete-playlists`.
 ## Examples
 
 Getting help:
@@ -48,7 +50,11 @@ Reset all Thumbs Up ratings back to neutral:
 ```
 ytmusic-deleter unlike-all
 ```
-Remove everything (uploads, library tracks, and unlike all songs):
+Delete all your personally created playlists:
+```
+ytmusic-deleter delete-playlists
+```
+Remove everything (uploads, library tracks, playlists, and unlike all songs):
 ```
 ytmusic-deleter delete-all
 ```

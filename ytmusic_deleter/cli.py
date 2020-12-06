@@ -246,9 +246,31 @@ def unlike_all():
 
 
 @cli.command()
+def delete_playlists():
+    """Delete all playlists
+    """
+    logging.info("Retrieving all your playlists...")
+    library_playlists = youtube_auth.get_library_playlists(sys.maxsize)
+    # Can't delete "Your Likes" playlist
+    library_playlists = list(filter(lambda playlist: playlist["playlistId"] != "LM", library_playlists))
+    logging.info(f"\tRetrieved {len(library_playlists)} playlists.")
+    logging.info(f"Begin deleting playlists...")
+    progress_bar = manager.counter(total=len(library_playlists), desc="Playlists Deleted", unit="playlists")
+    for playlist in library_playlists:
+        logging.info(f"Processing playlist: {playlist['title']}")
+        response = youtube_auth.delete_playlist(playlist["playlistId"])
+        if response:
+            logging.info(f"\tRemoved playlist \"{playlist['title']}\" from your library.")
+        else:
+            logging.error(f"\tFailed to remove playlist \"{playlist['title']}\" from your library.")
+        progress_bar.update()
+    logging.info("Finished deleting all playlists")
+
+@cli.command()
 @click.pass_context
 def delete_all(ctx):
-    """Executes delete-uploads, remove-library, and unlike-all"""
+    """Executes delete-uploads, remove-library, unlike-all, and delete_playlists"""
     ctx.invoke(delete_uploads)
     ctx.invoke(remove_library)
     ctx.invoke(unlike_all)
+    ctx.invoke(delete_playlists)

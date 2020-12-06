@@ -18,3 +18,8 @@ class TestCli(unittest.TestCase):
         runner = CliRunner()
         result = runner.invoke(cli.unlike_all)
         assert result.exit_code == 0
+
+    def test_delete_playlists(self):
+        runner = CliRunner()
+        result = runner.invoke(cli.delete_playlists)
+        assert result.exit_code == 0
