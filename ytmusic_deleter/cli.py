@@ -29,6 +29,7 @@ manager = enlighten.get_manager()
 
 
 @click.group()
+@click.version_option()
 def cli():
     """Perform batch delete operations on your YouTube Music library.
     """
@@ -231,7 +232,7 @@ def unlike_all():
     try:
         your_likes = youtube_auth.get_liked_songs(sys.maxsize)
     except Exception:
-        logging.exception(f"\tNo liked songs found.")
+        logging.exception("\tNo liked songs found.")
         return False
     logging.info(f"\tRetrieved {len(your_likes['tracks'])} liked songs.")
     logging.info("Begin unliking songs...")
@@ -258,7 +259,7 @@ def delete_playlists():
     # Can't delete "Your Likes" playlist
     library_playlists = list(filter(lambda playlist: playlist["playlistId"] != "LM", library_playlists))
     logging.info(f"\tRetrieved {len(library_playlists)} playlists.")
-    logging.info(f"Begin deleting playlists...")
+    logging.info("Begin deleting playlists...")
     progress_bar = manager.counter(total=len(library_playlists), desc="Playlists Deleted", unit="playlists")
     for playlist in library_playlists:
         logging.info(f"Processing playlist: {playlist['title']}")
@@ -269,6 +270,7 @@ def delete_playlists():
             logging.error(f"\tFailed to remove playlist \"{playlist['title']}\" from your library.")
         progress_bar.update()
     logging.info("Finished deleting all playlists")
+
 
 @cli.command()
 @click.pass_context
