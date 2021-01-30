@@ -263,11 +263,14 @@ def delete_playlists():
     progress_bar = manager.counter(total=len(library_playlists), desc="Playlists Deleted", unit="playlists")
     for playlist in library_playlists:
         logging.info(f"Processing playlist: {playlist['title']}")
-        response = youtube_auth.delete_playlist(playlist["playlistId"])
-        if response:
-            logging.info(f"\tRemoved playlist \"{playlist['title']}\" from your library.")
-        else:
-            logging.error(f"\tFailed to remove playlist \"{playlist['title']}\" from your library.")
+        try:
+            response = youtube_auth.delete_playlist(playlist["playlistId"])
+            if response:
+                logging.info(f"\tRemoved playlist \"{playlist['title']}\" from your library.")
+            else:
+                logging.error(f"\tFailed to remove playlist \"{playlist['title']}\" from your library.")
+        except Exception:
+            logging.error(f"\tCould not delete playlist {playlist['title']}. It might be a YT Music curated playlist.")
         progress_bar.update()
     logging.info("Finished deleting all playlists")
 
