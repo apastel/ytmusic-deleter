@@ -63,7 +63,7 @@ def delete_uploaded_albums(add_to_library):
     progress_bar = manager.counter(total=len(uploaded_albums), desc="Albums Processed", unit="albums")
     for album in uploaded_albums:
         try:
-            artist = album["artists"][0]["name"] if album["artists"] else const.UNKNOWN_ARTIST
+            artist = album["artists"][0]["name"] if hasattr(album, "artists") else const.UNKNOWN_ARTIST
             title = album["title"]
             logging.info(f"Processing album: {artist} - {title}")
             if add_to_library:
@@ -102,7 +102,7 @@ def delete_uploaded_singles():
 
     for single in uploaded_singles:
         try:
-            artist = single["artist"][0]["name"] if single["artist"] else const.UNKNOWN_ARTIST
+            artist = single["artist"][0]["name"] if hasattr(single, "artist") else const.UNKNOWN_ARTIST
             title = single["title"]
             response = youtube_auth.delete_upload_entity(single["entityId"])
             if response == "STATUS_SUCCEEDED":
@@ -125,7 +125,7 @@ def add_album_to_library(artist, title):
         if result["resultType"] == "album" and match_found(result, artist, title):
             catalog_album = youtube_auth.get_album(result["browseId"])
             logging.info(
-                f"\tFound matching album \"{catalog_album['artist'][0]['name'] if catalog_album['artist'] else ''} - {catalog_album['title']}\" in YouTube Music. Adding to library..."
+                f"\tFound matching album \"{catalog_album['artist'][0]['name'] if hasattr(catalog_album, 'artist') else ''} - {catalog_album['title']}\" in YouTube Music. Adding to library..."
             )
             success = youtube_auth.rate_playlist(catalog_album["playlistId"], const.LIKE)
             if success:
@@ -140,7 +140,7 @@ def match_found(result, artist, title):
     try:
         resultArtist = str(result["artist"]).lower()
     except KeyError:
-        resultArtist = str(result["artists"][0] if result["artists"] else "").lower()
+        resultArtist = str(result["artists"][0] if hasattr(result, "artists") else "").lower()
     try:
         resultTitle = str(result["title"]).lower()
     except KeyError:
@@ -212,7 +212,7 @@ def remove_album(browseId):
         logging.exception(
             f"\tFailed to remove album with ID {browseId} from your library, as it could not be retrieved.")
         return False
-    artist = album["artist"][0]["name"] if album["artist"] else const.UNKNOWN_ARTIST
+    artist = album["artist"][0]["name"] if hasattr(album, "artist") else const.UNKNOWN_ARTIST
     title = album["title"]
     logging.info(f"Processing album: {artist} - {title}")
     response = youtube_auth.rate_playlist(album["playlistId"], const.INDIFFERENT)
@@ -238,7 +238,7 @@ def unlike_all():
     logging.info("Begin unliking songs...")
     progress_bar = manager.counter(total=len(your_likes['tracks']), desc="Songs Unliked", unit="songs")
     for track in your_likes["tracks"]:
-        artist = track["artists"][0]["name"] if track["artists"] else const.UNKNOWN_ARTIST
+        artist = track["artists"][0]["name"] if hasattr(track, "artists") else const.UNKNOWN_ARTIST
         title = track["title"]
         logging.info(f"Processing track: {artist} - {title}")
         if track["album"] is None:
