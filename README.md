@@ -1,3 +1,7 @@
+If this project helped you and you want to thank me, you can get me a beer! (I will actually use the money to buy beer, and I'll send you a virtual cheers).
+
+<a href="https://www.buymeacoffee.com/jewbix.cube"><img src="https://img.buymeacoffee.com/button-api/?text=Buy me a beer&emoji=🍻&slug=jewbix.cube&button_colour=FFDD00&font_colour=000000&font_family=Arial&outline_colour=000000&coffee_colour=ffffff"></a>
+
 # ytmusic-deleter
 A command-line interface for performing batch delete operations on your YouTube Music library. You can use this to remove items from both your library and from your uploads.
 
@@ -80,6 +84,3 @@ You will see this printed by the [ytmusicapi](https://github.com/sigma67/ytmusic
 Other various exceptions may occur while running ytmusic-deleter because there is a wide swath of possible metadata on your library, and the YouTube Music backend is changing rapidly. Most errors deleting albums have been accounted for and you may just have to delete a couple albums manually that got left behind. If there are any errors that halt the entire program in the middle of deletion, please create an Issue and post the full error.
 
 ---
-If this project helped you and you want to thank me, you can get me a beer! (I will actually use the money to buy beer, and I'll send you a cheers).
-
-<a href="https://www.buymeacoffee.com/jewbix.cube"><img src="https://img.buymeacoffee.com/button-api/?text=Buy me a beer&emoji=🍻&slug=jewbix.cube&button_colour=FFDD00&font_colour=000000&font_family=Arial&outline_colour=000000&coffee_colour=ffffff"></a>
