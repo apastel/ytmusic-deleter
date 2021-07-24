@@ -23,7 +23,8 @@ develop_reqs = [
     "flake8",
     "yapf",
     "coverage",
-    "rope"
+    "rope",
+    "pytest"
 ]
 
 with open("README.md", "rb") as f:
