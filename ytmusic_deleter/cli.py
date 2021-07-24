@@ -236,7 +236,7 @@ def unlike_all():
     try:
         your_likes = youtube_auth.get_liked_songs(sys.maxsize)
     except Exception:
-        logging.exception("\tNo liked songs found.")
+        logging.error("\tNo liked songs found or error retrieving liked songs.")
         return False
     logging.info(f"\tRetrieved {len(your_likes['tracks'])} liked songs.")
     logging.info("Begin unliking songs...")
