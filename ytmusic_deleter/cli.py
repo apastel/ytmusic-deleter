@@ -179,8 +179,10 @@ def remove_library():
     except Exception:
         logging.exception("Failed to get library singles.")
         library_songs = []
-    # Filter for unique album IDs so that for each song, we can just remove the album its a part of
-    filtered_songs = list({v["album"]["id"]: v for v in library_songs}.values())
+    # Filter out songs where album is None (possible rare occurrence seen here: https://github.com/apastel/ytmusic-deleter/issues/12)
+    filtered_songs = list(filter(lambda song: song["album"], library_songs))
+    # Filter for unique album IDs so that for each song, we can just remove the album it's a part of
+    filtered_songs = list({v["album"]["id"]: v for v in filtered_songs}.values())
     progress_bar = manager.counter(total=len(filtered_songs), desc="Singles Processed", unit="singles")
     albums_removed += remove_library_albums_by_song(filtered_songs, progress_bar)
     logging.info(
