@@ -127,7 +127,7 @@ def add_album_to_library(artist, title):
             logging.info(
                 f"\tFound matching album \"{catalog_album['artist'][0]['name'] if 'artist' in catalog_album else ''} - {catalog_album['title']}\" in YouTube Music. Adding to library..."
             )
-            success = youtube_auth.rate_playlist(catalog_album["playlistId"], const.LIKE)
+            success = youtube_auth.rate_playlist(catalog_album["audioPlaylistId"], const.LIKE)
             if success:
                 logging.info("\tAdded album to library.")
             else:
@@ -219,7 +219,7 @@ def remove_album(browseId):
     artist = album["artist"][0]["name"] if "artist" in album else const.UNKNOWN_ARTIST
     title = album["title"]
     logging.info(f"Processing album: {artist} - {title}")
-    response = youtube_auth.rate_playlist(album["playlistId"], const.INDIFFERENT)
+    response = youtube_auth.rate_playlist(album["audioPlaylistId"], const.INDIFFERENT)
     if response:
         logging.info(f"\tRemoved {artist} - {title} from your library.")
         return True

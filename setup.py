@@ -14,7 +14,7 @@ module_name = "ytmusic-deleter"
 
 install_reqs = [
     "click",
-    "ytmusicapi >= 0.18.0",
+    "ytmusicapi >= 0.19.3",
     "enlighten"
 ]
 
