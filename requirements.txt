@@ -1,0 +1,3 @@
+ytmusic-deleter
+fbs
+pyqt5-tools
