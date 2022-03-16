@@ -1,5 +1,6 @@
 from ytmusicapi import YTMusic
 from ytmusic_deleter import constants as const
+from random import shuffle as unsort
 import click
 import logging
 import sys
@@ -287,3 +288,39 @@ def delete_all(ctx):
     ctx.invoke(remove_library)
     ctx.invoke(unlike_all)
     ctx.invoke(delete_playlists)
+
+
+@cli.command()
+@click.argument("playlist_title")
+@click.option("--shuffle",
+              "-s",
+              is_flag=True,
+              help="Shuffle the playlist instead of sorting it.")
+def sort_playlist(shuffle, playlist_title):
+    """Sort a playlist alphabetically by artist and by album"""
+    logging.info(f"Sorting playlist {playlist_title} alphabetically...")
+    logging.info("Getting all playlists first")
+    library_playlists = youtube_auth.get_library_playlists(sys.maxsize)
+    logging.info("Filtering for just the one selected")
+    library_playlists = list(filter(lambda playlist: playlist["title"].lower() == playlist_title.lower(), library_playlists))
+    logging.info(f"library_playlists is now of size {len(library_playlists)}")
+    if not library_playlists:
+        raise click.BadParameter(f"No playlists found named \"{playlist_title}\". Double-check your playlist name and try again.")
+
+    for library_playlist in library_playlists:
+        logging.info(f"Processing playlist: {library_playlist['title']}")
+        playlist = youtube_auth.get_playlist(library_playlist["playlistId"], sys.maxsize)
+        if shuffle:
+            logging.info(f"Shuffling playlist: {library_playlist['title']}")
+            ordered_tracks = [t for t in playlist["tracks"]]
+            unsort(ordered_tracks)
+        else:
+            ordered_tracks = [t for t in sorted(playlist["tracks"], key=lambda t: (t["artists"][0]["name"].lower(), t["album"]["name"]), reverse=True)]
+
+        # Not really sure why doing this twice works, but it does.
+        for cur, nxt in zip(ordered_tracks, ordered_tracks[1:]):
+            logging.info(f"Moving {nxt['artists'][0]['name']} - {nxt['title']} before {cur['artists'][0]['name']} - {cur['title']}")
+            youtube_auth.edit_playlist(playlist["id"], moveItem=(nxt["setVideoId"], cur["setVideoId"]))
+        for cur, nxt in zip(ordered_tracks, ordered_tracks[1:]):
+            logging.info(f"Moving {nxt['artists'][0]['name']} - {nxt['title']} before {cur['artists'][0]['name']} - {cur['title']}")
+            youtube_auth.edit_playlist(playlist["id"], moveItem=(nxt["setVideoId"], cur["setVideoId"]))
