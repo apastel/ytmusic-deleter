@@ -298,7 +298,7 @@ def delete_all(ctx):
               help="Shuffle the playlist instead of sorting it.")
 def sort_playlist(shuffle, playlist_title):
     """Sort a playlist alphabetically by artist and by album"""
-    logging.info(f"Sorting playlist {playlist_title} alphabetically...")
+    logging.info(f"Sorting playlist {playlist_title}...")
     logging.info("Getting all playlists first")
     library_playlists = youtube_auth.get_library_playlists(sys.maxsize)
     logging.info("Filtering for just the one selected")
@@ -310,17 +310,27 @@ def sort_playlist(shuffle, playlist_title):
     for library_playlist in library_playlists:
         logging.info(f"Processing playlist: {library_playlist['title']}")
         playlist = youtube_auth.get_playlist(library_playlist["playlistId"], sys.maxsize)
+        current_tracklist = [t for t in playlist["tracks"]]
         if shuffle:
             logging.info(f"Shuffling playlist: {library_playlist['title']}")
-            ordered_tracks = [t for t in playlist["tracks"]]
-            unsort(ordered_tracks)
+            desired_tracklist = [t for t in playlist["tracks"]]
+            unsort(desired_tracklist)
         else:
-            ordered_tracks = [t for t in sorted(playlist["tracks"], key=lambda t: (t["artists"][0]["name"].lower(), t["album"]["name"]), reverse=True)]
+            desired_tracklist = [t for t in sorted(playlist["tracks"], key=lambda t: (t["artists"][0]["name"].lower(), t["album"]["name"], t["title"]))]
 
-        # Not really sure why doing this twice works, but it does.
-        for cur, nxt in zip(ordered_tracks, ordered_tracks[1:]):
-            logging.info(f"Moving {nxt['artists'][0]['name']} - {nxt['title']} before {cur['artists'][0]['name']} - {cur['title']}")
-            youtube_auth.edit_playlist(playlist["id"], moveItem=(nxt["setVideoId"], cur["setVideoId"]))
-        for cur, nxt in zip(ordered_tracks, ordered_tracks[1:]):
-            logging.info(f"Moving {nxt['artists'][0]['name']} - {nxt['title']} before {cur['artists'][0]['name']} - {cur['title']}")
-            youtube_auth.edit_playlist(playlist["id"], moveItem=(nxt["setVideoId"], cur["setVideoId"]))
+        progress_bar = manager.counter(total=len(desired_tracklist), desc="Tracks Sorted", unit="tracks")
+        for cur_track in desired_tracklist:
+            cur_idx = desired_tracklist.index(cur_track)
+            track_after = current_tracklist[cur_idx]
+            logging.info(f"Moving {cur_track['artists'][0]['name']} - {cur_track['title']} before {track_after['artists'][0]['name']} - {track_after['title']}")
+            if cur_track != track_after:
+                try:
+                    response = youtube_auth.edit_playlist(playlist["id"], moveItem=(cur_track["setVideoId"], track_after["setVideoId"]))
+                    if not response:
+                        logging.error(f"Failed to move {cur_track['artists'][0]['name']} - {cur_track['title']} before {track_after['artists'][0]['name']} - {track_after['title']}")
+                except Exception:
+                    logging.error(f"Failed to move {cur_track['artists'][0]['name']} - {cur_track['title']} before {track_after['artists'][0]['name']} - {track_after['title']}")
+
+                current_tracklist.remove(cur_track)
+                current_tracklist.insert(cur_idx, cur_track)
+            progress_bar.update()
