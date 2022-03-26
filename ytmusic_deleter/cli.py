@@ -298,12 +298,8 @@ def delete_all(ctx):
               help="Shuffle the playlist instead of sorting it.")
 def sort_playlist(shuffle, playlist_title):
     """Sort a playlist alphabetically by artist and by album"""
-    logging.info(f"Sorting playlist {playlist_title}...")
-    logging.info("Getting all playlists first")
     library_playlists = youtube_auth.get_library_playlists(sys.maxsize)
-    logging.info("Filtering for just the one selected")
     library_playlists = list(filter(lambda playlist: playlist["title"].lower() == playlist_title.lower(), library_playlists))
-    logging.info(f"library_playlists is now of size {len(library_playlists)}")
     if not library_playlists:
         raise click.BadParameter(f"No playlists found named \"{playlist_title}\". Double-check your playlist name and try again.")
 
@@ -312,7 +308,7 @@ def sort_playlist(shuffle, playlist_title):
         playlist = youtube_auth.get_playlist(library_playlist["playlistId"], sys.maxsize)
         current_tracklist = [t for t in playlist["tracks"]]
         if shuffle:
-            logging.info(f"Shuffling playlist: {library_playlist['title']}")
+            logging.info(f"\tPlaylist: {library_playlist['title']} will be shuffled")
             desired_tracklist = [t for t in playlist["tracks"]]
             unsort(desired_tracklist)
         else:
@@ -322,7 +318,7 @@ def sort_playlist(shuffle, playlist_title):
         for cur_track in desired_tracklist:
             cur_idx = desired_tracklist.index(cur_track)
             track_after = current_tracklist[cur_idx]
-            logging.info(f"Moving {cur_track['artists'][0]['name']} - {cur_track['title']} before {track_after['artists'][0]['name']} - {track_after['title']}")
+            logging.debug(f"Moving {cur_track['artists'][0]['name']} - {cur_track['title']} before {track_after['artists'][0]['name']} - {track_after['title']}")
             if cur_track != track_after:
                 try:
                     response = youtube_auth.edit_playlist(playlist["id"], moveItem=(cur_track["setVideoId"], track_after["setVideoId"]))
