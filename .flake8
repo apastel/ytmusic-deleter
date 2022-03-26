@@ -16,4 +16,4 @@ ignore =
     # bin op line break, invalid
     W503
 # up to 88 allowed by bugbear B950
-max-line-length = 80
+max-line-length = 120
