@@ -5,6 +5,8 @@ If this project helped you and you want to thank me, you can get me a beer! (I w
 # ytmusic-deleter
 A command-line interface for performing batch delete operations on your YouTube Music library. You can use this to remove items from both your library and from your uploads.
 
+New in version 1.3.0, you can also sort your playlists. See the Usage information for `sort-playlist`.
+
 ## Setup
 1. Install [Python](https://www.python.org/downloads/). Make sure it is available on your PATH.
 1. Open a command prompt and type `pip install ytmusic-deleter`. Use a [virtual environment](https://virtualenv.pypa.io/en/latest/) if you're familiar with the process.
@@ -13,19 +15,23 @@ A command-line interface for performing batch delete operations on your YouTube 
 1. Press `Enter` after pasting the headers, then press Ctrl-D to continue (Ctrl-Z then Enter again on Windows). The next time you run ytmusic-deleter, it will reuse your headers from the `headers_auth.json` file that it generated.
 
 # Usage
-Type `ytmusic-deleter` to see the usage information. There are currently four commands available:
+Type `ytmusic-deleter` to see the usage information. There are several commands available.
 
-`delete-uploads`:&nbsp;&nbsp;&nbsp;&nbsp;Delete all tracks that you have uploaded to your YT Music library.  
+`delete-uploads`:&nbsp;&nbsp;&nbsp;&nbsp;Delete all tracks that you have uploaded to your YT Music library.
 
 >Use the `--add-to-library` or `-a` option to add each album or song to your library from YouTube Music's online catalog before deleting it from your uploads. If a match could not be found, the album or song will remain in your uploads. Note that each track that gets added to your library this way will have a thumbs up "Like" in your library due to how the [ytmusicapi](https://github.com/sigma67/ytmusicapi/) works.
 
-`remove-library`:&nbsp;&nbsp;&nbsp;&nbsp;Remove all tracks that you have added to your library from within YouTube Music.  
+`remove-library`:&nbsp;&nbsp;&nbsp;&nbsp;Remove all tracks that you have added to your library from within YouTube Music.
 
-`unlike-all`:&nbsp;&nbsp;&nbsp;&nbsp;Reset all Thumbs Up ratings back to neutral.  
+`unlike-all`:&nbsp;&nbsp;&nbsp;&nbsp;Reset all Thumbs Up ratings back to neutral.
 
-`delete-playlists`:&nbsp;&nbsp;&nbsp;&nbsp;Delete all manually created YT Music playlists.  
+`delete-playlists`:&nbsp;&nbsp;&nbsp;&nbsp;Delete all manually created YT Music playlists.
 
 `delete-all`:&nbsp;&nbsp;&nbsp;&nbsp;Combo command that will run `delete-uploads`, `remove-library`, `unlike-all`, and `delete-playlists`.
+### Non-deletion commands:
+`sort-playlist`:&nbsp;&nbsp;&nbsp;&nbsp;Sort a playlist alphabetically by artist and then by song title.
+
+>Use the `--shuffle` or `-s` option to shuffle the playlist instead of sorting it.
 ## Examples
 
 Getting help:
@@ -61,6 +67,10 @@ ytmusic-deleter delete-playlists
 Remove everything (uploads, library tracks, playlists, and unlike all songs):
 ```
 ytmusic-deleter delete-all
+```
+Sort a playlist called **Workout Jams**:
+```
+ytmusic-deleter sort-playlist "workout jams"
 ```
 
 # Troubleshooting
