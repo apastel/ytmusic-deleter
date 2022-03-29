@@ -370,7 +370,7 @@ def sort_playlist(shuffle, playlist_title):
                 for t in sorted(
                     playlist["tracks"],
                     key=lambda t: (
-                        t["artists"][0]["name"].lower(),
+                        re.sub(r"^(the |a )", "", t["artists"][0]["name"].lower()),
                         t["album"]["name"],
                         t["title"],
                     ),
