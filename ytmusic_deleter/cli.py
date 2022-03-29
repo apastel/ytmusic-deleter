@@ -1,16 +1,22 @@
-from ytmusicapi import YTMusic
-from ytmusic_deleter import constants as const
-import click
 import logging
-import sys
 import re
-import enlighten
+import sys
+from random import shuffle as unsort
 
-logging.basicConfig(level=logging.INFO,
-                    format="[%(asctime)s] %(message)s",
-                    datefmt="%Y-%m-%d %H:%M:%S",
-                    handlers=[logging.FileHandler("ytmusic-deleter.log"),
-                              logging.StreamHandler(sys.stdout)])
+import click
+import enlighten
+from ytmusic_deleter import constants as const
+from ytmusicapi import YTMusic
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="[%(asctime)s] %(message)s",
+    datefmt="%Y-%m-%d %H:%M:%S",
+    handlers=[
+        logging.FileHandler("ytmusic-deleter.log"),
+        logging.StreamHandler(sys.stdout),
+    ],
+)
 
 
 def get_auth_obj():
@@ -31,18 +37,18 @@ manager = enlighten.get_manager()
 @click.group()
 @click.version_option()
 def cli():
-    """Perform batch delete operations on your YouTube Music library.
-    """
+    """Perform batch delete operations on your YouTube Music library."""
 
 
 @cli.command()
-@click.option("--add-to-library",
-              "-a",
-              is_flag=True,
-              help="Add corresponding albums to your library before deleting them from uploads.")
+@click.option(
+    "--add-to-library",
+    "-a",
+    is_flag=True,
+    help="Add corresponding albums to your library before deleting them from uploads.",
+)
 def delete_uploads(add_to_library):
-    """Delete all tracks that you have uploaded to your YT Music library.
-    """
+    """Delete all tracks that you have uploaded to your YT Music library."""
     (albums_deleted, albums_total) = delete_uploaded_albums(add_to_library)
     logging.info(f"Deleted {albums_deleted} out of {albums_total} uploaded albums.")
     if (add_to_library) and albums_total - albums_deleted > 0:
@@ -60,19 +66,29 @@ def delete_uploaded_albums(add_to_library):
     uploaded_albums = youtube_auth.get_library_upload_albums(sys.maxsize)
     if not uploaded_albums:
         return (albums_deleted, 0)
-    progress_bar = manager.counter(total=len(uploaded_albums), desc="Albums Processed", unit="albums")
+    progress_bar = manager.counter(
+        total=len(uploaded_albums), desc="Albums Processed", unit="albums"
+    )
     for album in uploaded_albums:
         try:
-            artist = album["artists"][0]["name"] if "artists" in album else const.UNKNOWN_ARTIST
+            artist = (
+                album["artists"][0]["name"]
+                if "artists" in album
+                else const.UNKNOWN_ARTIST
+            )
             title = album["title"]
             logging.info(f"Processing album: {artist} - {title}")
             if add_to_library:
                 if artist == const.UNKNOWN_ARTIST:
-                    logging.warn("\tAlbum is missing artist metadata. Skipping match search and will not delete.")
+                    logging.warn(
+                        "\tAlbum is missing artist metadata. Skipping match search and will not delete."
+                    )
                     progress_bar.update()
                     continue
                 elif not add_album_to_library(artist, title):
-                    logging.warn("\tNo match for uploaded album found in online catalog. Will not delete.")
+                    logging.warn(
+                        "\tNo match for uploaded album found in online catalog. Will not delete."
+                    )
                     progress_bar.update()
                     continue
             response = youtube_auth.delete_upload_entity(album["browseId"])
@@ -98,11 +114,17 @@ def delete_uploaded_singles():
     # were skipped in the first batch would get deleted here
     uploaded_singles = [single for single in uploaded_singles if not single["album"]]
 
-    progress_bar = manager.counter(total=len(uploaded_singles), desc="Singles Processed", unit="singles")
+    progress_bar = manager.counter(
+        total=len(uploaded_singles), desc="Singles Processed", unit="singles"
+    )
 
     for single in uploaded_singles:
         try:
-            artist = single["artist"][0]["name"] if "artist" in single else const.UNKNOWN_ARTIST
+            artist = (
+                single["artist"][0]["name"]
+                if "artist" in single
+                else const.UNKNOWN_ARTIST
+            )
             title = single["title"]
             response = youtube_auth.delete_upload_entity(single["entityId"])
             if response == "STATUS_SUCCEEDED":
@@ -125,9 +147,12 @@ def add_album_to_library(artist, title):
         if result["resultType"] == "album" and match_found(result, artist, title):
             catalog_album = youtube_auth.get_album(result["browseId"])
             logging.info(
-                f"\tFound matching album \"{catalog_album['artist'][0]['name'] if 'artist' in catalog_album else ''} - {catalog_album['title']}\" in YouTube Music. Adding to library..."
+                f"\tFound matching album \"{catalog_album['artist'][0]['name'] if 'artist' in catalog_album else ''}"
+                f" - {catalog_album['title']}\" in YouTube Music. Adding to library..."
             )
-            success = youtube_auth.rate_playlist(catalog_album["audioPlaylistId"], const.LIKE)
+            success = youtube_auth.rate_playlist(
+                catalog_album["audioPlaylistId"], const.LIKE
+            )
             if success:
                 logging.info("\tAdded album to library.")
             else:
@@ -159,8 +184,7 @@ def match_found(result, artist, title):
 
 @cli.command()
 def remove_library():
-    """Remove all tracks that you have added to your library from within YouTube Music.
-    """
+    """Remove all tracks that you have added to your library from within YouTube Music."""
     logging.info("Retrieving all library albums...")
     try:
         library_albums = youtube_auth.get_library_albums(sys.maxsize)
@@ -168,7 +192,9 @@ def remove_library():
     except Exception:
         logging.exception("Failed to get library albums.")
         library_albums = []
-    progress_bar = manager.counter(total=len(library_albums), desc="Albums Processed", unit="albums")
+    progress_bar = manager.counter(
+        total=len(library_albums), desc="Albums Processed", unit="albums"
+    )
     albums_removed = remove_library_albums(library_albums, progress_bar)
 
     logging.info("Retrieving all singles...")
@@ -179,16 +205,21 @@ def remove_library():
     except Exception:
         logging.exception("Failed to get library singles.")
         library_songs = []
-    # Filter out songs where album is None (possible rare occurrence seen here: https://github.com/apastel/ytmusic-deleter/issues/12)
+    # Filter out songs where album is None (rare but seen here: https://github.com/apastel/ytmusic-deleter/issues/12)
     filtered_songs = list(filter(lambda song: song["album"], library_songs))
     if len(library_songs) - len(filtered_songs) > 0:
-        logging.info(f"{len(library_songs) - len(filtered_songs)} songs are not part of an album and won't be deleted.")
+        logging.info(
+            f"{len(library_songs) - len(filtered_songs)} songs are not part of an album and won't be deleted."
+        )
     # Filter for unique album IDs so that for each song, we can just remove the album it's a part of
     album_unique_songs = list({v["album"]["id"]: v for v in filtered_songs}.values())
-    progress_bar = manager.counter(total=len(album_unique_songs), desc="Singles Processed", unit="singles")
+    progress_bar = manager.counter(
+        total=len(album_unique_songs), desc="Singles Processed", unit="singles"
+    )
     albums_removed += remove_library_albums_by_song(album_unique_songs, progress_bar)
     logging.info(
-        f"Removed {albums_removed} out of {len(library_albums) + len(album_unique_songs)} albums from your library.")
+        f"Removed {albums_removed} out of {len(library_albums) + len(album_unique_songs)} albums from your library."
+    )
 
 
 def remove_library_albums(albums, progress_bar):
@@ -214,7 +245,8 @@ def remove_album(browseId):
         album = youtube_auth.get_album(browseId)
     except Exception:
         logging.exception(
-            f"\tFailed to remove album with ID {browseId} from your library, as it could not be retrieved.")
+            f"\tFailed to remove album with ID {browseId} from your library, as it could not be retrieved."
+        )
         return False
     artist = album["artist"][0]["name"] if "artist" in album else const.UNKNOWN_ARTIST
     title = album["title"]
@@ -230,8 +262,7 @@ def remove_album(browseId):
 
 @cli.command()
 def unlike_all():
-    """Reset all Thumbs Up ratings back to neutral
-    """
+    """Reset all Thumbs Up ratings back to neutral"""
     logging.info("Retrieving all your liked songs...")
     try:
         your_likes = youtube_auth.get_liked_songs(sys.maxsize)
@@ -240,13 +271,19 @@ def unlike_all():
         return False
     logging.info(f"\tRetrieved {len(your_likes['tracks'])} liked songs.")
     logging.info("Begin unliking songs...")
-    progress_bar = manager.counter(total=len(your_likes['tracks']), desc="Songs Unliked", unit="songs")
+    progress_bar = manager.counter(
+        total=len(your_likes["tracks"]), desc="Songs Unliked", unit="songs"
+    )
     for track in your_likes["tracks"]:
-        artist = track["artists"][0]["name"] if "artists" in track else const.UNKNOWN_ARTIST
+        artist = (
+            track["artists"][0]["name"] if "artists" in track else const.UNKNOWN_ARTIST
+        )
         title = track["title"]
         logging.info(f"Processing track: {artist} - {title}")
         if track["album"] is None:
-            logging.info("\tSkipping deletion as this might be a YouTube video and not a YouTube Music song.")
+            logging.info(
+                "\tSkipping deletion as this might be a YouTube video and not a YouTube Music song."
+            )
         else:
             logging.info("\tRemoved track from Likes.")
             youtube_auth.rate_song(track["videoId"], const.INDIFFERENT)
@@ -256,25 +293,34 @@ def unlike_all():
 
 @cli.command()
 def delete_playlists():
-    """Delete all playlists
-    """
+    """Delete all playlists"""
     logging.info("Retrieving all your playlists...")
     library_playlists = youtube_auth.get_library_playlists(sys.maxsize)
     # Can't delete "Your Likes" playlist
-    library_playlists = list(filter(lambda playlist: playlist["playlistId"] != "LM", library_playlists))
+    library_playlists = list(
+        filter(lambda playlist: playlist["playlistId"] != "LM", library_playlists)
+    )
     logging.info(f"\tRetrieved {len(library_playlists)} playlists.")
     logging.info("Begin deleting playlists...")
-    progress_bar = manager.counter(total=len(library_playlists), desc="Playlists Deleted", unit="playlists")
+    progress_bar = manager.counter(
+        total=len(library_playlists), desc="Playlists Deleted", unit="playlists"
+    )
     for playlist in library_playlists:
         logging.info(f"Processing playlist: {playlist['title']}")
         try:
             response = youtube_auth.delete_playlist(playlist["playlistId"])
             if response:
-                logging.info(f"\tRemoved playlist \"{playlist['title']}\" from your library.")
+                logging.info(
+                    f"\tRemoved playlist \"{playlist['title']}\" from your library."
+                )
             else:
-                logging.error(f"\tFailed to remove playlist \"{playlist['title']}\" from your library.")
+                logging.error(
+                    f"\tFailed to remove playlist \"{playlist['title']}\" from your library."
+                )
         except Exception:
-            logging.error(f"\tCould not delete playlist {playlist['title']}. It might be a YT Music curated playlist.")
+            logging.error(
+                f"\tCould not delete playlist {playlist['title']}. It might be a YT Music curated playlist."
+            )
         progress_bar.update()
     logging.info("Finished deleting all playlists")
 
@@ -287,3 +333,77 @@ def delete_all(ctx):
     ctx.invoke(remove_library)
     ctx.invoke(unlike_all)
     ctx.invoke(delete_playlists)
+
+
+@cli.command()
+@click.argument("playlist_title")
+@click.option(
+    "--shuffle", "-s", is_flag=True, help="Shuffle the playlist instead of sorting it."
+)
+def sort_playlist(shuffle, playlist_title):
+    """Sort a playlist alphabetically by artist and by album"""
+    library_playlists = youtube_auth.get_library_playlists(sys.maxsize)
+    library_playlists = list(
+        filter(
+            lambda playlist: playlist["title"].lower() == playlist_title.lower(),
+            library_playlists,
+        )
+    )
+    if not library_playlists:
+        raise click.BadParameter(
+            f'No playlists found named "{playlist_title}". Double-check your playlist name and try again.'
+        )
+
+    for library_playlist in library_playlists:
+        logging.info(f"Processing playlist: {library_playlist['title']}")
+        playlist = youtube_auth.get_playlist(
+            library_playlist["playlistId"], sys.maxsize
+        )
+        current_tracklist = [t for t in playlist["tracks"]]
+        if shuffle:
+            logging.info(f"\tPlaylist: {library_playlist['title']} will be shuffled")
+            desired_tracklist = [t for t in playlist["tracks"]]
+            unsort(desired_tracklist)
+        else:
+            desired_tracklist = [
+                t
+                for t in sorted(
+                    playlist["tracks"],
+                    key=lambda t: (
+                        re.sub(r"^(the |a )", "", t["artists"][0]["name"].lower()),
+                        t["album"]["name"],
+                        t["title"],
+                    ),
+                )
+            ]
+
+        progress_bar = manager.counter(
+            total=len(desired_tracklist), desc="Tracks Sorted", unit="tracks"
+        )
+        for cur_track in desired_tracklist:
+            cur_idx = desired_tracklist.index(cur_track)
+            track_after = current_tracklist[cur_idx]
+            logging.debug(
+                f"Moving {cur_track['artists'][0]['name']} - {cur_track['title']} "
+                f"before {track_after['artists'][0]['name']} - {track_after['title']}"
+            )
+            if cur_track != track_after:
+                try:
+                    response = youtube_auth.edit_playlist(
+                        playlist["id"],
+                        moveItem=(cur_track["setVideoId"], track_after["setVideoId"]),
+                    )
+                    if not response:
+                        logging.error(
+                            f"Failed to move {cur_track['artists'][0]['name']} - {cur_track['title']} "
+                            f"before {track_after['artists'][0]['name']} - {track_after['title']}"
+                        )
+                except Exception:
+                    logging.error(
+                        f"Failed to move {cur_track['artists'][0]['name']} - {cur_track['title']} "
+                        f"before {track_after['artists'][0]['name']} - {track_after['title']}"
+                    )
+
+                current_tracklist.remove(cur_track)
+                current_tracklist.insert(cur_idx, cur_track)
+            progress_bar.update()
