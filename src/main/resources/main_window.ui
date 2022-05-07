@@ -17,8 +17,8 @@
    <widget class="QPushButton" name="removeLibraryButton">
     <property name="geometry">
      <rect>
-      <x>320</x>
-      <y>250</y>
+      <x>330</x>
+      <y>70</y>
       <width>121</width>
       <height>41</height>
      </rect>
@@ -28,6 +28,54 @@
     </property>
     <property name="default">
      <bool>false</bool>
+    </property>
+   </widget>
+   <widget class="QPlainTextEdit" name="consoleTextArea">
+    <property name="geometry">
+     <rect>
+      <x>40</x>
+      <y>270</y>
+      <width>721</width>
+      <height>271</height>
+     </rect>
+    </property>
+    <property name="readOnly">
+     <bool>true</bool>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="deleteUploadsButton">
+    <property name="geometry">
+     <rect>
+      <x>330</x>
+      <y>130</y>
+      <width>121</width>
+      <height>41</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Delete Uploads</string>
+    </property>
+    <property name="default">
+     <bool>false</bool>
+    </property>
+   </widget>
+   <widget class="QLabel" name="consoleLabel">
+    <property name="geometry">
+     <rect>
+      <x>40</x>
+      <y>250</y>
+      <width>81</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <family>Arial</family>
+      <pointsize>10</pointsize>
+     </font>
+    </property>
+    <property name="text">
+     <string>Console Log</string>
     </property>
    </widget>
   </widget>

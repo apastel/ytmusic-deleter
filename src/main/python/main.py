@@ -10,11 +10,16 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def __init__(self):
         super().__init__()
         self.setupUi(self)
-        self.removeLibraryButton.clicked.connect(self.on_click)
+        self.removeLibraryButton.clicked.connect(self.remove_library)
+        self.deleteUploadsButton.clicked.connect(self.delete_uploads)
 
     @pyqtSlot()
-    def on_click(self):
-        cli.remove_library()
+    def remove_library(self):
+        cli.remove_library(standalone_mode=False)
+        
+    @pyqtSlot()
+    def delete_uploads(self):
+        cli.delete_uploads(standalone_mode=False)
 
 if __name__ == '__main__':
     appctxt = ApplicationContext()
