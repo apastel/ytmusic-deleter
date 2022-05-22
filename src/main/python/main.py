@@ -1,13 +1,26 @@
+import os
 from fbs_runtime.application_context.PyQt5 import ApplicationContext
 from PyQt5.QtWidgets import QMainWindow
-from PyQt5.QtCore import QProcess
+from PyQt5.QtCore import QProcess, QSettings
 from ui_form import Ui_MainWindow
 import sys
+from pathlib import Path
 
+DEFAULT_LOG_DIR = os.path.join(os.getenv('APPDATA'), "YTMusic Deleter")
 
 class MainWindow(QMainWindow, Ui_MainWindow):
     def __init__(self):
         super().__init__()
+
+        self.settings = QSettings("apastel", "YTMusic Deleter")
+        try:
+            self.resize(self.settings.value("mainwindow/size"))
+            self.move(self.settings.value("mainwindow/pos"))
+        except Exception:
+            pass
+        self.log_dir = self.settings.value("log_dir", DEFAULT_LOG_DIR)
+        Path(self.log_dir).mkdir(parents=True, exist_ok=True)
+
         self.setupUi(self)
         self.p = None
         self.removeLibraryButton.clicked.connect(self.remove_library)
@@ -15,13 +28,16 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def launch_process(self, args):
         if self.p is None:
-            self.message("Executing process.")
+            self.message(f"Executing process: {args}")
             self.p = QProcess()
             self.p.readyReadStandardOutput.connect(self.handle_stdout)
             self.p.readyReadStandardError.connect(self.handle_stderr)
             self.p.stateChanged.connect(self.handle_state)
             self.p.finished.connect(self.process_finished)
-            self.p.start("ytmusic-deleter", args)
+            self.p.start("cli.exe", ["-l", self.log_dir] + args)
+            if not self.p.waitForStarted():
+                self.message(self.p.errorString())
+
 
     def remove_library(self):
         self.launch_process(["remove-library"])
