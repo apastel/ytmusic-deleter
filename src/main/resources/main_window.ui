@@ -78,6 +78,19 @@
      <string>Console Log</string>
     </property>
    </widget>
+   <widget class="QPushButton" name="authIndicator">
+    <property name="geometry">
+     <rect>
+      <x>40</x>
+      <y>30</y>
+      <width>101</width>
+      <height>41</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Unauthenticated</string>
+    </property>
+   </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">

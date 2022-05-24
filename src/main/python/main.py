@@ -1,12 +1,20 @@
 import os
 from fbs_runtime.application_context.PyQt5 import ApplicationContext
-from PyQt5.QtWidgets import QMainWindow
+from PyQt5.QtWidgets import QMainWindow, QDialog
 from PyQt5.QtCore import QProcess, QSettings
-from ui_form import Ui_MainWindow
+from main_window import Ui_MainWindow
+from auth_dialog import Ui_Dialog
 import sys
 from pathlib import Path
+from ytmusicapi import YTMusic
+from ytmusic_deleter import constants
 
 DEFAULT_LOG_DIR = os.path.join(os.getenv('APPDATA'), "YTMusic Deleter")
+
+class AuthDialog(QDialog, Ui_Dialog):
+    def __init__(self):
+        super().__init__()
+        self.setupUi(self)
 
 class MainWindow(QMainWindow, Ui_MainWindow):
     def __init__(self):
@@ -25,9 +33,25 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.p = None
         self.removeLibraryButton.clicked.connect(self.remove_library)
         self.deleteUploadsButton.clicked.connect(self.delete_uploads)
+        self.authIndicator.clicked.connect(self.ensure_auth)
+        self.auth_dialog = AuthDialog()
+        self.authorized = self.check_auth()
+
+    def check_auth(self):
+        try:
+            YTMusic(constants.HEADERS_FILE)
+        except (KeyError, AttributeError):
+            self.message("Not authorized yet")
+
+
+    def ensure_auth(self):
+        self.message("prompting for auth...")
+        self.auth_dialog.show()
+
 
     def launch_process(self, args):
         if self.p is None:
+            self.ensure_auth()
             self.message(f"Executing process: {args}")
             self.p = QProcess()
             self.p.readyReadStandardOutput.connect(self.handle_stdout)
