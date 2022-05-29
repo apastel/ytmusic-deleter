@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>573</width>
+    <width>569</width>
     <height>438</height>
    </rect>
   </property>
@@ -14,11 +14,14 @@
    <string>Authentication</string>
   </property>
   <widget class="QDialogButtonBox" name="buttonBox">
+   <property name="enabled">
+    <bool>true</bool>
+   </property>
    <property name="geometry">
     <rect>
-     <x>10</x>
+     <x>200</x>
      <y>360</y>
-     <width>341</width>
+     <width>171</width>
      <height>32</height>
     </rect>
    </property>
@@ -27,6 +30,9 @@
    </property>
    <property name="standardButtons">
     <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+   </property>
+   <property name="centerButtons">
+    <bool>true</bool>
    </property>
   </widget>
   <widget class="QPlainTextEdit" name="headersInputBox">
@@ -42,10 +48,10 @@
   <widget class="QLabel" name="orLabel">
    <property name="geometry">
     <rect>
-     <x>260</x>
+     <x>280</x>
      <y>280</y>
-     <width>47</width>
-     <height>13</height>
+     <width>21</width>
+     <height>16</height>
     </rect>
    </property>
    <property name="text">
@@ -55,14 +61,27 @@
   <widget class="QPushButton" name="browseButton">
    <property name="geometry">
     <rect>
-     <x>230</x>
-     <y>310</y>
+     <x>140</x>
+     <y>300</y>
      <width>75</width>
      <height>23</height>
     </rect>
    </property>
    <property name="text">
     <string>Browse</string>
+   </property>
+  </widget>
+  <widget class="QLineEdit" name="fileNameField">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="geometry">
+    <rect>
+     <x>230</x>
+     <y>300</y>
+     <width>241</width>
+     <height>21</height>
+    </rect>
    </property>
   </widget>
  </widget>

@@ -1,8 +1,7 @@
 import os
 from fbs_runtime.application_context.PyQt5 import ApplicationContext
-from PyQt5.QtWidgets import QMainWindow, QDialog, QMessageBox
-from PyQt5.QtCore import QProcess, QSettings, pyqtSlot, pyqtSignal, QObject, QThread
-from PyQt5 import QtCore
+from PyQt5.QtWidgets import QMainWindow, QDialog, QMessageBox, QDialogButtonBox, QFileDialog
+from PyQt5.QtCore import QProcess, QSettings, pyqtSlot, pyqtSignal, QObject, QThread, QDir
 from main_window import Ui_MainWindow
 from auth_dialog import Ui_Dialog
 import sys
@@ -11,7 +10,7 @@ from ytmusicapi import YTMusic
 from ytmusic_deleter import constants
 import logging
 
-APP_DATA_DIR = Path(os.getenv('APPDATA')) / "YTMusic Deleter"
+APP_DATA_DIR = str(Path(os.getenv('APPDATA')) / "YTMusic Deleter")
 logging.basicConfig(
     level=logging.INFO,
     format="[%(asctime)s] %(message)s",
@@ -43,11 +42,16 @@ class YTAuthSetup(QObject):
 class AuthDialog(QDialog, Ui_Dialog):
     def __init__(self, parent):
         super(AuthDialog, self).__init__(parent)
-        # self.setAttribute(QtCore.Qt.WA_DeleteOnClose, True) also closes parent window now for some reason
+        # self.setAttribute(QtCore.Qt.WA_DeleteOnClose, True) # also closes parent window now for some reason
         self.setupUi(self)
         
         # Check again in case auth file was deleted/moved
         self.parentWidget().is_authenticated()
+
+        self.enable_ok_button()
+        self.headersInputBox.textChanged.connect(self.enable_ok_button)
+
+        self.browseButton.clicked.connect(self.choose_auth_file)
 
         self.auth_setup = YTAuthSetup(self.headersInputBox, self.parentWidget().credential_dir)
         self.auth_setup.auth_signal.connect(self.auth_finished)
@@ -56,6 +60,15 @@ class AuthDialog(QDialog, Ui_Dialog):
         self.thread = QThread(self)
         self.thread.started.connect(self.auth_setup.setup_auth)
         self.thread.start()
+
+    @pyqtSlot()
+    def enable_ok_button(self):
+        self.buttonBox.button(QDialogButtonBox.Ok).setEnabled(self.headersInputBox.toPlainText() != "")
+
+    @pyqtSlot()
+    def choose_auth_file(self):
+        file_name, _ = QFileDialog.getOpenFileName(self, "Select Auth File", QDir.rootPath(), "*.json")
+        self.fileNameField.setText(file_name)
 
     @pyqtSlot(str)
     def auth_finished(self, auth_result):
@@ -95,7 +108,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def is_authenticated(self, prompt=False):
         try:
-            YTMusic(os.path.join(self.credential_dir, constants.HEADERS_FILE))
+            YTMusic(Path(self.credential_dir) / constants.HEADERS_FILE)
             self.authIndicator.setText("Authenticated")
             return True
         except (KeyError, AttributeError):
@@ -107,8 +120,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     @pyqtSlot()
     def prompt_for_auth(self):
-        self.message("prompting for auth...")
         self.auth_dialog = AuthDialog(self)
+        self.message("prompting for auth...")
         self.auth_dialog.show()
 
     @pyqtSlot()
