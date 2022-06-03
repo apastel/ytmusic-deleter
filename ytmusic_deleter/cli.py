@@ -291,7 +291,7 @@ def remove_album(browseId):
             f"\tFailed to remove album with ID {browseId} from your library, as it could not be retrieved."
         )
         return False
-    artist = album["artist"][0]["name"] if "artist" in album else const.UNKNOWN_ARTIST
+    artist = album["artists"][0]["name"] if "artists" in album else const.UNKNOWN_ARTIST
     title = album["title"]
     logging.info(f"Processing album: {artist} - {title}")
     response = youtube_auth.rate_playlist(album["audioPlaylistId"], const.INDIFFERENT)
