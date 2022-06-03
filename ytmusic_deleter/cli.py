@@ -1,38 +1,54 @@
 import logging
+import os
 import re
 import sys
-import os
 from random import shuffle as unsort
 
 import click
 import enlighten
 from ytmusic_deleter import constants as const
 from ytmusicapi import YTMusic
-from pprint import pprint
 
 
 manager = enlighten.get_manager()
 progress_bar = None
 
+
 def ensure_auth(credential_dir):
     global youtube_auth
     headers_file_path = os.path.join(credential_dir, const.HEADERS_FILE)
     try:
-        logging.info(f"Looking for {headers_file_path}\"")
+        logging.info(f'Looking for {headers_file_path}"')
         youtube_auth = YTMusic(headers_file_path)
-        logging.info(f"Found {headers_file_path}\"")
+        logging.info(f'Found {headers_file_path}"')
     except (KeyError, AttributeError):
         logging.info(f"Creating {const.HEADERS_FILE} file...")
         youtube_auth = YTMusic(YTMusic.setup(filepath=headers_file_path))
-        logging.info(f"Created {headers_file_path}\"")
+        logging.info(f'Created {headers_file_path}"')
+
 
 @click.group()
 @click.version_option()
-@click.option("--log-dir", "-l", default=os.getcwd(), help="Custom directory in which to write log files, instead of current working directory.")
-@click.option("--credential-dir", "-c", default=os.getcwd(), help="Custom directory in which to locate/create JSON credential file, instead of current working directory")
-@click.option("--static-progress", "-p", is_flag=True, help="Log the progress statically instead of an animated progress bar")
+@click.option(
+    "--log-dir",
+    "-l",
+    default=os.getcwd(),
+    help="Custom directory in which to write log files, instead of current working directory.",
+)
+@click.option(
+    "--credential-dir",
+    "-c",
+    default=os.getcwd(),
+    help="Custom directory in which to locate/create JSON credential file, instead of current working directory",
+)
+@click.option(
+    "--static-progress",
+    "-p",
+    is_flag=True,
+    help="Log the progress statically instead of an animated progress bar",
+)
 @click.pass_context
-def cli(ctx, log_dir, credential_dir, static_progress):    
+def cli(ctx, log_dir, credential_dir, static_progress):
     """Perform batch delete operations on your YouTube Music library."""
 
     logging.basicConfig(
@@ -47,7 +63,8 @@ def cli(ctx, log_dir, credential_dir, static_progress):
     )
     ensure_auth(credential_dir)
     ctx.ensure_object(dict)
-    ctx.obj['STATIC_PROGRESS'] = static_progress
+    ctx.obj["STATIC_PROGRESS"] = static_progress
+
 
 @cli.command()
 @click.option(
@@ -78,7 +95,10 @@ def delete_uploaded_albums(ctx, add_to_library):
         return (albums_deleted, 0)
     global progress_bar
     progress_bar = manager.counter(
-        total=len(uploaded_albums), desc="Albums Processed", unit="albums", enabled=not ctx.obj["STATIC_PROGRESS"]
+        total=len(uploaded_albums),
+        desc="Albums Processed",
+        unit="albums",
+        enabled=not ctx.obj["STATIC_PROGRESS"],
     )
     for album in uploaded_albums:
         try:
@@ -127,7 +147,10 @@ def delete_uploaded_singles(ctx):
 
     global progress_bar
     progress_bar = manager.counter(
-        total=len(uploaded_singles), desc="Singles Processed", unit="singles", enabled=not ctx.obj["STATIC_PROGRESS"]
+        total=len(uploaded_singles),
+        desc="Singles Processed",
+        unit="singles",
+        enabled=not ctx.obj["STATIC_PROGRESS"],
     )
 
     for single in uploaded_singles:
@@ -207,7 +230,10 @@ def remove_library(ctx):
         library_albums = []
     global progress_bar
     progress_bar = manager.counter(
-        total=len(library_albums), desc="Albums Processed", unit="albums", enabled=not ctx.obj["STATIC_PROGRESS"]
+        total=len(library_albums),
+        desc="Albums Processed",
+        unit="albums",
+        enabled=not ctx.obj["STATIC_PROGRESS"],
     )
     albums_removed = remove_library_albums(ctx, library_albums)
 
@@ -228,7 +254,10 @@ def remove_library(ctx):
     # Filter for unique album IDs so that for each song, we can just remove the album it's a part of
     album_unique_songs = list({v["album"]["id"]: v for v in filtered_songs}.values())
     progress_bar = manager.counter(
-        total=len(album_unique_songs), desc="Singles Processed", unit="singles", enabled=not ctx.obj["STATIC_PROGRESS"]
+        total=len(album_unique_songs),
+        desc="Singles Processed",
+        unit="singles",
+        enabled=not ctx.obj["STATIC_PROGRESS"],
     )
     albums_removed += remove_library_albums_by_song(ctx, album_unique_songs)
     logging.info(
@@ -288,7 +317,10 @@ def unlike_all(ctx):
     logging.info("Begin unliking songs...")
     global progress_bar
     progress_bar = manager.counter(
-        total=len(your_likes["tracks"]), desc="Songs Unliked", unit="songs", enabled=not ctx.obj["STATIC_PROGRESS"]
+        total=len(your_likes["tracks"]),
+        desc="Songs Unliked",
+        unit="songs",
+        enabled=not ctx.obj["STATIC_PROGRESS"],
     )
     for track in your_likes["tracks"]:
         artist = (
@@ -321,7 +353,10 @@ def delete_playlists(ctx):
     logging.info("Begin deleting playlists...")
     global progress_bar
     progress_bar = manager.counter(
-        total=len(library_playlists), desc="Playlists Deleted", unit="playlists", enabled=not ctx.obj["STATIC_PROGRESS"]
+        total=len(library_playlists),
+        desc="Playlists Deleted",
+        unit="playlists",
+        enabled=not ctx.obj["STATIC_PROGRESS"],
     )
     for playlist in library_playlists:
         logging.info(f"Processing playlist: {playlist['title']}")
@@ -398,7 +433,10 @@ def sort_playlist(ctx, shuffle, playlist_title):
 
         global progress_bar
         progress_bar = manager.counter(
-            total=len(desired_tracklist), desc="Tracks Sorted", unit="tracks", enabled=not ctx.obj["STATIC_PROGRESS"]
+            total=len(desired_tracklist),
+            desc="Tracks Sorted",
+            unit="tracks",
+            enabled=not ctx.obj["STATIC_PROGRESS"],
         )
         for cur_track in desired_tracklist:
             cur_idx = desired_tracklist.index(cur_track)
@@ -433,7 +471,10 @@ def update_progress(ctx):
     global progress_bar
     progress_bar.update()
     if ctx.obj["STATIC_PROGRESS"]:
-        logging.info(f"Total complete: {round(progress_bar.count / progress_bar.total * 100)}%")
+        logging.info(
+            f"Total complete: {round(progress_bar.count / progress_bar.total * 100)}%"
+        )
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     cli()
