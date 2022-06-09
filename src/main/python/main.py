@@ -1,21 +1,23 @@
+import logging
 import os
-from fbs_runtime.application_context.PyQt5 import ApplicationContext
-from PyQt5.QtWidgets import QMainWindow, QDialog, QMessageBox, QDialogButtonBox, QFileDialog
-from PyQt5.QtCore import QProcess, QSettings, pyqtSlot, pyqtSignal, QObject, QThread, QDir
-from generated.ui_main_window import Ui_MainWindow
-from progress_dialog import ProgressDialog
-from auth_dialog import AuthDialog
-
+import re
 import sys
 from pathlib import Path
-from ytmusicapi import YTMusic
-from ytmusic_deleter import constants
-import logging
-import re
 
-APP_DATA_DIR = str(Path(os.getenv('APPDATA')) / "YTMusic Deleter")
+from auth_dialog import AuthDialog
+from fbs_runtime.application_context.PyQt5 import ApplicationContext
+from generated.ui_main_window import Ui_MainWindow
+from progress_dialog import ProgressDialog
+from PyQt5.QtCore import pyqtSlot
+from PyQt5.QtCore import QProcess
+from PyQt5.QtCore import QSettings
+from PyQt5.QtWidgets import QMainWindow
+from ytmusic_deleter import constants
+from ytmusicapi import YTMusic
+
+APP_DATA_DIR = str(Path(os.getenv("APPDATA")) / "YTMusic Deleter")
 # A regular expression, to extract the % complete.
-progress_re = re.compile("Total complete: (\d+)%")
+progress_re = re.compile("Total complete: (\\d+)%")
 
 logging.basicConfig(
     level=logging.INFO,
@@ -26,6 +28,7 @@ logging.basicConfig(
         logging.StreamHandler(sys.stdout),
     ],
 )
+
 
 class MainWindow(QMainWindow, Ui_MainWindow):
     def __init__(self):
@@ -70,7 +73,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     @pyqtSlot()
     def remove_library(self):
         self.launch_process(["remove-library"])
-    
+
     @pyqtSlot()
     def delete_uploads(self):
         self.launch_process(["delete-uploads"])
@@ -83,7 +86,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.p.readyReadStandardError.connect(self.handle_stderr)
             self.p.stateChanged.connect(self.handle_state)
             self.p.finished.connect(self.process_finished)
-            self.p.start("cli.exe", ["-l", self.log_dir, "-c", self.credential_dir, "-p"] + args)
+            self.p.start(
+                "cli.exe", ["-l", self.log_dir, "-c", self.credential_dir, "-p"] + args
+            )
             self.progress_dialog = ProgressDialog(self)
             self.progress_dialog.show()
             if not self.p.waitForStarted():
@@ -106,9 +111,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def handle_state(self, state):
         states = {
-            QProcess.NotRunning: 'Not running',
-            QProcess.Starting: 'Starting',
-            QProcess.Running: 'Running',
+            QProcess.NotRunning: "Not running",
+            QProcess.Starting: "Starting",
+            QProcess.Running: "Running",
         }
         state_name = states[state]
         self.message(f"State changed: {state_name}")
@@ -120,7 +125,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.p = None
 
     def message(self, msg):
-        msg = msg.rstrip() # Remove extra newlines
+        msg = msg.rstrip()  # Remove extra newlines
         self.consoleTextArea.appendPlainText(msg)
         logging.info(msg)
 
@@ -134,8 +139,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             percent_complete = m.group(1)
             return int(percent_complete)
 
-    
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     appctxt = ApplicationContext()
     window = MainWindow()
     window.show()

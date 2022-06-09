@@ -1,6 +1,7 @@
 from generated.ui_progress_dialog import Ui_ProgressDialog
 from PyQt5.QtWidgets import QDialog
 
+
 class ProgressDialog(QDialog, Ui_ProgressDialog):
     def __init__(self, parent):
         super(ProgressDialog, self).__init__(parent)
