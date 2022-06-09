@@ -2,15 +2,21 @@ import os
 from fbs_runtime.application_context.PyQt5 import ApplicationContext
 from PyQt5.QtWidgets import QMainWindow, QDialog, QMessageBox, QDialogButtonBox, QFileDialog
 from PyQt5.QtCore import QProcess, QSettings, pyqtSlot, pyqtSignal, QObject, QThread, QDir
-from main_window import Ui_MainWindow
-from auth_dialog import Ui_Dialog
+from generated.ui_main_window import Ui_MainWindow
+from progress_dialog import ProgressDialog
+from auth_dialog import AuthDialog
+
 import sys
 from pathlib import Path
 from ytmusicapi import YTMusic
 from ytmusic_deleter import constants
 import logging
+import re
 
 APP_DATA_DIR = str(Path(os.getenv('APPDATA')) / "YTMusic Deleter")
+# A regular expression, to extract the % complete.
+progress_re = re.compile("Total complete: (\d+)%")
+
 logging.basicConfig(
     level=logging.INFO,
     format="[%(asctime)s] %(message)s",
@@ -20,69 +26,6 @@ logging.basicConfig(
         logging.StreamHandler(sys.stdout),
     ],
 )
-
-class YTAuthSetup(QObject):
-    auth_signal = pyqtSignal(str)
-
-    def __init__(self, textarea, cred_dir):
-        super(YTAuthSetup, self).__init__()
-        self.textarea = textarea
-        self.headers_file_path = Path(cred_dir) / constants.HEADERS_FILE
-
-    @pyqtSlot()
-    def setup_auth(self):
-        user_input = self.textarea.toPlainText()
-        try:
-            YTMusic(YTMusic.setup(filepath=self.headers_file_path, headers_raw=user_input))
-            self.auth_signal.emit("Success")
-        except Exception as e:
-            self.auth_signal.emit(str(e))
-
-
-class AuthDialog(QDialog, Ui_Dialog):
-    def __init__(self, parent):
-        super(AuthDialog, self).__init__(parent)
-        # self.setAttribute(QtCore.Qt.WA_DeleteOnClose, True) # also closes parent window now for some reason
-        self.setupUi(self)
-        
-        # Check again in case auth file was deleted/moved
-        self.parentWidget().is_authenticated()
-
-        self.enable_ok_button()
-        self.headersInputBox.textChanged.connect(self.enable_ok_button)
-
-        self.browseButton.clicked.connect(self.choose_auth_file)
-
-        self.auth_setup = YTAuthSetup(self.headersInputBox, self.parentWidget().credential_dir)
-        self.auth_setup.auth_signal.connect(self.auth_finished)
-
-    def accept(self):
-        self.thread = QThread(self)
-        self.thread.started.connect(self.auth_setup.setup_auth)
-        self.thread.start()
-
-    @pyqtSlot()
-    def enable_ok_button(self):
-        self.buttonBox.button(QDialogButtonBox.Ok).setEnabled(self.headersInputBox.toPlainText() != "")
-
-    @pyqtSlot()
-    def choose_auth_file(self):
-        file_name, _ = QFileDialog.getOpenFileName(self, "Select Auth File", QDir.rootPath(), "*.json")
-        self.fileNameField.setText(file_name)
-
-    @pyqtSlot(str)
-    def auth_finished(self, auth_result):
-        if auth_result == "Success":
-            self.parentWidget().is_authenticated()
-            self.close()
-        else:
-            error_dialog = QMessageBox()
-            error_dialog.setIcon(QMessageBox.Critical)
-            error_dialog.setText(auth_result)
-            error_dialog.setInformativeText('See https://ytmusicapi.readthedocs.io/en/latest/setup.html#copy-authentication-headers')
-            error_dialog.setWindowTitle("Error")
-            error_dialog.exec_()
-
 
 class MainWindow(QMainWindow, Ui_MainWindow):
     def __init__(self):
@@ -140,7 +83,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.p.readyReadStandardError.connect(self.handle_stderr)
             self.p.stateChanged.connect(self.handle_state)
             self.p.finished.connect(self.process_finished)
-            self.p.start("cli.exe", ["-l", self.log_dir, "-c", self.credential_dir] + args)
+            self.p.start("cli.exe", ["-l", self.log_dir, "-c", self.credential_dir, "-p"] + args)
+            self.progress_dialog = ProgressDialog(self)
+            self.progress_dialog.show()
             if not self.p.waitForStarted():
                 self.message(self.p.errorString())
 
@@ -154,6 +99,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def handle_stdout(self):
         data = self.p.readAllStandardOutput()
         stdout = bytes(data).decode("utf8")
+        percent_complete = self.get_percent_complete(stdout)
+        if percent_complete:
+            self.progressBar.setValue(percent_complete)
         self.message(stdout)
 
     def handle_state(self, state):
@@ -167,12 +115,25 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     @pyqtSlot()
     def process_finished(self):
+        self.progress_dialog.close()
         self.message("Process finished.")
         self.p = None
 
     def message(self, msg):
+        msg = msg.rstrip() # Remove extra newlines
         self.consoleTextArea.appendPlainText(msg)
         logging.info(msg)
+
+    def get_percent_complete(self, output):
+        """
+        Matches lines using the progress_re regex,
+        returning a single integer for the % progress.
+        """
+        m = progress_re.search(output)
+        if m:
+            percent_complete = m.group(1)
+            return int(percent_complete)
+
     
 if __name__ == '__main__':
     appctxt = ApplicationContext()

@@ -1,46 +1,68 @@
-# -*- coding: utf-8 -*-
+from PyQt5.QtWidgets import QDialog, QMessageBox, QDialogButtonBox, QFileDialog
+from PyQt5.QtCore import pyqtSlot, pyqtSignal, QObject, QThread, QDir
+from generated.ui_auth_dialog import Ui_AuthDialog
+from pathlib import Path
+from ytmusicapi import YTMusic
+from ytmusic_deleter import constants
 
-# Form implementation generated from reading ui file 'src/main/resources/auth_dialog.ui'
-#
-# Created by: PyQt5 UI code generator 5.9.2
-#
-# WARNING! All changes made in this file will be lost!
+class AuthDialog(QDialog, Ui_AuthDialog):
+    def __init__(self, parent):
+        super(AuthDialog, self).__init__(parent)
+        # self.setAttribute(QtCore.Qt.WA_DeleteOnClose, True) # also closes parent window now for some reason
+        self.setupUi(self)
+        
+        # Check again in case auth file was deleted/moved
+        self.parentWidget().is_authenticated()
 
-from PyQt5 import QtCore, QtGui, QtWidgets
+        self.enable_ok_button()
+        self.headersInputBox.textChanged.connect(self.enable_ok_button)
 
-class Ui_Dialog(object):
-    def setupUi(self, Dialog):
-        Dialog.setObjectName("Dialog")
-        Dialog.resize(569, 438)
-        self.buttonBox = QtWidgets.QDialogButtonBox(Dialog)
-        self.buttonBox.setEnabled(True)
-        self.buttonBox.setGeometry(QtCore.QRect(200, 360, 171, 32))
-        self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
-        self.buttonBox.setStandardButtons(QtWidgets.QDialogButtonBox.Cancel|QtWidgets.QDialogButtonBox.Ok)
-        self.buttonBox.setCenterButtons(True)
-        self.buttonBox.setObjectName("buttonBox")
-        self.headersInputBox = QtWidgets.QPlainTextEdit(Dialog)
-        self.headersInputBox.setGeometry(QtCore.QRect(60, 20, 451, 251))
-        self.headersInputBox.setObjectName("headersInputBox")
-        self.orLabel = QtWidgets.QLabel(Dialog)
-        self.orLabel.setGeometry(QtCore.QRect(280, 280, 21, 16))
-        self.orLabel.setObjectName("orLabel")
-        self.browseButton = QtWidgets.QPushButton(Dialog)
-        self.browseButton.setGeometry(QtCore.QRect(140, 300, 75, 23))
-        self.browseButton.setObjectName("browseButton")
-        self.fileNameField = QtWidgets.QLineEdit(Dialog)
-        self.fileNameField.setEnabled(False)
-        self.fileNameField.setGeometry(QtCore.QRect(230, 300, 241, 21))
-        self.fileNameField.setObjectName("fileNameField")
+        self.browseButton.clicked.connect(self.choose_auth_file)
 
-        self.retranslateUi(Dialog)
-        self.buttonBox.accepted.connect(Dialog.accept)
-        self.buttonBox.rejected.connect(Dialog.reject)
-        QtCore.QMetaObject.connectSlotsByName(Dialog)
+        self.auth_setup = YTAuthSetup(self.headersInputBox, self.parentWidget().credential_dir)
+        self.auth_setup.auth_signal.connect(self.auth_finished)
 
-    def retranslateUi(self, Dialog):
-        _translate = QtCore.QCoreApplication.translate
-        Dialog.setWindowTitle(_translate("Dialog", "Authentication"))
-        self.orLabel.setText(_translate("Dialog", "Or"))
-        self.browseButton.setText(_translate("Dialog", "Browse"))
+    def accept(self):
+        self.thread = QThread(self)
+        self.thread.started.connect(self.auth_setup.setup_auth)
+        self.thread.start()
 
+    @pyqtSlot()
+    def enable_ok_button(self):
+        self.buttonBox.button(QDialogButtonBox.Ok).setEnabled(self.headersInputBox.toPlainText() != "")
+
+    @pyqtSlot()
+    def choose_auth_file(self):
+        file_name, _ = QFileDialog.getOpenFileName(self, "Select Auth File", QDir.rootPath(), "*.json")
+        self.fileNameField.setText(file_name)
+
+    @pyqtSlot(str)
+    def auth_finished(self, auth_result):
+        if auth_result == "Success":
+            self.parentWidget().is_authenticated()
+            self.close()
+        else:
+            error_dialog = QMessageBox()
+            error_dialog.setIcon(QMessageBox.Critical)
+            error_dialog.setText(auth_result)
+            error_dialog.setInformativeText('See https://ytmusicapi.readthedocs.io/en/latest/setup.html#copy-authentication-headers')
+            error_dialog.setWindowTitle("Error")
+            error_dialog.exec_()
+
+
+class YTAuthSetup(QObject):
+    auth_signal = pyqtSignal(str)
+
+    def __init__(self, textarea, cred_dir):
+        super(YTAuthSetup, self).__init__()
+        self.textarea = textarea
+        self.headers_file_path = Path(cred_dir) / constants.HEADERS_FILE
+
+    @pyqtSlot()
+    def setup_auth(self):
+        user_input = self.textarea.toPlainText()
+        try:
+            YTMusic(YTMusic.setup(filepath=self.headers_file_path, headers_raw=user_input))
+            self.auth_signal.emit("Success")
+        except Exception as e:
+            self.auth_signal.emit(str(e))

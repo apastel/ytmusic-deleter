@@ -2,8 +2,9 @@
 A project that aims to package ytmusic-deleter into an easy to install &amp; run application
 
 ### Generate `ui_form.py`:
-`$ pyuic5 -o src/main/python/ui_form.py src/main/resources/main_window.ui`
-`$ pyuic5 -o src/main/python/auth_dialog.py src/main/resources/auth_dialog.ui`
+pyuic5 -o src/main/python/generated/ui_main_window.py src/main/resources/main_window.ui
+pyuic5 -o src/main/python/generated/ui_auth_dialog.py src/main/resources/auth_dialog.ui
+pyuic5 -o src/main/python/generated/ui_progress_dialog.py src/main/resources/progress_dialog.ui
 
 # ToDo
 ~~* Print stdout to in-app textarea instead of separate terminal window~~
