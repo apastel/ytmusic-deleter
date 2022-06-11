@@ -16,7 +16,15 @@ module_name = "ytmusic-deleter"
 
 install_reqs = ["click", "ytmusicapi >= 0.22.0", "enlighten"]
 
-develop_reqs = ["pre-commit", "flake8", "yapf", "coverage", "rope", "pytest"]
+develop_reqs = [
+    "pre-commit",
+    "flake8",
+    "yapf",
+    "coverage",
+    "rope",
+    "pytest",
+    "pyinstaller",
+]
 
 with open("README.md", "rb") as f:
     long_description = f.read().decode("utf-8")
