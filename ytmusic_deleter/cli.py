@@ -2,7 +2,9 @@ import logging
 import os
 import re
 import sys
+from pathlib import Path
 from random import shuffle as unsort
+from time import strftime
 
 import click
 import enlighten
@@ -16,7 +18,7 @@ progress_bar = None
 
 def ensure_auth(credential_dir):
     global youtube_auth
-    headers_file_path = os.path.join(credential_dir, const.HEADERS_FILE)
+    headers_file_path = Path(credential_dir) / const.HEADERS_FILE
     try:
         logging.info(f'Looking for {headers_file_path}"')
         youtube_auth = YTMusic(headers_file_path)
@@ -57,7 +59,9 @@ def cli(ctx, log_dir, credential_dir, static_progress):
         format="[%(asctime)s] %(message)s",
         datefmt="%Y-%m-%d %H:%M:%S",
         handlers=[
-            logging.FileHandler(os.path.join(log_dir, "ytmusic-deleter.log")),
+            logging.FileHandler(
+                Path(log_dir) / f"ytmusic-deleter_{strftime('%Y-%m-%d')}.log"
+            ),
             logging.StreamHandler(sys.stdout),
         ],
     )
