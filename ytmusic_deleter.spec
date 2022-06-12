@@ -1,5 +1,6 @@
 # -*- mode: python ; coding: utf-8 -*-
 from PyInstaller.utils.hooks import collect_data_files
+from ytmusic_deleter._version_git import __version__
 
 datas = []
 datas += collect_data_files('ytmusicapi')
@@ -32,7 +33,7 @@ exe = EXE(
     a.zipfiles,
     a.datas,
     [],
-    name='ytmusic-deleter',
+    name=f'ytmusic-deleter-{__version__}',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
