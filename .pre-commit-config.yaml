@@ -1,3 +1,4 @@
+exclude: ^src/main/python/generated/
 repos:
   # - repo: https://github.com/asottile/pyupgrade
   #   rev: v2.32.1

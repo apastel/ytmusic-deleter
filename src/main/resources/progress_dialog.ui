@@ -26,19 +26,6 @@
     <number>0</number>
    </property>
   </widget>
-  <widget class="QLineEdit" name="lineEdit">
-   <property name="enabled">
-    <bool>false</bool>
-   </property>
-   <property name="geometry">
-    <rect>
-     <x>50</x>
-     <y>60</y>
-     <width>341</width>
-     <height>20</height>
-    </rect>
-   </property>
-  </widget>
   <widget class="QPushButton" name="pushButton">
    <property name="geometry">
     <rect>
@@ -50,6 +37,22 @@
    </property>
    <property name="text">
     <string>Abort</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="itemLine">
+   <property name="geometry">
+    <rect>
+     <x>50</x>
+     <y>60</y>
+     <width>371</width>
+     <height>20</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string/>
+   </property>
+   <property name="alignment">
+    <set>Qt::AlignCenter</set>
    </property>
   </widget>
  </widget>

@@ -16,8 +16,9 @@ from ytmusic_deleter import constants
 from ytmusicapi import YTMusic
 
 APP_DATA_DIR = str(Path(os.getenv("APPDATA")) / "YTMusic Deleter")
-# A regular expression, to extract the % complete.
 progress_re = re.compile("Total complete: (\\d+)%")
+item_processing_re = re.compile("(Processing \\w+: .+)")
+cli_filename = "ytmusic-deleter-1.4.0.exe"
 
 logging.basicConfig(
     level=logging.INFO,
@@ -87,7 +88,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.p.stateChanged.connect(self.handle_state)
             self.p.finished.connect(self.process_finished)
             self.p.start(
-                "cli.exe", ["-l", self.log_dir, "-c", self.credential_dir, "-p"] + args
+                cli_filename,
+                ["-l", self.log_dir, "-c", self.credential_dir, "-p"] + args,
             )
             self.progress_dialog = ProgressDialog(self)
             self.progress_dialog.show()
@@ -106,7 +108,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         stdout = bytes(data).decode("utf8")
         percent_complete = self.get_percent_complete(stdout)
         if percent_complete:
-            self.progressBar.setValue(percent_complete)
+            self.progress_dialog.progressBar.setValue(percent_complete)
+        item_processing = self.get_item_processing(stdout)
+        if item_processing:
+            self.progress_dialog.itemLine.setText(item_processing)
         self.message(stdout)
 
     def handle_state(self, state):
@@ -138,6 +143,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         if m:
             percent_complete = m.group(1)
             return int(percent_complete)
+
+    def get_item_processing(self, output):
+        m = item_processing_re.search(output)
+        if m:
+            return m.group(1)
 
 
 if __name__ == "__main__":
