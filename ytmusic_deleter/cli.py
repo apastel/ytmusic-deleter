@@ -11,7 +11,6 @@ import enlighten
 from ytmusic_deleter import constants as const
 from ytmusicapi import YTMusic
 
-
 manager = enlighten.get_manager()
 progress_bar = None
 
@@ -392,6 +391,20 @@ def delete_all(ctx):
     ctx.invoke(delete_playlists)
 
 
+def mk_track_key(track):
+    try:
+        artists = track["artists"]
+        artist = artists[0]["name"].lower() if artists else "z"
+        album = track["album"]
+        album_title = album["name"] if album else "z"
+        return (re.sub(r"^(the |a )", "", artist),
+                album_title,
+                track["title"])
+    except TypeError:
+        print(track)
+        raise
+
+
 @cli.command()
 @click.argument("playlist_title")
 @click.option(
@@ -427,11 +440,7 @@ def sort_playlist(ctx, shuffle, playlist_title):
                 t
                 for t in sorted(
                     playlist["tracks"],
-                    key=lambda t: (
-                        re.sub(r"^(the |a )", "", t["artists"][0]["name"].lower()),
-                        t["album"]["name"],
-                        t["title"],
-                    ),
+                    key=lambda t: mk_track_key(t)
                 )
             ]
 
