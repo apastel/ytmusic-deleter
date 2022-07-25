@@ -18,7 +18,7 @@ from ytmusicapi import YTMusic
 APP_DATA_DIR = str(Path(os.getenv("APPDATA")) / "YTMusic Deleter")
 progress_re = re.compile("Total complete: (\\d+)%")
 item_processing_re = re.compile("(Processing \\w+: .+)")
-cli_filename = "ytmusic-deleter-1.4.0.exe"
+cli_filename = "ytmusic-deleter-1.4.1.exe"
 
 logging.basicConfig(
     level=logging.INFO,
