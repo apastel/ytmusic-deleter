@@ -12,6 +12,7 @@ from PyQt5.QtCore import pyqtSlot
 from PyQt5.QtCore import QProcess
 from PyQt5.QtCore import QSettings
 from PyQt5.QtWidgets import QMainWindow
+from PyQt5.QtWidgets import QMessageBox
 from ytmusic_deleter import constants
 from ytmusicapi import YTMusic
 
@@ -79,22 +80,44 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def delete_uploads(self):
         self.launch_process(["delete-uploads"])
 
+    @pyqtSlot()
+    def delete_playlists(self):
+        self.launch_process(["delete-playlists"])
+
+    @pyqtSlot()
+    def unlike_all(self):
+        self.launch_process(["unlike-all"])
+
+    def delete_all(self):
+        self.launch_process(["delete-all"])
+
     def launch_process(self, args):
         if self.p is None and self.is_authenticated(prompt=True):
-            self.message(f"Executing process: {args}")
-            self.p = QProcess()
-            self.p.readyReadStandardOutput.connect(self.handle_stdout)
-            self.p.readyReadStandardError.connect(self.handle_stderr)
-            self.p.stateChanged.connect(self.handle_state)
-            self.p.finished.connect(self.process_finished)
-            self.p.start(
-                cli_filename,
-                ["-l", self.log_dir, "-c", self.credential_dir, "-p"] + args,
-            )
-            self.progress_dialog = ProgressDialog(self)
-            self.progress_dialog.show()
-            if not self.p.waitForStarted():
-                self.message(self.p.errorString())
+            self.message("Showing confirmation dialog")
+            if self.confirm() == QMessageBox.Ok:
+                self.message(f"Executing process: {args}")
+                self.p = QProcess()
+                self.p.readyReadStandardOutput.connect(self.handle_stdout)
+                self.p.readyReadStandardError.connect(self.handle_stderr)
+                self.p.stateChanged.connect(self.handle_state)
+                self.p.finished.connect(self.process_finished)
+                self.p.start(
+                    cli_filename,
+                    ["-l", self.log_dir, "-c", self.credential_dir, "-p"] + args,
+                )
+                self.progress_dialog = ProgressDialog(self)
+                self.progress_dialog.show()
+                if not self.p.waitForStarted():
+                    self.message(self.p.errorString())
+
+    def confirm(self):
+        confirmation_dialog = QMessageBox()
+        confirmation_dialog.setIcon(QMessageBox.Warning)
+        confirmation_dialog.setText("This will delete some shit")
+        confirmation_dialog.setInformativeText("Last chance?")
+        confirmation_dialog.setWindowTitle("Alert")
+        confirmation_dialog.setStandardButtons(QMessageBox.Ok | QMessageBox.Cancel)
+        return confirmation_dialog.exec_()
 
     @pyqtSlot()
     def handle_stderr(self):
