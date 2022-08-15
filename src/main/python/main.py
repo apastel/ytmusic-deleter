@@ -11,6 +11,7 @@ from progress_dialog import ProgressDialog
 from PyQt5.QtCore import pyqtSlot
 from PyQt5.QtCore import QProcess
 from PyQt5.QtCore import QSettings
+from PyQt5.QtWidgets import QCheckBox
 from PyQt5.QtWidgets import QMainWindow
 from PyQt5.QtWidgets import QMessageBox
 from ytmusic_deleter import constants
@@ -49,10 +50,18 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         self.setupUi(self)
         self.p = None
+
         self.removeLibraryButton.clicked.connect(self.remove_library)
         self.deleteUploadsButton.clicked.connect(self.delete_uploads)
+        self.deletePlaylistsButton.clicked.connect(self.delete_playlists)
+        self.unlikeAllButton.clicked.connect(self.unlike_all)
+        self.deleteAllButton.clicked.connect(self.delete_all)
+        self.sortPlaylistButton.clicked.connect(self.sort_playlist)
+
         self.authIndicator.clicked.connect(self.prompt_for_auth)
         self.is_authenticated()
+
+        self.add_to_library = False
 
     def is_authenticated(self, prompt=False):
         try:
@@ -88,13 +97,21 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def unlike_all(self):
         self.launch_process(["unlike-all"])
 
+    @pyqtSlot()
     def delete_all(self):
         self.launch_process(["delete-all"])
+
+    @pyqtSlot()
+    def sort_playlist(self):
+        self.launch_process(["sort-playlist"])
 
     def launch_process(self, args):
         if self.p is None and self.is_authenticated(prompt=True):
             self.message("Showing confirmation dialog")
-            if self.confirm() == QMessageBox.Ok:
+            if self.confirm(args) == QMessageBox.Ok:
+                if self.add_to_library:
+                    args += ["-a"]
+                    self.add_to_library_checked(False)
                 self.message(f"Executing process: {args}")
                 self.p = QProcess()
                 self.p.readyReadStandardOutput.connect(self.handle_stdout)
@@ -110,14 +127,29 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 if not self.p.waitForStarted():
                     self.message(self.p.errorString())
 
-    def confirm(self):
+    def confirm(self, args):
         confirmation_dialog = QMessageBox()
         confirmation_dialog.setIcon(QMessageBox.Warning)
-        confirmation_dialog.setText("This will delete some shit")
+        if args[0] == "sort-playlist":
+            text = "This will sort your playlists"
+        elif args[0] == "delete-uploads":
+            text = "This will delete all your uploaded music. "
+            checkbox = QCheckBox("Add uploads to library first")
+            checkbox.toggled.connect(self.add_to_library_checked)
+            confirmation_dialog.setCheckBox(checkbox)
+        else:
+            text = "I don't know what this will do"
+        confirmation_dialog.setText(text)
         confirmation_dialog.setInformativeText("Last chance?")
         confirmation_dialog.setWindowTitle("Alert")
         confirmation_dialog.setStandardButtons(QMessageBox.Ok | QMessageBox.Cancel)
         return confirmation_dialog.exec_()
+
+    def add_to_library_checked(self, is_checked):
+        if is_checked:
+            self.add_to_library = True
+        else:
+            self.add_to_library = False
 
     @pyqtSlot()
     def handle_stderr(self):

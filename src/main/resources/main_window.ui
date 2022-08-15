@@ -17,8 +17,8 @@
    <widget class="QPushButton" name="removeLibraryButton">
     <property name="geometry">
      <rect>
-      <x>330</x>
-      <y>70</y>
+      <x>40</x>
+      <y>130</y>
       <width>121</width>
       <height>41</height>
      </rect>
@@ -46,7 +46,7 @@
    <widget class="QPushButton" name="deleteUploadsButton">
     <property name="geometry">
      <rect>
-      <x>330</x>
+      <x>170</x>
       <y>130</y>
       <width>121</width>
       <height>41</height>
@@ -89,6 +89,70 @@
     </property>
     <property name="text">
      <string>Unauthenticated</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="deletePlaylistsButton">
+    <property name="geometry">
+     <rect>
+      <x>300</x>
+      <y>130</y>
+      <width>121</width>
+      <height>41</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Delete Playlists</string>
+    </property>
+    <property name="default">
+     <bool>false</bool>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="unlikeAllButton">
+    <property name="geometry">
+     <rect>
+      <x>430</x>
+      <y>130</y>
+      <width>121</width>
+      <height>41</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Unlike All Songs</string>
+    </property>
+    <property name="default">
+     <bool>false</bool>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="deleteAllButton">
+    <property name="geometry">
+     <rect>
+      <x>570</x>
+      <y>130</y>
+      <width>121</width>
+      <height>41</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Delete All</string>
+    </property>
+    <property name="default">
+     <bool>false</bool>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="sortPlaylistButton">
+    <property name="geometry">
+     <rect>
+      <x>40</x>
+      <y>190</y>
+      <width>121</width>
+      <height>41</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Sort Playlist</string>
+    </property>
+    <property name="default">
+     <bool>false</bool>
     </property>
    </widget>
   </widget>
