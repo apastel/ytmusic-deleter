@@ -1,5 +1,5 @@
 from generated.ui_progress_dialog import Ui_ProgressDialog
-from PyQt5.QtWidgets import QDialog
+from PySide6.QtWidgets import QDialog
 
 
 class ProgressDialog(QDialog, Ui_ProgressDialog):

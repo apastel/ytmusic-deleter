@@ -5,17 +5,18 @@ import sys
 from pathlib import Path
 
 from auth_dialog import AuthDialog
-from fbs_runtime.application_context.PyQt5 import ApplicationContext
+from fbs_runtime.application_context.PySide6 import ApplicationContext
 from generated.ui_main_window import Ui_MainWindow
 from progress_dialog import ProgressDialog
-from PyQt5.QtCore import pyqtSlot
-from PyQt5.QtCore import QProcess
-from PyQt5.QtCore import QSettings
-from PyQt5.QtWidgets import QCheckBox
-from PyQt5.QtWidgets import QMainWindow
-from PyQt5.QtWidgets import QMessageBox
+from PySide6.QtCore import QProcess
+from PySide6.QtCore import QSettings
+from PySide6.QtCore import Slot
+from PySide6.QtWidgets import QCheckBox
+from PySide6.QtWidgets import QMainWindow
+from PySide6.QtWidgets import QMessageBox
 from ytmusic_deleter import constants
 from ytmusicapi import YTMusic
+
 
 APP_DATA_DIR = str(Path(os.getenv("APPDATA")) / "YTMusic Deleter")
 progress_re = re.compile("Total complete: (\\d+)%")
@@ -75,33 +76,33 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 self.prompt_for_auth()
             return False
 
-    @pyqtSlot()
+    @Slot()
     def prompt_for_auth(self):
         self.auth_dialog = AuthDialog(self)
         self.message("prompting for auth...")
         self.auth_dialog.show()
 
-    @pyqtSlot()
+    @Slot()
     def remove_library(self):
         self.launch_process(["remove-library"])
 
-    @pyqtSlot()
+    @Slot()
     def delete_uploads(self):
         self.launch_process(["delete-uploads"])
 
-    @pyqtSlot()
+    @Slot()
     def delete_playlists(self):
         self.launch_process(["delete-playlists"])
 
-    @pyqtSlot()
+    @Slot()
     def unlike_all(self):
         self.launch_process(["unlike-all"])
 
-    @pyqtSlot()
+    @Slot()
     def delete_all(self):
         self.launch_process(["delete-all"])
 
-    @pyqtSlot()
+    @Slot()
     def sort_playlist(self):
         self.launch_process(["sort-playlist"])
 
@@ -130,17 +131,28 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def confirm(self, args):
         confirmation_dialog = QMessageBox()
         confirmation_dialog.setIcon(QMessageBox.Warning)
-        if args[0] == "sort-playlist":
-            text = "This will sort your playlists"
+        if args[0] == "remove-library":
+            text = "This will remove all tracks that you have added to your library from within YouTube Music."
         elif args[0] == "delete-uploads":
             text = "This will delete all your uploaded music. "
             checkbox = QCheckBox("Add uploads to library first")
             checkbox.toggled.connect(self.add_to_library_checked)
             confirmation_dialog.setCheckBox(checkbox)
+        elif args[0] == "delete-playlists":
+            text = "This will delete all your playlists, and may include playlists in regular YouTube.com that have music."
+        elif args[0] == "sort-playlist":
+            text = "This will sort your playlists"
+        elif args[0] == "unlike-all":
+            text = "This will reset all your Liked songs back to neutral."
+        elif args[0] == "unlike-all":
+            text = "This will run Remove Library, Delete Uploads, Delete Playlists, and Unlike All Songs."
+            checkbox = QCheckBox("Add uploads to library first")
+            checkbox.toggled.connect(self.add_to_library_checked)
+            confirmation_dialog.setCheckBox(checkbox)
         else:
-            text = "I don't know what this will do"
+            raise ValueError("Unexpected argument provided to confirmation window.")
         confirmation_dialog.setText(text)
-        confirmation_dialog.setInformativeText("Last chance?")
+        confirmation_dialog.setInformativeText("Are you sure you want to continue?")
         confirmation_dialog.setWindowTitle("Alert")
         confirmation_dialog.setStandardButtons(QMessageBox.Ok | QMessageBox.Cancel)
         return confirmation_dialog.exec_()
@@ -151,13 +163,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         else:
             self.add_to_library = False
 
-    @pyqtSlot()
+    @Slot()
     def handle_stderr(self):
         data = self.p.readAllStandardError()
         stderr = bytes(data).decode("utf8")
         self.message(stderr)
 
-    @pyqtSlot()
+    @Slot()
     def handle_stdout(self):
         data = self.p.readAllStandardOutput()
         stdout = bytes(data).decode("utf8")
@@ -178,7 +190,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         state_name = states[state]
         self.message(f"State changed: {state_name}")
 
-    @pyqtSlot()
+    @Slot()
     def process_finished(self):
         self.progress_dialog.close()
         self.message("Process finished.")

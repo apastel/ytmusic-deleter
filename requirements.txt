@@ -1,7 +1,6 @@
+./fbs_pro-1.1.3.tar.gz
+PySide6
 ytmusic-deleter
-fbs==1.1.2
-PyQt5==5.9.2
-PyInstaller==3.4
 flake8
 yapf
 pre-commit

@@ -1,15 +1,15 @@
 from pathlib import Path
 
 from generated.ui_auth_dialog import Ui_AuthDialog
-from PyQt5.QtCore import pyqtSignal
-from PyQt5.QtCore import pyqtSlot
-from PyQt5.QtCore import QDir
-from PyQt5.QtCore import QObject
-from PyQt5.QtCore import QThread
-from PyQt5.QtWidgets import QDialog
-from PyQt5.QtWidgets import QDialogButtonBox
-from PyQt5.QtWidgets import QFileDialog
-from PyQt5.QtWidgets import QMessageBox
+from PySide6.QtCore import QDir
+from PySide6.QtCore import QObject
+from PySide6.QtCore import QThread
+from PySide6.QtCore import Signal
+from PySide6.QtCore import Slot
+from PySide6.QtWidgets import QDialog
+from PySide6.QtWidgets import QDialogButtonBox
+from PySide6.QtWidgets import QFileDialog
+from PySide6.QtWidgets import QMessageBox
 from ytmusic_deleter import constants
 from ytmusicapi import YTMusic
 
@@ -38,20 +38,20 @@ class AuthDialog(QDialog, Ui_AuthDialog):
         self.thread.started.connect(self.auth_setup.setup_auth)
         self.thread.start()
 
-    @pyqtSlot()
+    @Slot()
     def enable_ok_button(self):
         self.buttonBox.button(QDialogButtonBox.Ok).setEnabled(
             self.headersInputBox.toPlainText() != ""
         )
 
-    @pyqtSlot()
+    @Slot()
     def choose_auth_file(self):
         file_name, _ = QFileDialog.getOpenFileName(
             self, "Select Auth File", QDir.rootPath(), "*.json"
         )
         self.fileNameField.setText(file_name)
 
-    @pyqtSlot(str)
+    @Slot(str)
     def auth_finished(self, auth_result):
         if auth_result == "Success":
             self.parentWidget().is_authenticated()
@@ -68,14 +68,14 @@ class AuthDialog(QDialog, Ui_AuthDialog):
 
 
 class YTAuthSetup(QObject):
-    auth_signal = pyqtSignal(str)
+    auth_signal = Signal(str)
 
     def __init__(self, textarea, cred_dir):
         super(YTAuthSetup, self).__init__()
         self.textarea = textarea
         self.headers_file_path = Path(cred_dir) / constants.HEADERS_FILE
 
-    @pyqtSlot()
+    @Slot()
     def setup_auth(self):
         user_input = self.textarea.toPlainText()
         try:

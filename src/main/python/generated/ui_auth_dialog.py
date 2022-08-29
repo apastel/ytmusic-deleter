@@ -1,46 +1,60 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'src/main/resources/auth_dialog.ui'
-#
-# Created by: PyQt5 UI code generator 5.9.2
-#
-# WARNING! All changes made in this file will be lost!
+################################################################################
+## Form generated from reading UI file 'auth_dialog.ui'
+##
+## Created by: Qt User Interface Compiler version 6.3.1
+##
+## WARNING! All changes made in this file will be lost when recompiling UI file!
+################################################################################
 
-from PyQt5 import QtCore, QtGui, QtWidgets
+from PySide6.QtCore import (QCoreApplication, QDate, QDateTime, QLocale,
+    QMetaObject, QObject, QPoint, QRect,
+    QSize, QTime, QUrl, Qt)
+from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
+    QFont, QFontDatabase, QGradient, QIcon,
+    QImage, QKeySequence, QLinearGradient, QPainter,
+    QPalette, QPixmap, QRadialGradient, QTransform)
+from PySide6.QtWidgets import (QAbstractButton, QApplication, QDialog, QDialogButtonBox,
+    QLabel, QLineEdit, QPlainTextEdit, QPushButton,
+    QSizePolicy, QWidget)
 
 class Ui_AuthDialog(object):
     def setupUi(self, AuthDialog):
-        AuthDialog.setObjectName("AuthDialog")
+        if not AuthDialog.objectName():
+            AuthDialog.setObjectName(u"AuthDialog")
         AuthDialog.resize(569, 438)
-        self.buttonBox = QtWidgets.QDialogButtonBox(AuthDialog)
+        self.buttonBox = QDialogButtonBox(AuthDialog)
+        self.buttonBox.setObjectName(u"buttonBox")
         self.buttonBox.setEnabled(True)
-        self.buttonBox.setGeometry(QtCore.QRect(200, 360, 171, 32))
-        self.buttonBox.setOrientation(QtCore.Qt.Horizontal)
-        self.buttonBox.setStandardButtons(QtWidgets.QDialogButtonBox.Cancel|QtWidgets.QDialogButtonBox.Ok)
+        self.buttonBox.setGeometry(QRect(200, 360, 171, 32))
+        self.buttonBox.setOrientation(Qt.Horizontal)
+        self.buttonBox.setStandardButtons(QDialogButtonBox.Cancel|QDialogButtonBox.Ok)
         self.buttonBox.setCenterButtons(True)
-        self.buttonBox.setObjectName("buttonBox")
-        self.headersInputBox = QtWidgets.QPlainTextEdit(AuthDialog)
-        self.headersInputBox.setGeometry(QtCore.QRect(60, 20, 451, 251))
-        self.headersInputBox.setObjectName("headersInputBox")
-        self.orLabel = QtWidgets.QLabel(AuthDialog)
-        self.orLabel.setGeometry(QtCore.QRect(280, 280, 21, 16))
-        self.orLabel.setObjectName("orLabel")
-        self.browseButton = QtWidgets.QPushButton(AuthDialog)
-        self.browseButton.setGeometry(QtCore.QRect(140, 300, 75, 23))
-        self.browseButton.setObjectName("browseButton")
-        self.fileNameField = QtWidgets.QLineEdit(AuthDialog)
+        self.headersInputBox = QPlainTextEdit(AuthDialog)
+        self.headersInputBox.setObjectName(u"headersInputBox")
+        self.headersInputBox.setGeometry(QRect(60, 20, 451, 251))
+        self.orLabel = QLabel(AuthDialog)
+        self.orLabel.setObjectName(u"orLabel")
+        self.orLabel.setGeometry(QRect(280, 280, 21, 16))
+        self.browseButton = QPushButton(AuthDialog)
+        self.browseButton.setObjectName(u"browseButton")
+        self.browseButton.setGeometry(QRect(140, 300, 75, 23))
+        self.fileNameField = QLineEdit(AuthDialog)
+        self.fileNameField.setObjectName(u"fileNameField")
         self.fileNameField.setEnabled(False)
-        self.fileNameField.setGeometry(QtCore.QRect(230, 300, 241, 21))
-        self.fileNameField.setObjectName("fileNameField")
+        self.fileNameField.setGeometry(QRect(230, 300, 241, 21))
 
         self.retranslateUi(AuthDialog)
         self.buttonBox.accepted.connect(AuthDialog.accept)
         self.buttonBox.rejected.connect(AuthDialog.reject)
-        QtCore.QMetaObject.connectSlotsByName(AuthDialog)
+
+        QMetaObject.connectSlotsByName(AuthDialog)
+    # setupUi
 
     def retranslateUi(self, AuthDialog):
-        _translate = QtCore.QCoreApplication.translate
-        AuthDialog.setWindowTitle(_translate("AuthDialog", "Authentication"))
-        self.orLabel.setText(_translate("AuthDialog", "Or"))
-        self.browseButton.setText(_translate("AuthDialog", "Browse"))
+        AuthDialog.setWindowTitle(QCoreApplication.translate("AuthDialog", u"Authentication", None))
+        self.orLabel.setText(QCoreApplication.translate("AuthDialog", u"Or", None))
+        self.browseButton.setText(QCoreApplication.translate("AuthDialog", u"Browse", None))
+    # retranslateUi
 
