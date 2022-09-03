@@ -20,7 +20,7 @@ New in 1.4.0, Windows users can download a self-contained .exe file of ytmusic-d
   An easy way to do this is to open the folder in Windows Explorer, then Shift+Right-click on an empty space in the Explorer window and select "Open in Terminal" or "Open PowerShell window here".
 1. Run ytmusic-deleter by typing the name of the .exe file (you can avoid typing the full filename by just typing the first few letters and hitting the Tab key to auto-complete).  
 
-Continue See Step 4 below in "Setup (cont.)
+Continue to Step 4 below in "Setup (cont.)"
 ### Manual install using Python / PIP
 1. Install [Python](https://www.python.org/downloads/). Make sure it is available on your PATH.
 1. Open a command prompt and type `pip install ytmusic-deleter`. Use a [virtual environment](https://virtualenv.pypa.io/en/latest/) if you're familiar with the process.
