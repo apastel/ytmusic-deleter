@@ -1,6 +1,7 @@
 ./fbs_pro-1.1.3.tar.gz
 PySide6
 ytmusic-deleter
+fbs[sentry]
 flake8
 yapf
 pre-commit

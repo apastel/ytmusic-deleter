@@ -5,6 +5,7 @@ import sys
 from pathlib import Path
 
 from auth_dialog import AuthDialog
+from fbs_runtime import PUBLIC_SETTINGS
 from fbs_runtime.application_context.PySide6 import ApplicationContext
 from generated.ui_main_window import Ui_MainWindow
 from progress_dialog import ProgressDialog
@@ -63,6 +64,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.is_authenticated()
 
         self.add_to_library = False
+
+        self.message(f"Starting version {PUBLIC_SETTINGS['version']}")
 
     def is_authenticated(self, prompt=False):
         try:
@@ -221,4 +224,4 @@ if __name__ == "__main__":
     appctxt = ApplicationContext()
     window = MainWindow()
     window.show()
-    sys.exit(appctxt.app.exec_())
+    sys.exit(appctxt.app.exec())
