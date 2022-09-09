@@ -1,13 +1,16 @@
 # ytmusic-deleter-packager
-A project that aims to package ytmusic-deleter into an easy to install &amp; run application
+A project that aims to package ytmusic-deleter into an easy to install and run application
 
-### Generate `ui_form.py`:
+### Generate forms from UI files:
 pyside6-uic -o src/main/python/generated/ui_main_window.py src/main/resources/main_window.ui
 pyside6-uic -o src/main/python/generated/ui_auth_dialog.py src/main/resources/auth_dialog.ui
 pyside6-uic -o src/main/python/generated/ui_progress_dialog.py src/main/resources/progress_dialog.ui
 
 ### Build
 ```
+(from venv)
+pip install -r requirements/dev.txt
+pre-commit install
 fbs clean
 fbs freeze
 fbs installer

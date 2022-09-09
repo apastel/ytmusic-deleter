@@ -6,7 +6,10 @@ from pathlib import Path
 
 from auth_dialog import AuthDialog
 from fbs_runtime import PUBLIC_SETTINGS
+from fbs_runtime.application_context import cached_property
+from fbs_runtime.application_context import is_frozen
 from fbs_runtime.application_context.PySide6 import ApplicationContext
+from fbs_runtime.excepthook.sentry import SentryExceptionHandler
 from generated.ui_main_window import Ui_MainWindow
 from progress_dialog import ProgressDialog
 from PySide6.QtCore import QProcess
@@ -113,7 +116,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         if self.p is None and self.is_authenticated(prompt=True):
             self.message("Showing confirmation dialog")
             if self.confirm(args) == QMessageBox.Ok:
-                if self.add_to_library:
+                if args[0] == "remove-library" and self.add_to_library:
                     args += ["-a"]
                     self.add_to_library_checked(False)
                 self.message(f"Executing process: {args}")
@@ -220,8 +223,38 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             return m.group(1)
 
 
+class AppContext(ApplicationContext):
+    @cached_property
+    def window(self):
+        return MainWindow()
+
+    @cached_property
+    def exception_handlers(self):
+        result = super().exception_handlers
+        if is_frozen():
+            result.append(self.sentry_exception_handler)
+        return result
+
+    @cached_property
+    def sentry_exception_handler(self):
+        return SentryExceptionHandler(
+            PUBLIC_SETTINGS["sentry_dsn"],
+            PUBLIC_SETTINGS["version"],
+            PUBLIC_SETTINGS["environment"],
+            callback=self._on_sentry_init,
+        )
+
+    def _on_sentry_init(self):
+        scope = self.sentry_exception_handler.scope
+        from fbs_runtime import platform
+
+        scope.set_extra("os", platform.name())
+
+    def run(self):
+        self.window.show()
+        return self.app.exec()
+
+
 if __name__ == "__main__":
-    appctxt = ApplicationContext()
-    window = MainWindow()
-    window.show()
-    sys.exit(appctxt.app.exec())
+    appctxt = AppContext()
+    appctxt.run()
