@@ -23,6 +23,7 @@ class Ui_AuthDialog(object):
     def setupUi(self, AuthDialog):
         if not AuthDialog.objectName():
             AuthDialog.setObjectName(u"AuthDialog")
+        AuthDialog.setWindowModality(Qt.ApplicationModal)
         AuthDialog.resize(569, 438)
         self.buttonBox = QDialogButtonBox(AuthDialog)
         self.buttonBox.setObjectName(u"buttonBox")

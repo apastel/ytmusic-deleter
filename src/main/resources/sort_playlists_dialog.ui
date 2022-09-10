@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>AuthDialog</class>
- <widget class="QDialog" name="AuthDialog">
+ <class>SortPlaylistsDialog</class>
+ <widget class="QDialog" name="SortPlaylistsDialog">
   <property name="windowModality">
    <enum>Qt::ApplicationModal</enum>
   </property>
@@ -9,22 +9,19 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>569</width>
-    <height>438</height>
+    <width>400</width>
+    <height>300</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Authentication</string>
+   <string>Sort Playlists</string>
   </property>
   <widget class="QDialogButtonBox" name="buttonBox">
-   <property name="enabled">
-    <bool>true</bool>
-   </property>
    <property name="geometry">
     <rect>
-     <x>200</x>
-     <y>360</y>
-     <width>171</width>
+     <x>30</x>
+     <y>240</y>
+     <width>341</width>
      <height>32</height>
     </rect>
    </property>
@@ -34,57 +31,24 @@
    <property name="standardButtons">
     <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
    </property>
-   <property name="centerButtons">
-    <bool>true</bool>
-   </property>
   </widget>
-  <widget class="QPlainTextEdit" name="headersInputBox">
+  <widget class="QListWidget" name="playlistList">
    <property name="geometry">
     <rect>
-     <x>60</x>
-     <y>20</y>
-     <width>451</width>
-     <height>251</height>
+     <x>70</x>
+     <y>30</y>
+     <width>256</width>
+     <height>192</height>
     </rect>
    </property>
-  </widget>
-  <widget class="QLabel" name="orLabel">
-   <property name="geometry">
-    <rect>
-     <x>280</x>
-     <y>280</y>
-     <width>21</width>
-     <height>16</height>
-    </rect>
+   <property name="selectionMode">
+    <enum>QAbstractItemView::MultiSelection</enum>
    </property>
-   <property name="text">
-    <string>Or</string>
-   </property>
-  </widget>
-  <widget class="QPushButton" name="browseButton">
-   <property name="geometry">
-    <rect>
-     <x>140</x>
-     <y>300</y>
-     <width>75</width>
-     <height>23</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>Browse</string>
-   </property>
-  </widget>
-  <widget class="QLineEdit" name="fileNameField">
-   <property name="enabled">
+   <property name="selectionRectVisible">
     <bool>false</bool>
    </property>
-   <property name="geometry">
-    <rect>
-     <x>230</x>
-     <y>300</y>
-     <width>241</width>
-     <height>21</height>
-    </rect>
+   <property name="sortingEnabled">
+    <bool>true</bool>
    </property>
   </widget>
  </widget>
@@ -93,7 +57,7 @@
   <connection>
    <sender>buttonBox</sender>
    <signal>accepted()</signal>
-   <receiver>AuthDialog</receiver>
+   <receiver>SortPlaylistsDialog</receiver>
    <slot>accept()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -109,7 +73,7 @@
   <connection>
    <sender>buttonBox</sender>
    <signal>rejected()</signal>
-   <receiver>AuthDialog</receiver>
+   <receiver>SortPlaylistsDialog</receiver>
    <slot>reject()</slot>
    <hints>
     <hint type="sourcelabel">

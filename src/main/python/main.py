@@ -18,6 +18,7 @@ from PySide6.QtCore import Slot
 from PySide6.QtWidgets import QCheckBox
 from PySide6.QtWidgets import QMainWindow
 from PySide6.QtWidgets import QMessageBox
+from sort_playlists_dialog import SortPlaylistsDialog
 from ytmusic_deleter import constants
 from ytmusicapi import YTMusic
 
@@ -72,7 +73,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def is_authenticated(self, prompt=False):
         try:
-            YTMusic(Path(self.credential_dir) / constants.HEADERS_FILE)
+            self.ytmusic = YTMusic(Path(self.credential_dir) / constants.HEADERS_FILE)
             self.authIndicator.setText("Authenticated")
             return True
         except (KeyError, AttributeError):
@@ -114,6 +115,14 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def launch_process(self, args):
         if self.p is None and self.is_authenticated(prompt=True):
+            if args[0] == "sort-playlist":
+                self.sort_playlists_dialog = SortPlaylistsDialog()
+                playlists = self.ytmusic.get_library_playlists()
+                self.sort_playlists_dialog.playlistList.insertItems(
+                    0, [playlist["title"] for playlist in playlists]
+                )
+                self.sort_playlists_dialog.show()
+                return
             self.message("Showing confirmation dialog")
             if self.confirm(args) == QMessageBox.Ok:
                 if args[0] == "remove-library" and self.add_to_library:
@@ -146,8 +155,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             confirmation_dialog.setCheckBox(checkbox)
         elif args[0] == "delete-playlists":
             text = "This will delete all your playlists, and may include playlists in regular YouTube.com that have music."
-        elif args[0] == "sort-playlist":
-            text = "This will sort your playlists"
         elif args[0] == "unlike-all":
             text = "This will reset all your Liked songs back to neutral."
         elif args[0] == "unlike-all":

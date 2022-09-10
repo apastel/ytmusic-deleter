@@ -22,6 +22,7 @@ class Ui_ProgressDialog(object):
     def setupUi(self, ProgressDialog):
         if not ProgressDialog.objectName():
             ProgressDialog.setObjectName(u"ProgressDialog")
+        ProgressDialog.setWindowModality(Qt.ApplicationModal)
         ProgressDialog.resize(473, 220)
         self.progressBar = QProgressBar(ProgressDialog)
         self.progressBar.setObjectName(u"progressBar")
