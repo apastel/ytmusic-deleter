@@ -14,23 +14,26 @@ New in version 1.3.0, you can also sort your playlists. See the Usage informatio
 ## Setup
 New in 1.4.0, Windows users can download a self-contained .exe file of ytmusic-deleter without having to install Python or set up a virtual environment.  
 
-### Windows Setup Using .exe File
-1. Download the latest `ytmusic-deleter-<version>.exe` from the Releases area in GitHub.
-1. Open a Terminal window in the same folder in which the .exe was downloaded.
-  An easy way to do this is to open the folder in Windows Explorer, then Shift+Right-click on an empty space in the Explorer window and select "Open in Terminal" or "Open PowerShell window here".
-1. Run ytmusic-deleter by typing the name of the .exe file (you can avoid typing the full filename by just typing the first few letters and hitting the Tab key to auto-complete).  
+### Windows Easy "Install" Using .exe File
+1. Download the latest `ytmusic-deleter-<version>.exe` from the Releases area on this GitHub repository.
+1. Double-clicking the .exe file is not how to run the program. You must run it in a command window.
+    - Open a Terminal/CMD window in the same folder in which the .exe was downloaded.
+        - An easy way to do this is to open the folder in Windows Explorer, then Shift+Right-click on an empty space in the Explorer window and select "Open in Terminal" or "Open PowerShell window here".
+1. Run ytmusic-deleter by typing the name of the .exe file and pressing Enter. You can avoid typing the full filename by just typing the first few letters and hitting the Tab key to auto-complete.
 
-Continue See Step 4 below in "Setup (cont.)
+Continue to Setup Below
+
 ### Manual install using Python / PIP
 1. Install [Python](https://www.python.org/downloads/). Make sure it is available on your PATH.
 1. Open a command prompt and type `pip install ytmusic-deleter`. Use a [virtual environment](https://virtualenv.pypa.io/en/latest/) if you're familiar with the process.
 1. Run ytmusic-deleter by simply entering `ytmusic-deleter` at the command line.
-### Setup (cont.)
-4. The first time you run ytmusic-deleter, you will be asked to paste your request headers from Firefox. This allows ytmusic-deleter to make requests against your music library. To copy your request headers follow the instructions from the [ytmusicapi docs](https://ytmusicapi.readthedocs.io/en/latest/setup.html) under "Copy authentication headers".
-5. Press `Enter` after pasting the headers, then press Ctrl-D to continue (Ctrl-Z then Enter again on Windows). The next time you run ytmusic-deleter, it will reuse your headers from the `headers_auth.json` file that it generated.
+
+### Installation & Setup
+1. The first time you run ytmusic-deleter, you will be asked to paste your request headers from Firefox. This allows ytmusic-deleter to make requests against your music library. To copy your request headers follow the instructions from the [ytmusicapi docs](https://ytmusicapi.readthedocs.io/en/latest/setup.html) under "Copy authentication headers".
+1. Press `Enter` after pasting the headers, then press Ctrl-D to continue (Ctrl-Z then Enter again on Windows). The next time you run ytmusic-deleter, it will reuse your headers from the `headers_auth.json` file that it generated.
 
 # Usage
-Type `ytmusic-deleter` to see the usage information. There are several commands available.
+When you run `ytmusic-deleter` with no parameters, you will see see the usage information. There are several commands available.
 
 `delete-uploads`:&nbsp;&nbsp;&nbsp;&nbsp;Delete all tracks that you have uploaded to your YT Music library.
 
