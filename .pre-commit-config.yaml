@@ -1,7 +1,7 @@
 exclude: ^src/main/python/generated/
 repos:
   - repo: https://github.com/asottile/pyupgrade
-    rev: v2.37.3
+    rev: v2.38.0
     hooks:
       - id: pyupgrade
   - repo: https://github.com/asottile/reorder_python_imports
@@ -14,7 +14,7 @@ repos:
     hooks:
       - id: black
   - repo: https://gitlab.com/pycqa/flake8
-    rev: 5.0.4
+    rev: 3.9.2
     hooks:
       - id: flake8
         additional_dependencies:

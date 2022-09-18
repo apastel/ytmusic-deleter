@@ -1,3 +1,4 @@
+import atexit
 import logging
 import os
 import re
@@ -26,7 +27,7 @@ from ytmusicapi import YTMusic
 APP_DATA_DIR = str(Path(os.getenv("APPDATA")) / "YTMusic Deleter")
 progress_re = re.compile("Total complete: (\\d+)%")
 item_processing_re = re.compile("(Processing \\w+: .+)")
-cli_filename = "ytmusic-deleter-1.4.1.exe"
+cli_filename = "ytmusic-deleter-1.5.0-SNAPSHOT.exe"
 
 logging.basicConfig(
     level=logging.INFO,
@@ -77,7 +78,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.authIndicator.setText("Authenticated")
             return True
         except (KeyError, AttributeError):
-            self.message("Not authorized yet")
+            self.message("Not authenticated yet")
             self.authIndicator.setText("Unauthenticated")
             if prompt:
                 self.prompt_for_auth()
@@ -91,57 +92,57 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     @Slot()
     def remove_library(self):
-        self.launch_process(["remove-library"])
+        self.show_dialog(["remove-library"])
 
     @Slot()
     def delete_uploads(self):
-        self.launch_process(["delete-uploads"])
+        self.show_dialog(["delete-uploads"])
 
     @Slot()
     def delete_playlists(self):
-        self.launch_process(["delete-playlists"])
+        self.show_dialog(["delete-playlists"])
 
     @Slot()
     def unlike_all(self):
-        self.launch_process(["unlike-all"])
+        self.show_dialog(["unlike-all"])
 
     @Slot()
     def delete_all(self):
-        self.launch_process(["delete-all"])
+        self.show_dialog(["delete-all"])
 
     @Slot()
     def sort_playlist(self):
-        self.launch_process(["sort-playlist"])
+        self.show_dialog(["sort-playlist"])
 
-    def launch_process(self, args):
+    def show_dialog(self, args):
         if self.p is None and self.is_authenticated(prompt=True):
             if args[0] == "sort-playlist":
-                self.sort_playlists_dialog = SortPlaylistsDialog()
-                playlists = self.ytmusic.get_library_playlists()
-                self.sort_playlists_dialog.playlistList.insertItems(
-                    0, [playlist["title"] for playlist in playlists]
-                )
+                self.sort_playlists_dialog = SortPlaylistsDialog(self)
                 self.sort_playlists_dialog.show()
-                return
-            self.message("Showing confirmation dialog")
-            if self.confirm(args) == QMessageBox.Ok:
-                if args[0] == "remove-library" and self.add_to_library:
-                    args += ["-a"]
-                    self.add_to_library_checked(False)
-                self.message(f"Executing process: {args}")
-                self.p = QProcess()
-                self.p.readyReadStandardOutput.connect(self.handle_stdout)
-                self.p.readyReadStandardError.connect(self.handle_stderr)
-                self.p.stateChanged.connect(self.handle_state)
-                self.p.finished.connect(self.process_finished)
-                self.p.start(
-                    cli_filename,
-                    ["-l", self.log_dir, "-c", self.credential_dir, "-p"] + args,
-                )
-                self.progress_dialog = ProgressDialog(self)
-                self.progress_dialog.show()
-                if not self.p.waitForStarted():
-                    self.message(self.p.errorString())
+
+            else:
+                self.message("Showing confirmation dialog")
+                if self.confirm(args) == QMessageBox.Ok:
+                    if args[0] == "remove-library" and self.add_to_library:
+                        args += ["-a"]
+                        self.add_to_library_checked(False)
+                    self.launch_process(args)
+
+    def launch_process(self, args):
+        self.message(f"Executing process: {args}")
+        self.p = QProcess()
+        self.p.readyReadStandardOutput.connect(self.handle_stdout)
+        self.p.readyReadStandardError.connect(self.handle_stderr)
+        self.p.stateChanged.connect(self.handle_state)
+        self.p.finished.connect(self.process_finished)
+        self.p.start(
+            cli_filename,
+            ["-l", self.log_dir, "-c", self.credential_dir, "-p"] + args,
+        )
+        self.progress_dialog = ProgressDialog(self)
+        self.progress_dialog.show()
+        if not self.p.waitForStarted():
+            self.message(self.p.errorString())
 
     def confirm(self, args):
         confirmation_dialog = QMessageBox()
@@ -168,8 +169,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         confirmation_dialog.setInformativeText("Are you sure you want to continue?")
         confirmation_dialog.setWindowTitle("Alert")
         confirmation_dialog.setStandardButtons(QMessageBox.Ok | QMessageBox.Cancel)
-        return confirmation_dialog.exec_()
+        return confirmation_dialog.exec()
 
+    @Slot()
     def add_to_library_checked(self, is_checked):
         if is_checked:
             self.add_to_library = True
@@ -261,6 +263,15 @@ class AppContext(ApplicationContext):
         self.window.show()
         return self.app.exec()
 
+
+def flush_sentry():
+    """Necessary because fbs disables Sentry's Atexit handler"""
+    import sentry_sdk
+
+    sentry_sdk.flush()
+
+
+atexit.register(flush_sentry)
 
 if __name__ == "__main__":
     appctxt = AppContext()

@@ -28,9 +28,9 @@ class Ui_ProgressDialog(object):
         self.progressBar.setObjectName(u"progressBar")
         self.progressBar.setGeometry(QRect(100, 100, 291, 23))
         self.progressBar.setValue(0)
-        self.pushButton = QPushButton(ProgressDialog)
-        self.pushButton.setObjectName(u"pushButton")
-        self.pushButton.setGeometry(QRect(200, 170, 75, 23))
+        self.abortButton = QPushButton(ProgressDialog)
+        self.abortButton.setObjectName(u"abortButton")
+        self.abortButton.setGeometry(QRect(200, 170, 75, 23))
         self.itemLine = QLabel(ProgressDialog)
         self.itemLine.setObjectName(u"itemLine")
         self.itemLine.setGeometry(QRect(50, 60, 371, 20))
@@ -43,7 +43,7 @@ class Ui_ProgressDialog(object):
 
     def retranslateUi(self, ProgressDialog):
         ProgressDialog.setWindowTitle(QCoreApplication.translate("ProgressDialog", u"Progress", None))
-        self.pushButton.setText(QCoreApplication.translate("ProgressDialog", u"Abort", None))
+        self.abortButton.setText(QCoreApplication.translate("ProgressDialog", u"Abort", None))
         self.itemLine.setText("")
     # retranslateUi
 

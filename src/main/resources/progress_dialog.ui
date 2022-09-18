@@ -29,7 +29,7 @@
     <number>0</number>
    </property>
   </widget>
-  <widget class="QPushButton" name="pushButton">
+  <widget class="QPushButton" name="abortButton">
    <property name="geometry">
     <rect>
      <x>200</x>

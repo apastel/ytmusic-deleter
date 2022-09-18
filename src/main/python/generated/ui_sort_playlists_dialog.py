@@ -15,9 +15,9 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QFont, QFontDatabase, QGradient, QIcon,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
-from PySide6.QtWidgets import (QAbstractButton, QAbstractItemView, QApplication, QDialog,
-    QDialogButtonBox, QListWidget, QListWidgetItem, QSizePolicy,
-    QWidget)
+from PySide6.QtWidgets import (QAbstractButton, QAbstractItemView, QApplication, QCheckBox,
+    QDialog, QDialogButtonBox, QListWidget, QListWidgetItem,
+    QSizePolicy, QWidget)
 
 class Ui_SortPlaylistsDialog(object):
     def setupUi(self, SortPlaylistsDialog):
@@ -36,6 +36,9 @@ class Ui_SortPlaylistsDialog(object):
         self.playlistList.setSelectionMode(QAbstractItemView.MultiSelection)
         self.playlistList.setSelectionRectVisible(False)
         self.playlistList.setSortingEnabled(True)
+        self.shuffleCheckBox = QCheckBox(SortPlaylistsDialog)
+        self.shuffleCheckBox.setObjectName(u"shuffleCheckBox")
+        self.shuffleCheckBox.setGeometry(QRect(90, 240, 70, 17))
 
         self.retranslateUi(SortPlaylistsDialog)
         self.buttonBox.accepted.connect(SortPlaylistsDialog.accept)
@@ -46,5 +49,9 @@ class Ui_SortPlaylistsDialog(object):
 
     def retranslateUi(self, SortPlaylistsDialog):
         SortPlaylistsDialog.setWindowTitle(QCoreApplication.translate("SortPlaylistsDialog", u"Sort Playlists", None))
+#if QT_CONFIG(tooltip)
+        self.shuffleCheckBox.setToolTip(QCoreApplication.translate("SortPlaylistsDialog", u"Shuffle the playlist(s) instead of sorting.", None))
+#endif // QT_CONFIG(tooltip)
+        self.shuffleCheckBox.setText(QCoreApplication.translate("SortPlaylistsDialog", u"Shuffle", None))
     # retranslateUi
 

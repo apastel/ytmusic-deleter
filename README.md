@@ -23,6 +23,5 @@ fbs installer
 ~~* Initial screen for inputting request headers (instead of separate terminal window)~~
 ~~* Copy ytmusicapi/locales from site-packages instead of including in the project tree~~
   ~~* Or use cli.exe~~
-* Proper logging and exception handling
-  * Example: Raising exception in confirmation dialog neither logs the exception or gives any indication in the UI what happened
-  * Can't get this to work when the exception is raised in a slot
+* Exceptions aren't displayed to the user when they happen in a Slot
+~~* Exceptions aren't sent to Sentry when they happen on the main thread (https://github.com/mherrmann/fbs/issues/283)~~

@@ -64,7 +64,7 @@ class AuthDialog(QDialog, Ui_AuthDialog):
                 "See https://ytmusicapi.readthedocs.io/en/latest/setup.html#copy-authentication-headers"
             )
             error_dialog.setWindowTitle("Error")
-            error_dialog.exec_()
+            error_dialog.exec()
 
 
 class YTAuthSetup(QObject):
