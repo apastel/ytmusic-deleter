@@ -123,26 +123,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             else:
                 self.message("Showing confirmation dialog")
                 if self.confirm(args) == QMessageBox.Ok:
-                    if args[0] == "remove-library" and self.add_to_library:
+                    if args[0] == "delete-uploads" and self.add_to_library:
                         args += ["-a"]
                         self.add_to_library_checked(False)
                     self.launch_process(args)
-
-    def launch_process(self, args):
-        self.message(f"Executing process: {args}")
-        self.p = QProcess()
-        self.p.readyReadStandardOutput.connect(self.handle_stdout)
-        self.p.readyReadStandardError.connect(self.handle_stderr)
-        self.p.stateChanged.connect(self.handle_state)
-        self.p.finished.connect(self.process_finished)
-        self.p.start(
-            cli_filename,
-            ["-l", self.log_dir, "-c", self.credential_dir, "-p"] + args,
-        )
-        self.progress_dialog = ProgressDialog(self)
-        self.progress_dialog.show()
-        if not self.p.waitForStarted():
-            self.message(self.p.errorString())
 
     def confirm(self, args):
         confirmation_dialog = QMessageBox()
@@ -170,6 +154,20 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         confirmation_dialog.setWindowTitle("Alert")
         confirmation_dialog.setStandardButtons(QMessageBox.Ok | QMessageBox.Cancel)
         return confirmation_dialog.exec()
+
+    def launch_process(self, args):
+        self.p = QProcess()
+        self.p.readyReadStandardOutput.connect(self.handle_stdout)
+        self.p.readyReadStandardError.connect(self.handle_stderr)
+        self.p.stateChanged.connect(self.handle_state)
+        self.p.finished.connect(self.process_finished)
+        cli_args = ["-l", self.log_dir, "-c", self.credential_dir, "-p"] + args
+        self.message(f"Executing process: {cli_filename} {cli_args}")
+        self.p.start(cli_filename, cli_args)
+        self.progress_dialog = ProgressDialog(self)
+        self.progress_dialog.show()
+        if not self.p.waitForStarted():
+            self.message(self.p.errorString())
 
     @Slot()
     def add_to_library_checked(self, is_checked):
