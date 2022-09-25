@@ -1,3 +1,4 @@
+import shutil
 from pathlib import Path
 
 from generated.ui_auth_dialog import Ui_AuthDialog
@@ -9,7 +10,9 @@ from PySide6.QtCore import Slot
 from PySide6.QtWidgets import QDialog
 from PySide6.QtWidgets import QDialogButtonBox
 from PySide6.QtWidgets import QFileDialog
+from PySide6.QtWidgets import QLineEdit
 from PySide6.QtWidgets import QMessageBox
+from PySide6.QtWidgets import QPlainTextEdit
 from ytmusic_deleter import constants
 from ytmusicapi import YTMusic
 
@@ -25,11 +28,12 @@ class AuthDialog(QDialog, Ui_AuthDialog):
 
         self.enable_ok_button()
         self.headersInputBox.textChanged.connect(self.enable_ok_button)
+        self.fileNameField.textChanged.connect(self.enable_ok_button)
 
         self.browseButton.clicked.connect(self.choose_auth_file)
 
         self.auth_setup = YTAuthSetup(
-            self.headersInputBox, self.parentWidget().credential_dir
+            self.headersInputBox, self.fileNameField, self.parentWidget().credential_dir
         )
         self.auth_setup.auth_signal.connect(self.auth_finished)
 
@@ -41,7 +45,7 @@ class AuthDialog(QDialog, Ui_AuthDialog):
     @Slot()
     def enable_ok_button(self):
         self.buttonBox.button(QDialogButtonBox.Ok).setEnabled(
-            self.headersInputBox.toPlainText() != ""
+            self.headersInputBox.toPlainText() != "" or self.fileNameField.text() != ""
         )
 
     @Slot()
@@ -70,18 +74,33 @@ class AuthDialog(QDialog, Ui_AuthDialog):
 class YTAuthSetup(QObject):
     auth_signal = Signal(str)
 
-    def __init__(self, textarea, cred_dir):
+    def __init__(self, textarea: QPlainTextEdit, filename_field: QLineEdit, cred_dir):
         super(YTAuthSetup, self).__init__()
         self.textarea = textarea
+        self.filename_field = filename_field
         self.headers_file_path = Path(cred_dir) / constants.HEADERS_FILE
 
     @Slot()
     def setup_auth(self):
-        user_input = self.textarea.toPlainText()
-        try:
-            YTMusic(
-                YTMusic.setup(filepath=self.headers_file_path, headers_raw=user_input)
-            )
-            self.auth_signal.emit("Success")
-        except Exception as e:
-            self.auth_signal.emit(str(e))
+        # Use selected headers_auth.json file
+        if self.filename_field.text():
+            try:
+                YTMusic(self.filename_field.text())
+                from main import APP_DATA_DIR
+
+                shutil.copy2(self.filename_field.text(), APP_DATA_DIR)
+                self.auth_signal.emit("Success")
+            except Exception as e:
+                self.auth_signal.emit(str(e))
+        # Use pasted headers
+        else:
+            user_input = self.textarea.toPlainText()
+            try:
+                YTMusic(
+                    YTMusic.setup(
+                        filepath=self.headers_file_path, headers_raw=user_input
+                    )
+                )
+                self.auth_signal.emit("Success")
+            except Exception as e:
+                self.auth_signal.emit(str(e))
