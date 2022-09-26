@@ -91,6 +91,19 @@ Sort a playlist called **Workout Jams**:
 ytmusic-deleter sort-playlist "workout jams"
 ```
 
+## Extra options
+These supplemental options are unlikely to be helpful for most use cases and are mainly to support an app I'm working on that will use this tool.
+```
+Options:
+  --version                  Show the version and exit.
+  -l, --log-dir TEXT         Custom directory in which to write log files,
+                             instead of current working directory.
+  -c, --credential-dir TEXT  Custom directory in which to locate/create JSON
+                             credential file, instead of current working
+                             directory
+  -p, --static-progress      Log the progress statically instead of an
+                             animated progress bar
+```
 # Troubleshooting
 ```
 ytmusic-deleter: command not found

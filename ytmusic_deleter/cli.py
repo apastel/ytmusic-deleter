@@ -391,70 +391,47 @@ def delete_all(ctx):
     ctx.invoke(delete_playlists)
 
 
-def mk_track_key(track):
-    try:
-        artists = track["artists"]
-        artist = artists[0]["name"].lower() if artists else "z"
-        album = track["album"]
-        album_title = album["name"] if album else "z"
-        return (re.sub(r"^(the |a )", "", artist),
-                album_title,
-                track["title"])
-    except TypeError:
-        print(track)
-        raise
-
-
 @cli.command()
-@click.argument("playlist_title")
+@click.argument("playlist_titles", nargs=-1, required=True)
 @click.option(
-    "--shuffle", "-s", is_flag=True, help="Shuffle the playlist instead of sorting it."
+    "--shuffle", "-s", is_flag=True, help="Shuffle the playlist(s) instead of sorting."
 )
 @click.pass_context
-def sort_playlist(ctx, shuffle, playlist_title):
-    """Sort a playlist alphabetically by artist and by album"""
-    library_playlists = youtube_auth.get_library_playlists(sys.maxsize)
-    library_playlists = list(
-        filter(
-            lambda playlist: playlist["title"].lower() == playlist_title.lower(),
-            library_playlists,
-        )
-    )
-    if not library_playlists:
-        raise click.BadParameter(
-            f'No playlists found named "{playlist_title}". Double-check your playlist name and try again.'
-        )
-
-    for library_playlist in library_playlists:
-        logging.info(f"Processing playlist: {library_playlist['title']}")
+def sort_playlist(ctx, shuffle, playlist_titles):
+    """Sort or shuffle one or more playlists alphabetically by artist and by album"""
+    all_playlists = youtube_auth.get_library_playlists(sys.maxsize)
+    lowercase_playlist_titles = [title.lower() for title in playlist_titles]
+    selected_playlist_list = [
+        playlist
+        for playlist in all_playlists
+        if playlist["title"].lower() in lowercase_playlist_titles
+    ]
+    for selected_playlist in selected_playlist_list:
+        logging.info(f'Processing playlist: {selected_playlist["title"]}')
         playlist = youtube_auth.get_playlist(
-            library_playlist["playlistId"], sys.maxsize
+            selected_playlist["playlistId"], sys.maxsize
         )
         current_tracklist = [t for t in playlist["tracks"]]
         if shuffle:
-            logging.info(f"\tPlaylist: {library_playlist['title']} will be shuffled")
+            logging.info(f"\tPlaylist: {selected_playlist['title']} will be shuffled")
             desired_tracklist = [t for t in playlist["tracks"]]
             unsort(desired_tracklist)
         else:
             desired_tracklist = [
-                t
-                for t in sorted(
-                    playlist["tracks"],
-                    key=lambda t: mk_track_key(t)
-                )
+                t for t in sorted(playlist["tracks"], key=lambda t: make_sort_key(t))
             ]
 
         global progress_bar
         progress_bar = manager.counter(
             total=len(desired_tracklist),
-            desc="Tracks Sorted",
+            desc=f'\'{selected_playlist["title"]}\' Tracks {"Shuffled" if shuffle else "Sorted"}',
             unit="tracks",
             enabled=not ctx.obj["STATIC_PROGRESS"],
         )
         for cur_track in desired_tracklist:
             cur_idx = desired_tracklist.index(cur_track)
             track_after = current_tracklist[cur_idx]
-            logging.debug(
+            logging.debug(  # No way to actually enable debug logging yet
                 f"Moving {cur_track['artists'][0]['name']} - {cur_track['title']} "
                 f"before {track_after['artists'][0]['name']} - {track_after['title']}"
             )
@@ -462,7 +439,10 @@ def sort_playlist(ctx, shuffle, playlist_title):
                 try:
                     response = youtube_auth.edit_playlist(
                         playlist["id"],
-                        moveItem=(cur_track["setVideoId"], track_after["setVideoId"]),
+                        moveItem=(
+                            cur_track["setVideoId"],
+                            track_after["setVideoId"],
+                        ),
                     )
                     if not response:
                         logging.error(
@@ -478,6 +458,28 @@ def sort_playlist(ctx, shuffle, playlist_title):
                 current_tracklist.remove(cur_track)
                 current_tracklist.insert(cur_idx, cur_track)
             update_progress(ctx)
+
+    not_found_playlists = []
+    for title in lowercase_playlist_titles:
+        if title not in [x["title"].lower() for x in selected_playlist_list]:
+            not_found_playlists.append(title)
+    if not_found_playlists:
+        raise click.BadParameter(
+            f'No playlists found named "{", ".join(not_found_playlists)}". Double-check your playlist name(s) '
+            '(or surround them "with quotes") and try again.'
+        )
+
+
+def make_sort_key(track):
+    try:
+        artists = track["artists"]
+        artist = artists[0]["name"].lower() if artists else "z"
+        album = track["album"]
+        album_title = album["name"] if album else "z"
+        return (re.sub(r"^(the |a )", "", artist), album_title, track["title"])
+    except Exception:
+        logging.exception(f"Track {track} could not be sorted.")
+        raise
 
 
 def update_progress(ctx):
