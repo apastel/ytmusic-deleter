@@ -27,7 +27,7 @@ from ytmusicapi import YTMusic
 APP_DATA_DIR = str(Path(os.getenv("APPDATA")) / "YTMusic Deleter")
 progress_re = re.compile("Total complete: (\\d+)%")
 item_processing_re = re.compile("(Processing \\w+: .+)")
-cli_filename = "ytmusic-deleter-1.5.0-SNAPSHOT.exe"
+cli_filename = "ytmusic-deleter-1.5.1.exe"
 
 logging.basicConfig(
     level=logging.INFO,
@@ -162,7 +162,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.p.stateChanged.connect(self.handle_state)
         self.p.finished.connect(self.process_finished)
         cli_args = ["-l", self.log_dir, "-c", self.credential_dir, "-p"] + args
-        self.message(f"Executing process: {cli_filename} {cli_args}")
+        self.message(f"Executing process: {Path(cli_filename).resolve()} {cli_args}")
         self.p.start(cli_filename, cli_args)
         self.progress_dialog = ProgressDialog(self)
         self.progress_dialog.show()
