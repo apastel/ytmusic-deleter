@@ -27,3 +27,4 @@ repos:
       - id: trailing-whitespace
         exclude: README.md
       - id: end-of-file-fixer
+        exclude: ^src/build/settings/base.json
