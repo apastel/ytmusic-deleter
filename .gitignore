@@ -1,6 +1,8 @@
+# YTMusic Deleter
 headers_auth.json
 fbs_pro-*
 ytmusic-deleter*
+secret.json
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
