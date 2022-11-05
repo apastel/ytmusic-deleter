@@ -4,8 +4,10 @@ A project that aims to package ytmusic-deleter into an easy to install and run a
 ### Generate forms from UI files:
 pyside6-uic -o src/main/python/generated/ui_main_window.py src/main/resources/main_window.ui
 pyside6-uic -o src/main/python/generated/ui_auth_dialog.py src/main/resources/auth_dialog.ui
+pyside6-uic -o src/main/python/generated/ui_license_dialog.py src/main/resources/license_dialog.ui
 pyside6-uic -o src/main/python/generated/ui_progress_dialog.py src/main/resources/progress_dialog.ui
 pyside6-uic -o src/main/python/generated/ui_sort_playlists_dialog.py src/main/resources/sort_playlists_dialog.ui
+
 
 ### Build
 ```
@@ -16,6 +18,9 @@ fbs clean
 fbs freeze
 fbs installer
 ```
+
+### Release
+
 
 # ToDo
 ~~* Print stdout to in-app textarea instead of separate terminal window~~

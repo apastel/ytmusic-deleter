@@ -3,6 +3,7 @@ headers_auth.json
 fbs_pro-*
 ytmusic-deleter*
 secret.json
+cache/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

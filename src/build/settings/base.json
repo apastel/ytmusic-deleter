@@ -8,6 +8,7 @@
         "app_name",
         "author",
         "version",
-        "sentry_dsn"
+        "sentry_dsn",
+        "licensing_pubkey"
     ]
 }

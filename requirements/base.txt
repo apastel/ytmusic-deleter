@@ -1,4 +1,4 @@
 ./fbs_pro-1.1.3.tar.gz
-fbs[sentry]
+fbs[sentry,upload,licensing]
 PySide6
 ytmusic-deleter
