@@ -69,15 +69,16 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.sortPlaylistButton.clicked.connect(self.sort_playlist)
 
         self.authIndicator.clicked.connect(self.prompt_for_auth)
-        self.is_authenticated()
 
         self.add_to_library = False
 
         self.message(f"Starting version {PUBLIC_SETTINGS['version']}")
         if not self.license_key_is_valid():
-            self.message("Your license key is invalid.")
+            self.message("Prompt for license key.")
             self.license_dialog = LicenseDialog()
             self.license_dialog.show()
+
+        self.is_authenticated()
 
     def is_authenticated(self, prompt=False):
         try:
@@ -245,13 +246,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         try:
             license_key = self.get_license_key()
         except FileNotFoundError:
-            self.message("License key file not found. Prompt for new key.")
+            self.message("License key file not found.")
             return False
         except InvalidKey:
-            self.message("License key was invalid. Prompt for new key.")
+            self.message("License key was invalid.")
             return False
         else:
-            self.message(f"License key was valid.\n{license_key}")
+            self.message(f"License key was valid for user {license_key}")
             return True
 
 
