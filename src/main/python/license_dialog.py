@@ -24,13 +24,13 @@ class LicenseDialog(QDialog, Ui_LicenseDialog):
         self.setupUi(self)
 
         self.browseButton.clicked.connect(self.choose_license_file)
-        self.submitButton.clicked.connect(self.accept)
+        self.submitButton.clicked.connect(self.submit_clicked)
 
         self.license_check = LicenseCheck(self.licenseInputBox, self.fileNameField)
         self.license_check.check_signal.connect(self.check_finished)
 
     @Slot()
-    def accept(self):
+    def submit_clicked(self):
         self.thread = QThread(self)
         self.thread.started.connect(self.license_check.license_key_is_valid)
         self.thread.start()
@@ -50,7 +50,7 @@ class LicenseDialog(QDialog, Ui_LicenseDialog):
     @Slot(str)
     def check_finished(self, check_result):
         if check_result == "VALID":
-            self.close()
+            self.accept()
         else:
             error_dialog = QMessageBox()
             error_dialog.setIcon(QMessageBox.Critical)
