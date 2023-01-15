@@ -14,7 +14,7 @@ from _version_git import __version__, get_cmdclass  # noqa
 
 module_name = "ytmusic-deleter"
 
-install_reqs = ["click", "ytmusicapi >= 0.23.0", "enlighten"]
+install_reqs = ["click", "ytmusicapi >= 0.24.1", "enlighten"]
 
 develop_reqs = [
     "pre-commit",
