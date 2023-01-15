@@ -82,25 +82,25 @@ class YTAuthSetup(QObject):
 
     @Slot()
     def setup_auth(self):
-        # Use selected headers_auth.json file
-        if self.filename_field.text():
-            try:
+        try:
+            # Use selected headers_auth.json file
+            if self.filename_field.text():
                 YTMusic(self.filename_field.text())
                 from main import APP_DATA_DIR
 
-                shutil.copy2(self.filename_field.text(), APP_DATA_DIR)
-                self.auth_signal.emit("Success")
-            except Exception as e:
-                self.auth_signal.emit(str(e))
-        # Use pasted headers
-        else:
-            user_input = self.textarea.toPlainText()
-            try:
+                shutil.copy2(
+                    self.filename_field.text(),
+                    str(Path(APP_DATA_DIR) / "headers_auth.json"),
+                )
+            # Use pasted headers
+            else:
+                user_input = self.textarea.toPlainText()
                 YTMusic(
                     YTMusic.setup(
                         filepath=self.headers_file_path, headers_raw=user_input
                     )
                 )
-                self.auth_signal.emit("Success")
-            except Exception as e:
-                self.auth_signal.emit(str(e))
+
+            self.auth_signal.emit("Success")
+        except Exception as e:
+            self.auth_signal.emit(str(e))
