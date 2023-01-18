@@ -107,7 +107,7 @@ def delete_uploaded_albums(ctx, add_to_library):
         try:
             artist = (
                 album["artists"][0]["name"]
-                if "artists" in album
+                if "artists" in album and len(album["artists"]) > 0
                 else const.UNKNOWN_ARTIST
             )
             title = album["title"]
