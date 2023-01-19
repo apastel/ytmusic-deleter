@@ -1,4 +1,4 @@
-If this project helped you and you want to thank me, you can get me a beer! (I will actually use the money to buy beer, and I'll send you a virtual cheers).
+If this project helped you and you want to thank me, you can get me a beer!
 
 <a href="https://www.buymeacoffee.com/jewbix.cube"><img src="https://img.buymeacoffee.com/button-api/?text=Buy me a beer&emoji=🍻&slug=jewbix.cube&button_colour=FFDD00&font_colour=000000&font_family=Arial&outline_colour=000000&coffee_colour=ffffff"></a>
 
