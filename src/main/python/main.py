@@ -30,7 +30,8 @@ from ytmusicapi import YTMusic
 APP_DATA_DIR = str(Path(os.getenv("APPDATA")) / "YTMusic Deleter")
 progress_re = re.compile("Total complete: (\\d+)%")
 item_processing_re = re.compile("(Processing \\w+: .+)")
-cli_filename = "ytmusic-deleter-1.5.1.exe"
+cli_filename = "ytmusic-deleter-1.5.4.exe"
+REQUIRE_LICENSE = False  # disabling this because...it's just not worth it
 
 logging.basicConfig(
     level=logging.INFO,
@@ -73,7 +74,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.add_to_library = False
 
         self.message(f"Starting version {PUBLIC_SETTINGS['version']}")
-        if not self.license_key_is_valid():
+        if REQUIRE_LICENSE and not self.license_key_is_valid():
             self.message("Prompt for license key.")
             self.license_dialog = LicenseDialog()
             self.license_dialog.show()
