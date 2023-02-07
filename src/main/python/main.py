@@ -33,16 +33,6 @@ item_processing_re = re.compile("(Processing \\w+: .+)")
 cli_filename = "ytmusic-deleter-1.5.4.exe"
 REQUIRE_LICENSE = False  # disabling this because...it's just not worth it
 
-logging.basicConfig(
-    level=logging.INFO,
-    format="[%(asctime)s] %(message)s",
-    datefmt="%Y-%m-%d %H:%M:%S",
-    handlers=[
-        logging.FileHandler(Path(APP_DATA_DIR) / "ytmusic-deleter-packager.log"),
-        logging.StreamHandler(sys.stdout),
-    ],
-)
-
 
 class MainWindow(QMainWindow, Ui_MainWindow):
     def __init__(self):
@@ -58,6 +48,17 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.credential_dir = self.settings.value("credential_dir", APP_DATA_DIR)
         Path(self.log_dir).mkdir(parents=True, exist_ok=True)
         Path(self.credential_dir).mkdir(parents=True, exist_ok=True)
+        logging.basicConfig(
+            level=logging.INFO,
+            format="[%(asctime)s] %(message)s",
+            datefmt="%Y-%m-%d %H:%M:%S",
+            handlers=[
+                logging.FileHandler(
+                    Path(APP_DATA_DIR) / "ytmusic-deleter-packager.log"
+                ),
+                logging.StreamHandler(sys.stdout),
+            ],
+        )
 
         self.setupUi(self)
         self.p = None
