@@ -88,7 +88,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.authIndicator.setText("Authenticated")
             return True
         except (KeyError, AttributeError):
-            self.message("Not authenticated yet")
+            self.message('Not yet authenticated. Click the "Unauthenticated" button.')
             self.authIndicator.setText("Unauthenticated")
             if prompt:
                 self.prompt_for_auth()

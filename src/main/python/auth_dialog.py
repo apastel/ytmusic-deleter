@@ -37,6 +37,14 @@ class AuthDialog(QDialog, Ui_AuthDialog):
         )
         self.auth_setup.auth_signal.connect(self.auth_finished)
 
+        self.headersInputBox.setPlaceholderText(
+            """
+        Paste your raw request headers here and click OK.
+        See https://ytmusicapi.readthedocs.io/en/latest/setup.html#copy-authentication-headers
+        Alternatively, use Browse to select an existing headers_auth.json file.
+        """
+        )
+
     def accept(self):
         self.thread = QThread(self)
         self.thread.started.connect(self.auth_setup.setup_auth)
@@ -65,7 +73,9 @@ class AuthDialog(QDialog, Ui_AuthDialog):
             error_dialog.setIcon(QMessageBox.Critical)
             error_dialog.setText(auth_result)
             error_dialog.setInformativeText(
-                "See https://ytmusicapi.readthedocs.io/en/latest/setup.html#copy-authentication-headers"
+                "<html>See <a href=https://ytmusicapi.readthedocs.io/en/latest/setup.html#copy-authentication-headers>"
+                "https://ytmusicapi.readthedocs.io/en/latest/setup.html#copy-authentication-headers</a> for "
+                "instructions on obtaining your request headers.</html>"
             )
             error_dialog.setWindowTitle("Error")
             error_dialog.exec()
