@@ -160,24 +160,21 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         confirmation_dialog = QMessageBox()
         confirmation_dialog.setIcon(QMessageBox.Warning)
         if args[0] == "remove-library":
-            text = "This will remove all tracks that you have added to your library from within YouTube Music."
+            text = 'This is the same as clicking "Remove from library" on all tracks that you have added to your library by clicking "Add to library". This will not delete your uploads.'  # noqa
         elif args[0] == "delete-uploads":
             text = "This will delete all your uploaded music. "
             checkbox = QCheckBox("Add uploads to library first")
             checkbox.toggled.connect(self.add_to_library_checked)
             confirmation_dialog.setCheckBox(checkbox)
         elif args[0] == "delete-playlists":
-            text = "This will delete all your playlists, and may include playlists in regular YouTube.com that have music."
+            text = "This will delete all your playlists, which may also include playlists in regular YouTube.com that have music."
         elif args[0] == "unlike-all":
             text = "This will reset all your Liked songs back to neutral."
-        elif args[0] == "unlike-all":
+        elif args[0] == "delete-all":
             text = "This will run Remove Library, Delete Uploads, Delete Playlists, and Unlike All Songs."
-            checkbox = QCheckBox("Add uploads to library first")
-            checkbox.toggled.connect(self.add_to_library_checked)
-            confirmation_dialog.setCheckBox(checkbox)
         else:
             raise ValueError("Unexpected argument provided to confirmation window.")
-        confirmation_dialog.setText(text)
+        confirmation_dialog.setText(f"{text}")
         confirmation_dialog.setInformativeText("Are you sure you want to continue?")
         confirmation_dialog.setWindowTitle("Alert")
         confirmation_dialog.setStandardButtons(QMessageBox.Ok | QMessageBox.Cancel)

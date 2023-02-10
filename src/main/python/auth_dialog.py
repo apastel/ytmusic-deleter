@@ -38,7 +38,10 @@ class AuthDialog(QDialog, Ui_AuthDialog):
         self.auth_setup.auth_signal.connect(self.auth_finished)
 
         self.headersInputBox.setPlaceholderText(
-            """
+            f"""
+        {"You are already authenticated, so whatever you do here will overwrite your existing authentication."
+            if self.parentWidget().is_authenticated() else ""}
+
         Paste your raw request headers here and click OK.
         See https://ytmusicapi.readthedocs.io/en/latest/setup.html#copy-authentication-headers
         Alternatively, use Browse to select an existing headers_auth.json file.
