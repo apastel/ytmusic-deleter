@@ -3,8 +3,10 @@ import logging
 import os
 import re
 import sys
+import webbrowser
 from pathlib import Path
 
+import requests
 from auth_dialog import AuthDialog
 from fbs_runtime import PUBLIC_SETTINGS
 from fbs_runtime.application_context import cached_property
@@ -17,9 +19,13 @@ from generated.ui_main_window import Ui_MainWindow
 from license_dialog import LicenseDialog
 from progress_dialog import ProgressDialog
 from PySide6.QtCore import QProcess
+from PySide6.QtCore import QRect
 from PySide6.QtCore import QSettings
 from PySide6.QtCore import Slot
+from PySide6.QtGui import QImage
+from PySide6.QtGui import QPixmap
 from PySide6.QtWidgets import QCheckBox
+from PySide6.QtWidgets import QLabel
 from PySide6.QtWidgets import QMainWindow
 from PySide6.QtWidgets import QMessageBox
 from sort_playlists_dialog import SortPlaylistsDialog
@@ -69,6 +75,18 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.unlikeAllButton.clicked.connect(self.unlike_all)
         self.deleteAllButton.clicked.connect(self.delete_all)
         self.sortPlaylistButton.clicked.connect(self.sort_playlist)
+        self.donateLabel = ClickableLabel(
+            self.centralwidget, "https://www.buymeacoffee.com/jewbix.cube"
+        )
+        self.donateLabel.setObjectName("donateLabel")
+        self.donateLabel.setGeometry(QRect(480, 30, 280, 50))
+        r = requests.get(
+            "https://img.buymeacoffee.com/button-api/?text=Buy me a beer&emoji=🍺&slug=jewbix.cube&button_colour=FFDD00&"
+            "font_colour=000000&font_family=Cookie&outline_colour=000000&coffee_colour=ffffff"
+        )
+        img = QImage()
+        img.loadFromData(r.content)
+        self.donateLabel.setPixmap(QPixmap.fromImage(img))
 
         self.authIndicator.clicked.connect(self.prompt_for_auth)
 
@@ -288,6 +306,15 @@ class AppContext(ApplicationContext):
     def run(self):
         self.window.show()
         return self.app.exec()
+
+
+class ClickableLabel(QLabel):
+    def __init__(self, parent, link):
+        QLabel.__init__(self, parent)
+        self.link = link
+
+    def mousePressEvent(self, event):
+        webbrowser.open(self.link)
 
 
 def flush_sentry():
