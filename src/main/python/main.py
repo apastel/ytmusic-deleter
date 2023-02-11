@@ -87,6 +87,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         img = QImage()
         img.loadFromData(r.content)
         self.donateLabel.setPixmap(QPixmap.fromImage(img))
+        self.donateLabel.setToolTip(
+            "It's a donate button! Sorry it looks like crap. But if this tool saved you a lot of time, consider buying me a beer!"
+        )
 
         self.authIndicator.clicked.connect(self.prompt_for_auth)
 
