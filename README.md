@@ -37,4 +37,4 @@ https://fbs.sh/apastel/YTMusic%20Deleter/YTMusic%20DeleterSetup.exe
 ~~* Exceptions aren't sent to Sentry when they happen on the main thread (https://github.com/mherrmann/fbs/issues/283)~~
 * Output to a single log file instead of two
 * Logging from all dialogs instead of `self.message`
-* Closing license dialog closes the app
+~~* Closing license dialog closes the app~~
