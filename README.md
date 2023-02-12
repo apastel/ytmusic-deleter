@@ -12,25 +12,20 @@ A command-line interface for performing batch delete operations on your YouTube 
 New in version 1.3.0, you can also sort your playlists. See the Usage information for `sort-playlist`.
 
 ## Setup
-New in 1.4.0, Windows users can download a self-contained .exe file of ytmusic-deleter without having to install Python or set up a virtual environment.  
+![YTMusic Deleter screenshot](https://i.imgur.com/QR7T9ai.png)
+New in version 1.5.4, Windows users can download an .exe to install the YTMusic Deleter GUI (Graphical User Interface).  
+Find the .exe file in the [Releases](https://github.com/apastel/ytmusic-deleter/releases) area in the sidebar in the Assets section at the bottom. Please note you may get a browser warning when downloading the file, and a Windows warning for installing files from an unknown publisher. It's not really worth the cost for me to buy a code signing certificate, so you will just have to accept the warning for now.
 
-### Windows Easy "Install" Using .exe File
-1. Download the latest `ytmusic-deleter-<version>.exe` from the Releases area on this GitHub repository.
-1. Double-clicking the .exe file is not how to run the program. You must run it in a command window.
-    - Open a Terminal/CMD window in the same folder in which the .exe was downloaded.
-        - An easy way to do this is to open the folder in Windows Explorer, then Shift+Right-click on an empty space in the Explorer window and select "Open in Terminal" or "Open PowerShell window here".
-1. Run ytmusic-deleter by typing the name of the .exe file and pressing Enter. You can avoid typing the full filename by just typing the first few letters and hitting the Tab key to auto-complete.
-
-Continue to Setup Below
-
-### Manual install using Python / PIP
+### (Advanced) Command-line interface install using Python / PIP (for non-Windows users)
+The CLI version of YTMusic Deleter is still available and is for advanced users who would rather use a command-line or aren't running Windows.
 1. Install [Python](https://www.python.org/downloads/). Make sure it is available on your PATH.
 1. Open a command prompt and type `pip install ytmusic-deleter`. Use a [virtual environment](https://virtualenv.pypa.io/en/latest/) if you're familiar with the process.
 1. Run ytmusic-deleter by simply entering `ytmusic-deleter` at the command line.
 
-### Installation & Setup
-1. The first time you run ytmusic-deleter, you will be asked to paste your request headers from Firefox. This allows ytmusic-deleter to make requests against your music library. To copy your request headers follow the instructions from the [ytmusicapi docs](https://ytmusicapi.readthedocs.io/en/latest/setup.html) under "Copy authentication headers".
-1. Press `Enter` after pasting the headers, then press Ctrl-D to continue (Ctrl-Z then Enter again on Windows). The next time you run ytmusic-deleter, it will reuse your headers from the `headers_auth.json` file that it generated.
+# Authenticating To Your Account
+The first time you run ytmusic-deleter, you will be asked to paste your request headers from Firefox. This allows ytmusic-deleter to make requests against your music library. To copy your request headers follow the instructions from the [ytmusicapi docs](https://ytmusicapi.readthedocs.io/en/latest/setup.html) under "Copy authentication headers".
+
+If you're running the command line (CLI) version of YTMusic Deleter, press `Enter` after pasting the headers, then press Ctrl-D to continue (Ctrl-Z then Enter again on Windows). The next time you run ytmusic-deleter, it will reuse your headers from the `headers_auth.json` file that it generated.
 
 # Usage
 When you run `ytmusic-deleter` with no parameters, you will see see the usage information. There are several commands available.
