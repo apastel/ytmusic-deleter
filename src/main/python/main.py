@@ -207,13 +207,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     @Slot()
     def handle_stderr(self):
         data = self.p.readAllStandardError()
-        stderr = bytes(data).decode("utf8")
+        stderr = bytes(data).decode("ISO-8859-1")
         self.message(stderr)
 
     @Slot()
     def handle_stdout(self):
         data = self.p.readAllStandardOutput()
-        stdout = bytes(data).decode("utf8")
+        stdout = bytes(data).decode("ISO-8859-1")
         percent_complete = self.get_percent_complete(stdout)
         if percent_complete:
             self.progress_dialog.progressBar.setValue(percent_complete)
