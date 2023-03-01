@@ -87,7 +87,7 @@ ytmusic-deleter sort-playlist "workout jams"
 ```
 
 ## Extra options
-These supplemental options are unlikely to be helpful for most use cases and are mainly to support an app I'm working on that will use this tool.
+These supplemental options are unlikely to be helpful for most use cases and are mainly to support the GUI version.
 ```
 Options:
   --version                  Show the version and exit.
