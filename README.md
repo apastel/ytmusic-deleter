@@ -14,7 +14,7 @@ New in version 1.3.0, you can also sort your playlists. See the Usage informatio
 ## Setup
 ![YTMusic Deleter screenshot](https://i.imgur.com/QR7T9ai.png)
 New in version 1.5.4, Windows users can download an .exe to install the YTMusic Deleter GUI (Graphical User Interface).  
-Find the .exe file in the [Releases](https://github.com/apastel/ytmusic-deleter/releases) area in the sidebar in the Assets section at the bottom. Please note you may get a browser warning when downloading the file, and a Windows warning for installing files from an unknown publisher. It's not really worth the cost for me to buy a code signing certificate, so you will just have to accept the warning for now.
+Find the .exe file in the [Releases](https://github.com/apastel/ytmusic-deleter/releases) area; just click the latest release and look at the Assets section. Please note you may get a browser warning when downloading the file, and a Windows warning for installing files from an unknown publisher. It's not really worth the cost for me to buy a code signing certificate, so you will just have to accept the warning for now.
 
 ### (Advanced) Command-line interface install using Python / PIP (for non-Windows users)
 The CLI version of YTMusic Deleter is still available and is for advanced users who would rather use a command-line or aren't running Windows.
