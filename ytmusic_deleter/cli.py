@@ -96,6 +96,8 @@ def delete_uploaded_albums(ctx, add_to_library):
     uploaded_albums = youtube_auth.get_library_upload_albums(sys.maxsize)
     if not uploaded_albums:
         return (albums_deleted, 0)
+    logging.info(f"Retrieved {len(uploaded_albums)} uploaded albums from your library.")
+
     global progress_bar
     progress_bar = manager.counter(
         total=len(uploaded_albums),
@@ -107,7 +109,7 @@ def delete_uploaded_albums(ctx, add_to_library):
         try:
             artist = (
                 album["artists"][0]["name"]
-                if album["artists"]
+                if album.get("artists")  # Using `get` ensures key exists and isn't []
                 else const.UNKNOWN_ARTIST
             )
             title = album["title"]
@@ -147,6 +149,9 @@ def delete_uploaded_singles(ctx):
     # Filter for songs that don't have an album, otherwise songs that
     # were skipped in the first batch would get deleted here
     uploaded_singles = [single for single in uploaded_singles if not single["album"]]
+    logging.info(
+        f"Retrieved {len(uploaded_singles)} uploaded singles from your library."
+    )
 
     global progress_bar
     progress_bar = manager.counter(
@@ -160,7 +165,7 @@ def delete_uploaded_singles(ctx):
         try:
             artist = (
                 single["artist"][0]["name"]
-                if single["artist"]
+                if single.get("artist")  # Using `get` ensures key exists and isn't []
                 else const.UNKNOWN_ARTIST
             )
             title = single["title"]
