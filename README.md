@@ -9,10 +9,10 @@ A command-line interface for performing batch delete operations on your YouTube 
 - Delete playlists
 - Reset "Likes"
 
-New in version 1.3.0, you can also sort your playlists. See the Usage information for `sort-playlist`.
+New in version 1.3.0, you can also sort your playlists.
 
 ## Setup
-![YTMusic Deleter screenshot](https://i.imgur.com/QR7T9ai.png)
+![YTMusic Deleter screenshot](https://i.imgur.com/ZmGl58E.gif)
 New in version 1.5.4, Windows users can download an .exe to install the YTMusic Deleter GUI (Graphical User Interface).  
 Find the .exe file in the [Releases](https://github.com/apastel/ytmusic-deleter/releases) area; just click the latest release and look at the Assets section. Please note you may get a browser warning when downloading the file, and a Windows warning for installing files from an unknown publisher. It's not really worth the cost for me to buy a code signing certificate, so you will just have to accept the warning for now.
 
