@@ -43,7 +43,7 @@ class AuthDialog(QDialog, Ui_AuthDialog):
             if self.parentWidget().is_authenticated() else ""}
 
         Paste your raw request headers here and click OK.
-        See https://ytmusicapi.readthedocs.io/en/latest/setup.html#copy-authentication-headers
+        See https://ytmusicapi.readthedocs.io/en/stable/setup/browser.html#copy-authentication-headers
         Alternatively, use Browse to select an existing headers_auth.json file.
         """
         )
