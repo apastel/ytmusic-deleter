@@ -3,17 +3,18 @@ If this project helped you and you want to thank me, you can get me a beer!
 <a href="https://www.buymeacoffee.com/jewbix.cube"><img src="https://img.buymeacoffee.com/button-api/?text=Buy me a beer&emoji=🍻&slug=jewbix.cube&button_colour=FFDD00&font_colour=000000&font_family=Arial&outline_colour=000000&coffee_colour=ffffff"></a>
 
 # ytmusic-deleter
-A command-line interface for performing batch delete operations on your YouTube Music library. It's faster than browser-based / Javscript-based tools because it uses the YouTube Music API instead of performing the deletion in your browser. You can use this to do any of the following:
+An installable program for performing batch delete operations on your YouTube Music library. It's faster than browser-based / Javscript-based tools because it uses the YouTube Music API instead of performing the deletion in your browser. You can use this to do any of the following:
 - Delete uploads
 - Delete library songs
 - Delete playlists
 - Reset "Likes"
 
-New in version 1.3.0, you can also sort your playlists.
+You can also use it to sort your playlists.
 
-## Setup
-![YTMusic Deleter screenshot](https://i.imgur.com/ZmGl58E.gif)
-New in version 1.5.4, Windows users can download an .exe to install the YTMusic Deleter GUI (Graphical User Interface).  
+![YTMusic Deleter screenshot](https://i.imgur.com/ZmGl58E.gif)  
+
+## Installation
+Windows users can download an .exe to install the YTMusic Deleter GUI (Graphical User Interface).  
 Find the .exe file in the [Releases](https://github.com/apastel/ytmusic-deleter/releases) area; just click the latest release and look at the Assets section. Please note you may get a browser warning when downloading the file, and a Windows warning for installing files from an unknown publisher. It's not really worth the cost for me to buy a code signing certificate, so you will just have to accept the warning for now.
 
 ### (Advanced) Command-line interface install using Python / PIP (for non-Windows users)
@@ -22,12 +23,12 @@ The CLI version of YTMusic Deleter is still available and is for advanced users 
 1. Open a command prompt and type `pip install ytmusic-deleter`. Use a [virtual environment](https://virtualenv.pypa.io/en/latest/) if you're familiar with the process.
 1. Run ytmusic-deleter by simply entering `ytmusic-deleter` at the command line.
 
-# Authenticating To Your Account
+## Setup
 The first time you run ytmusic-deleter, you will be asked to paste your request headers from Firefox. This allows ytmusic-deleter to make requests against your music library. To copy your request headers follow the instructions from the [ytmusicapi docs](https://ytmusicapi.readthedocs.io/en/stable/setup/browser.html) under "Copy authentication headers". If you're running the Windows graphical (GUI) version of ytmusic-deleter, just click OK after pasting the headers or selecting an existing `headers_auth.json` file.
 
 If you're running the command line (CLI) version of YTMusic Deleter, press `Enter` after pasting the headers, then press Ctrl-D to continue (Ctrl-Z then Enter again on Windows). The next time you run ytmusic-deleter, it will reuse your headers from the `headers_auth.json` file that it generated. If you're running on macOS, you should create the `headers_auth.json` file manually, as the MacOS terminal application can only accept 1024 characters pasted to std input. Follow the instructions on the ytmusicapi here for "Manual file creation": [https://ytmusicapi.readthedocs.io/en/stable/setup.html#manual-file-creation](https://ytmusicapi.readthedocs.io/en/stable/setup/browser.html#manual-file-creation)
 
-# Usage
+### Usage (For the advance Command-line interface only)
 When you run `ytmusic-deleter` with no parameters, you will see see the usage information. There are several commands available.
 
 `delete-uploads`:&nbsp;&nbsp;&nbsp;&nbsp;Delete all tracks that you have uploaded to your YT Music library.
@@ -41,11 +42,11 @@ When you run `ytmusic-deleter` with no parameters, you will see see the usage in
 `delete-playlists`:&nbsp;&nbsp;&nbsp;&nbsp;Delete all manually created YT Music playlists.
 
 `delete-all`:&nbsp;&nbsp;&nbsp;&nbsp;Combo command that will run `delete-uploads`, `remove-library`, `unlike-all`, and `delete-playlists`.
-### Non-deletion commands:
+#### Non-deletion commands:
 `sort-playlist`:&nbsp;&nbsp;&nbsp;&nbsp;Sort a playlist alphabetically by artist and then by song title.
 
 >Use the `--shuffle` or `-s` option to shuffle the playlist instead of sorting it.
-## Examples
+#### Examples
 
 Getting help:
 ```
@@ -86,7 +87,7 @@ Sort a playlist called **Workout Jams**:
 ytmusic-deleter sort-playlist "workout jams"
 ```
 
-## Extra options
+#### Extra options
 These supplemental options are unlikely to be helpful for most use cases and are mainly to support the GUI version.
 ```
 Options:
@@ -99,7 +100,7 @@ Options:
   -p, --static-progress      Log the progress statically instead of an
                              animated progress bar
 ```
-# Troubleshooting
+#### Troubleshooting
 ```
 ytmusic-deleter: command not found
 ```
