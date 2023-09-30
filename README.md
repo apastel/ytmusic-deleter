@@ -2,6 +2,8 @@ If this project helped you and you want to thank me, you can get me a beer!
 
 <a href="https://www.buymeacoffee.com/jewbix.cube"><img src="https://img.buymeacoffee.com/button-api/?text=Buy me a beer&emoji=🍻&slug=jewbix.cube&button_colour=FFDD00&font_colour=000000&font_family=Arial&outline_colour=000000&coffee_colour=ffffff"></a>
 
+![Get help on Discord!](https://invidget.switchblade.xyz/M9t5H8njrM)
+
 # ytmusic-deleter
 An installable program for performing batch delete operations on your YouTube Music library. It's faster than browser-based / Javscript-based tools because it uses the YouTube Music API instead of performing the deletion in your browser. You can use this to do any of the following:
 - Delete uploads
