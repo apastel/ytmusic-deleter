@@ -17,6 +17,9 @@ You can also use it to sort your playlists.
 Windows users can download an .exe to install the YTMusic Deleter GUI (Graphical User Interface).  
 Find the .exe file in the [Releases](https://github.com/apastel/ytmusic-deleter/releases) area; just click the latest release and look at the Assets section. Please note you may get a browser warning when downloading the file, and a Windows warning for installing files from an unknown publisher. It's not really worth the cost for me to buy a code signing certificate, so you will just have to accept the warning for now.
 
+[![thumbnail of youtube instructional video](https://img.youtube.com/vi/f4RTUZ6kLUI/0.jpg)](https://www.youtube.com/watch?v=f4RTUZ6kLUI)
+
+
 ### (Advanced) Command-line interface install using Python / PIP (for non-Windows users)
 The CLI version of YTMusic Deleter is still available and is for advanced users who would rather use a command-line or aren't running Windows.
 1. Install [Python](https://www.python.org/downloads/). Make sure it is available on your PATH.
