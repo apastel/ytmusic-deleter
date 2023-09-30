@@ -14,21 +14,24 @@ You can also use it to sort your playlists.
 ![YTMusic Deleter screenshot](https://i.imgur.com/ZmGl58E.gif)  
 
 ## Installation
-Windows users can download an .exe to install the YTMusic Deleter GUI (Graphical User Interface).  
-Find the .exe file in the [Releases](https://github.com/apastel/ytmusic-deleter/releases) area; just click the latest release and look at the Assets section. Please note you may get a browser warning when downloading the file, and a Windows warning for installing files from an unknown publisher. It's not really worth the cost for me to buy a code signing certificate, so you will just have to accept the warning for now.
+### Easy Install
+Windows users can download an .exe to install the YTMusic Deleter GUI (Graphical User Interface).
 
-[![thumbnail of youtube instructional video](https://img.youtube.com/vi/f4RTUZ6kLUI/0.jpg)](https://www.youtube.com/watch?v=f4RTUZ6kLUI)
+Find the .exe file in the [Releases](https://github.com/apastel/ytmusic-deleter/releases) area. Just click the latest release and look at the Assets section.  
+Please note you may get a browser warning when downloading the file, and a Windows warning for installing files from an unknown publisher. It's not really worth the cost for me to buy a code signing certificate, so you will just have to accept the warning for now.
 
-
-### (Advanced) Command-line interface install using Python / PIP (for non-Windows users)
+#### (Advanced) Command-line interface install using Python / PIP (for non-Windows users)
 The CLI version of YTMusic Deleter is still available and is for advanced users who would rather use a command-line or aren't running Windows.
 1. Install [Python](https://www.python.org/downloads/). Make sure it is available on your PATH.
 1. Open a command prompt and type `pip install ytmusic-deleter`. Use a [virtual environment](https://virtualenv.pypa.io/en/latest/) if you're familiar with the process.
 1. Run ytmusic-deleter by simply entering `ytmusic-deleter` at the command line.
 
 ## Setup
-The first time you run ytmusic-deleter, you will be asked to paste your request headers from Firefox. This allows ytmusic-deleter to make requests against your music library. To copy your request headers follow the instructions from the [ytmusicapi docs](https://ytmusicapi.readthedocs.io/en/stable/setup/browser.html) under "Copy authentication headers". If you're running the Windows graphical (GUI) version of ytmusic-deleter, just click OK after pasting the headers or selecting an existing `headers_auth.json` file.
+[![How to use YTMusic Deleter](https://i.imgur.com/8HqFlTd.png)](https://youtu.be/f4RTUZ6kLUI?si=Rh_qzc21LS3xuw-e&t=60 "How to use YTMusic Deleter")
 
+The first time you run ytmusic-deleter, you will be asked to paste your request headers from Firefox. This allows ytmusic-deleter to make requests against your music library. To copy your request headers follow the instructions from the [ytmusicapi docs](https://ytmusicapi.readthedocs.io/en/stable/setup/browser.html) under "Copy authentication headers", or [watch the YouTube video above](https://youtu.be/f4RTUZ6kLUI?si=Rh_qzc21LS3xuw-e&t=60). If you're running the Windows graphical (GUI) version of ytmusic-deleter, just click OK after pasting the headers or selecting an existing `headers_auth.json` file.
+
+#### (Advanced) Command-line setup instructions
 If you're running the command line (CLI) version of YTMusic Deleter, press `Enter` after pasting the headers, then press Ctrl-D to continue (Ctrl-Z then Enter again on Windows). The next time you run ytmusic-deleter, it will reuse your headers from the `headers_auth.json` file that it generated. If you're running on macOS, you should create the `headers_auth.json` file manually, as the MacOS terminal application can only accept 1024 characters pasted to std input. Follow the instructions on the ytmusicapi here for "Manual file creation": [https://ytmusicapi.readthedocs.io/en/stable/setup.html#manual-file-creation](https://ytmusicapi.readthedocs.io/en/stable/setup/browser.html#manual-file-creation)
 
 ### Usage (For the advance Command-line interface only)
