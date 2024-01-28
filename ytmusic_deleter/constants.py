@@ -1,4 +1,4 @@
 LIKE = "LIKE"
 INDIFFERENT = "INDIFFERENT"
-HEADERS_FILE = "headers_auth.json"
+OAUTH_FILENAME = "oauth.json"
 UNKNOWN_ARTIST = "Unknown Artist"

@@ -1,3 +1,4 @@
+from json import JSONDecodeError
 import logging
 import os
 import re
@@ -5,6 +6,7 @@ import sys
 from pathlib import Path
 from random import shuffle as unsort
 from time import strftime
+import ytmusicapi
 
 import click
 import enlighten
@@ -17,15 +19,16 @@ progress_bar = None
 
 def ensure_auth(credential_dir):
     global youtube_auth
-    headers_file_path = Path(credential_dir) / const.HEADERS_FILE
+    oauth_file_path: str = str(Path(credential_dir) / const.OAUTH_FILENAME)
     try:
-        logging.info(f'Looking for {headers_file_path}"')
-        youtube_auth = YTMusic(headers_file_path)
-        logging.info(f'Found {headers_file_path}"')
-    except (KeyError, AttributeError):
-        logging.info(f"Creating {const.HEADERS_FILE} file...")
-        youtube_auth = YTMusic(YTMusic.setup(filepath=headers_file_path))
-        logging.info(f'Created {headers_file_path}"')
+        logging.info(f'Attempting authentication with: {oauth_file_path}')
+        youtube_auth = YTMusic(oauth_file_path)
+        logging.info(f'Authenticated with: {oauth_file_path}"')
+    except JSONDecodeError:
+        logging.info(f"Creating file: {const.OAUTH_FILENAME}")
+        ytmusicapi.setup_oauth(filepath=oauth_file_path, open_browser=True)
+        youtube_auth = YTMusic(oauth_file_path)
+        logging.info(f'Created: {oauth_file_path}"')
 
 
 @click.group()
