@@ -4,10 +4,10 @@ import os
 import re
 import sys
 import webbrowser
+from json import JSONDecodeError
 from pathlib import Path
 
 import requests
-from auth_dialog import AuthDialog
 from fbs_runtime import PUBLIC_SETTINGS
 from fbs_runtime.application_context import cached_property
 from fbs_runtime.application_context import is_frozen
@@ -31,12 +31,16 @@ from PySide6.QtWidgets import QMessageBox
 from sort_playlists_dialog import SortPlaylistsDialog
 from ytmusic_deleter import constants
 from ytmusicapi import YTMusic
+from ytmusicapi.auth.oauth import OAuthCredentials
+from ytmusicapi.auth.oauth import RefreshingToken
 
 
-APP_DATA_DIR = str(Path(os.getenv("APPDATA")) / "YTMusic Deleter")
+APP_DATA_DIR = str(
+    Path(os.getenv("APPDATA" if os.name == "nt" else "HOME")) / "YTMusic Deleter"
+)
 progress_re = re.compile("Total complete: (\\d+)%")
 item_processing_re = re.compile("(Processing \\w+: .+)")
-cli_filename = "ytmusic-deleter-1.5.4.exe"
+cli_filename = "ytmusic-deleter-1.5.6+10.g46ccdd4.exe"
 REQUIRE_LICENSE = False  # disabling this because...it's just not worth it
 
 
@@ -101,25 +105,51 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.license_dialog = LicenseDialog()
             self.license_dialog.show()
 
-        self.is_authenticated()
+        self.is_logged_in()
 
-    def is_authenticated(self, prompt=False):
+    def is_logged_in(self, prompt=False):
         try:
-            self.ytmusic = YTMusic(Path(self.credential_dir) / constants.HEADERS_FILE)
-            self.authIndicator.setText("Authenticated")
+            self.ytmusic = YTMusic(
+                str(Path(self.credential_dir) / constants.OAUTH_FILENAME)
+            )
+            self.authIndicator.setText("Log Out")
             return True
-        except (KeyError, AttributeError):
-            self.message('Not yet authenticated. Click the "Unauthenticated" button.')
-            self.authIndicator.setText("Unauthenticated")
+        except (JSONDecodeError):
+            self.message('Not logged in. Click the "Log In" button')
+            self.authIndicator.setText("Log In")
             if prompt:
                 self.prompt_for_auth()
             return False
 
     @Slot()
     def prompt_for_auth(self):
-        self.auth_dialog = AuthDialog(self)
-        self.message("prompting for auth...")
-        self.auth_dialog.show()
+        oauth_file_path = Path(Path(self.credential_dir) / constants.OAUTH_FILENAME)
+        if self.is_logged_in():
+            # log out
+            Path.unlink(oauth_file_path)
+        else:
+            oauth = OAuthCredentials()
+            code = oauth.get_code()
+
+            # tell the user to finish the flow at code['verification_url']
+            url_prompt = QMessageBox()
+            url = f"{code['verification_url']}?user_code={code['user_code']}"
+            url_prompt.setText(
+                f"<html>Go to <a href={url!r}>{url}</a>, finish the login flow and click OK when done.</html>"
+            )
+            url_prompt.exec()
+
+            raw_token = oauth.token_from_code(code["device_code"])
+            ref_token = RefreshingToken(credentials=oauth, **raw_token)
+
+            # store the token in oauth.json
+            ref_token.store_token(oauth_file_path)
+
+            self.is_logged_in()
+
+            # prior method using terminal
+            # oauth = setup_oauth(filepath=str(Path(self.credential_dir) / constants.OAUTH_FILENAME), open_browser=True).as_dict()
+            # self.ytmusic = YTMusic(oauth)
 
     @Slot()
     def remove_library(self):
@@ -146,7 +176,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.show_dialog(["sort-playlist"])
 
     def show_dialog(self, args):
-        if self.p is None and self.is_authenticated(prompt=True):
+        if self.p is None and self.is_logged_in(prompt=True):
             if args[0] == "sort-playlist":
                 self.sort_playlists_dialog = SortPlaylistsDialog(self)
                 self.sort_playlists_dialog.show()
