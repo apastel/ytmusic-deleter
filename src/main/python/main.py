@@ -79,6 +79,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.unlikeAllButton.clicked.connect(self.unlike_all)
         self.deleteAllButton.clicked.connect(self.delete_all)
         self.sortPlaylistButton.clicked.connect(self.sort_playlist)
+        self.removeLibraryButton.setDisabled(True)
+        self.deleteUploadsButton.setDisabled(True)
+        self.deletePlaylistsButton.setDisabled(True)
+        self.unlikeAllButton.setDisabled(True)
+        self.deleteAllButton.setDisabled(True)
+        self.sortPlaylistButton.setDisabled(True)
         self.donateLabel = ClickableLabel(
             self.centralwidget, "https://www.buymeacoffee.com/jewbix.cube"
         )
@@ -105,21 +111,38 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.license_dialog = LicenseDialog()
             self.license_dialog.show()
 
-        self.is_logged_in()
+        self.update_buttons()
 
-    def is_logged_in(self, prompt=False):
+    def is_logged_in(self, display_message=False):
         try:
             self.ytmusic = YTMusic(
                 str(Path(self.credential_dir) / constants.OAUTH_FILENAME)
             )
-            self.authIndicator.setText("Log Out")
             return True
         except (JSONDecodeError):
-            self.message('Not logged in. Click the "Log In" button')
-            self.authIndicator.setText("Log In")
-            if prompt:
-                self.prompt_for_auth()
+            if display_message:
+                self.message('Click the "Log In" button to connect to your account.')
             return False
+        
+    def update_buttons(self):
+        if self.is_logged_in(display_message=True):
+            self.authIndicator.setText("Log Out")
+            self.removeLibraryButton.setDisabled(False)
+            self.deleteUploadsButton.setDisabled(False)
+            self.deletePlaylistsButton.setDisabled(False)
+            self.unlikeAllButton.setDisabled(False)
+            self.deleteAllButton.setDisabled(False)
+            self.sortPlaylistButton.setDisabled(False)
+        else:
+            self.authIndicator.setText("Log In")
+            self.removeLibraryButton.setDisabled(True)
+            self.deleteUploadsButton.setDisabled(True)
+            self.deletePlaylistsButton.setDisabled(True)
+            self.unlikeAllButton.setDisabled(True)
+            self.deleteAllButton.setDisabled(True)
+            self.sortPlaylistButton.setDisabled(True)
+            
+
 
     @Slot()
     def prompt_for_auth(self):
@@ -127,29 +150,35 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         if self.is_logged_in():
             # log out
             Path.unlink(oauth_file_path)
+            self.message("Logged out of YTMusic Deleter.")
         else:
             oauth = OAuthCredentials()
             code = oauth.get_code()
 
-            # tell the user to finish the flow at code['verification_url']
+            self.message("Showing login prompt.")
             url_prompt = QMessageBox()
+            url_prompt.setIcon(QMessageBox.Information)
             url = f"{code['verification_url']}?user_code={code['user_code']}"
             url_prompt.setText(
-                f"<html>Go to <a href={url!r}>{url}</a>, finish the login flow and click OK when done.</html>"
+                f"<html>Go to <a href={url!r}>{url}</a>, follow the instructions, and click OK in this window when done.</html>"
             )
+            url_prompt.setInformativeText("<html>This OAuth flow uses the <a href='https://developers.google.com/youtube/v3/guides/auth/devices'>Google API flow for TV devices</a>.</html>")
             url_prompt.exec()
 
             raw_token = oauth.token_from_code(code["device_code"])
-            ref_token = RefreshingToken(credentials=oauth, **raw_token)
+            try:
+                ref_token = RefreshingToken(credentials=oauth, **raw_token)
+                # store the token in oauth.json
+                ref_token.store_token(oauth_file_path)
+                if self.is_logged_in():
+                    self.message("Successfully logged in.")
+                else:
+                    self.message("Failed to log in. Try again.")
+            except:
+                self.message("Failed to log in. Try again.")
 
-            # store the token in oauth.json
-            ref_token.store_token(oauth_file_path)
 
-            self.is_logged_in()
-
-            # prior method using terminal
-            # oauth = setup_oauth(filepath=str(Path(self.credential_dir) / constants.OAUTH_FILENAME), open_browser=True).as_dict()
-            # self.ytmusic = YTMusic(oauth)
+        self.update_buttons()
 
     @Slot()
     def remove_library(self):
@@ -176,7 +205,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.show_dialog(["sort-playlist"])
 
     def show_dialog(self, args):
-        if self.p is None and self.is_logged_in(prompt=True):
+        if self.p is None and self.is_logged_in():
             if args[0] == "sort-playlist":
                 self.sort_playlists_dialog = SortPlaylistsDialog(self)
                 self.sort_playlists_dialog.show()
@@ -193,7 +222,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         confirmation_dialog = QMessageBox()
         confirmation_dialog.setIcon(QMessageBox.Warning)
         if args[0] == "remove-library":
-            text = 'This is the same as clicking "Remove from library" on all tracks that you have added to your library by clicking "Add to library". This will not delete your uploads.'  # noqa
+            text = 'This is the same as clicking "Remove from library" on all albums that you have added to your library by clicking "Add to library" within YT Music. This will not delete your uploads.'  # noqa
         elif args[0] == "delete-uploads":
             text = "This will delete all your uploaded music. "
             checkbox = QCheckBox("Add uploads to library first")
