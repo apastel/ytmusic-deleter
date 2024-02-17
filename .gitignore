@@ -1,4 +1,7 @@
+# ytmusicapi auth files
 headers_auth.json
+oauth.json
+browser.json
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

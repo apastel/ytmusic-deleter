@@ -388,6 +388,23 @@ def delete_playlists(ctx):
         update_progress(ctx)
     logging.info("Finished deleting all playlists")
 
+@cli.command
+@click.pass_context
+def delete_history(ctx):
+    logging.info(f"Deleting history...")
+    try:
+        history_items = youtube_auth.get_history()
+    except Exception as e:
+        if str(e) == "None":
+            logging.info("History was already empty, nothing to delete.")
+        else:
+            logging.exception(e)
+        return False
+    global progress_bar
+    progress_bar = manager.counter(total=len(history_items), desc="History Items Deleted", unit="items", enabled=not ctx.obj["STATIC_PROGRESS"])
+    for item in history_items:
+        youtube_auth.remove_history_items(item['feedbackToken'])
+        update_progress(ctx)
 
 @cli.command()
 @click.pass_context
