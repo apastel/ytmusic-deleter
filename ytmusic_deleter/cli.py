@@ -1,15 +1,15 @@
-from json import JSONDecodeError
 import logging
 import os
 import re
 import sys
+from json import JSONDecodeError
 from pathlib import Path
 from random import shuffle as unsort
 from time import strftime
-import ytmusicapi
 
 import click
 import enlighten
+import ytmusicapi
 from ytmusic_deleter import constants as const
 from ytmusicapi import YTMusic
 
@@ -21,7 +21,7 @@ def ensure_auth(credential_dir):
     global youtube_auth
     oauth_file_path: str = str(Path(credential_dir) / const.OAUTH_FILENAME)
     try:
-        logging.info(f'Attempting authentication with: {oauth_file_path}')
+        logging.info(f"Attempting authentication with: {oauth_file_path}")
         youtube_auth = YTMusic(oauth_file_path)
         logging.info(f'Authenticated with: {oauth_file_path}"')
     except JSONDecodeError:
@@ -335,7 +335,9 @@ def unlike_all(ctx):
     )
     for track in your_likes["tracks"]:
         artist = (
-            track["artists"][0]["name"] if "artists" in track else const.UNKNOWN_ARTIST
+            track["artists"][0]["name"]
+            if track.get("artists")  # Using `get` ensures key exists and isn't []
+            else const.UNKNOWN_ARTIST
         )
         title = track["title"]
         logging.info(f"Processing track: {artist} - {title}")
@@ -375,11 +377,11 @@ def delete_playlists(ctx):
             response = youtube_auth.delete_playlist(playlist["playlistId"])
             if response:
                 logging.info(
-                    f"\tRemoved playlist \"{playlist['title']}\" from your library."
+                    f"\tRemoved playlist {playlist['title']!r} from your library."
                 )
             else:
                 logging.error(
-                    f"\tFailed to remove playlist \"{playlist['title']}\" from your library."
+                    f"\tFailed to remove playlist {playlist['title']!r} from your library."
                 )
         except Exception:
             logging.error(
@@ -388,32 +390,53 @@ def delete_playlists(ctx):
         update_progress(ctx)
     logging.info("Finished deleting all playlists")
 
+
 @cli.command
 @click.pass_context
 def delete_history(ctx):
-    logging.info(f"Deleting history...")
+    """
+    Delete your play history. This does not currently work with brand accounts.
+    The API can only retrieve 200 history items at a time, so the process will appear to
+    start over and repeat multiple times if necessary until all history is deleted.
+    """
+    logging.info("Begin deleting history...")
     try:
         history_items = youtube_auth.get_history()
     except Exception as e:
         if str(e) == "None":
-            logging.info("History was already empty, nothing to delete.")
+            logging.info("History is empty, nothing to delete.")
         else:
             logging.exception(e)
         return False
     global progress_bar
-    progress_bar = manager.counter(total=len(history_items), desc="History Items Deleted", unit="items", enabled=not ctx.obj["STATIC_PROGRESS"])
+    progress_bar = manager.counter(
+        total=len(history_items),
+        desc="History Items Deleted",
+        unit="items",
+        enabled=not ctx.obj["STATIC_PROGRESS"],
+    )
+    logging.info(f"Found {len(history_items)} history items to delete.")
     for item in history_items:
-        youtube_auth.remove_history_items(item['feedbackToken'])
+        artist = (
+            item["artists"][0]["name"]
+            if item.get("artists")  # Using `get` ensures key exists and isn't []
+            else const.UNKNOWN_ARTIST
+        )
+        logging.info(f"Processing {artist} - {item['title']}")
+        youtube_auth.remove_history_items(item["feedbackToken"])
         update_progress(ctx)
+    ctx.invoke(delete_history)  # repeat until history is empty
+
 
 @cli.command()
 @click.pass_context
 def delete_all(ctx):
-    """Executes delete-uploads, remove-library, unlike-all, and delete_playlists"""
+    """Executes delete-uploads, remove-library, delete-playlists, unlike-all, and delete-history"""
     ctx.invoke(delete_uploads)
     ctx.invoke(remove_library)
-    ctx.invoke(unlike_all)
     ctx.invoke(delete_playlists)
+    ctx.invoke(unlike_all)
+    ctx.invoke(delete_history)
 
 
 @cli.command()
@@ -449,7 +472,7 @@ def sort_playlist(ctx, shuffle, playlist_titles):
         global progress_bar
         progress_bar = manager.counter(
             total=len(desired_tracklist),
-            desc=f'\'{selected_playlist["title"]}\' Tracks {"Shuffled" if shuffle else "Sorted"}',
+            desc=f'{selected_playlist["title"]!r} Tracks {"Shuffled" if shuffle else "Sorted"}',
             unit="tracks",
             enabled=not ctx.obj["STATIC_PROGRESS"],
         )
@@ -490,7 +513,7 @@ def sort_playlist(ctx, shuffle, playlist_titles):
             not_found_playlists.append(title)
     if not_found_playlists:
         raise click.BadParameter(
-            f'No playlists found named "{", ".join(not_found_playlists)}". Double-check your playlist name(s) '
+            f'No playlists found named {", ".join(not_found_playlists)!r}. Double-check your playlist name(s) '
             '(or surround them "with quotes") and try again.'
         )
 
