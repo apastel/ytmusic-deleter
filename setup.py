@@ -44,7 +44,7 @@ setup(
     cmdclass=get_cmdclass(),
     packages=find_packages(),
     install_requires=install_reqs,
-    python_requires=">=3.5",
+    python_requires=">=3.6",
     extras_require={"dev": develop_reqs},
     entry_points="""
         [console_scripts]
