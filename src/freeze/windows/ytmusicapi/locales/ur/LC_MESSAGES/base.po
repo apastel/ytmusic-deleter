@@ -1,0 +1,70 @@
+# Translations for ytmusicapi
+# Copyright (C) 2023 sigma67
+# This file is distributed under the same license as ytmusicapi
+# sigma67 <ytmusicapi@gmail.com>
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2023-11-11 16:22+0100\n"
+"PO-Revision-Date: 2023-01-02 22:18+0530\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: ur\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 3.2.2\n"
+
+#: parsers/i18n.py:16
+msgid "artist"
+msgstr "فنکار"
+
+#: parsers/i18n.py:16
+msgid "playlist"
+msgstr "پلے لسٹ"
+
+#: parsers/i18n.py:16
+msgid "song"
+msgstr "نغمہ"
+
+#: parsers/i18n.py:16
+msgid "video"
+msgstr "ویڈیو"
+
+#: parsers/i18n.py:16
+msgid "station"
+msgstr "اسٹیشن"
+
+#: parsers/i18n.py:16
+msgid "profile"
+msgstr "پروفائ"
+
+#: parsers/i18n.py:16
+msgid "podcast"
+msgstr "پوڈکاسٹ"
+
+#: parsers/i18n.py:16
+msgid "episode"
+msgstr "ایپی سوڈ"
+
+#: parsers/i18n.py:21
+msgid "albums"
+msgstr "البمز"
+
+#: parsers/i18n.py:21
+msgid "singles"
+msgstr "سنگلز"
+
+#: parsers/i18n.py:21
+msgid "videos"
+msgstr "ویڈیوز"
+
+#: parsers/i18n.py:21
+msgid "playlists"
+msgstr "پلے لسٹس"
+
+#: parsers/i18n.py:21
+msgid "related"
+msgstr "متعلقہ"

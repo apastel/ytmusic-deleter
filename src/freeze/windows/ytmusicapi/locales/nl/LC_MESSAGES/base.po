@@ -1,0 +1,71 @@
+# Translations for ytmusicapi
+# Copyright (C) 2023 sigma67
+# This file is distributed under the same license as ytmusicapi
+# sigma67 <ytmusicapi@gmail.com>
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2023-11-11 16:22+0100\n"
+"PO-Revision-Date: 2023-04-23 14:55+0200\n"
+"Last-Translator: Heimen Stoffels <vistausss@fastmail.com>\n"
+"Language-Team: \n"
+"Language: nl\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Generator: Poedit 3.2.2\n"
+
+#: parsers/i18n.py:16
+msgid "artist"
+msgstr "artiest"
+
+#: parsers/i18n.py:16
+msgid "playlist"
+msgstr "afspeellijst"
+
+#: parsers/i18n.py:16
+msgid "song"
+msgstr "nummer"
+
+#: parsers/i18n.py:16
+msgid "video"
+msgstr "video"
+
+#: parsers/i18n.py:16
+msgid "station"
+msgstr "station"
+
+#: parsers/i18n.py:16
+msgid "profile"
+msgstr "profiel"
+
+#: parsers/i18n.py:16
+msgid "podcast"
+msgstr ""
+
+#: parsers/i18n.py:16
+msgid "episode"
+msgstr "Aflevering"
+
+#: parsers/i18n.py:21
+msgid "albums"
+msgstr "albums"
+
+#: parsers/i18n.py:21
+msgid "singles"
+msgstr "singles"
+
+#: parsers/i18n.py:21
+msgid "videos"
+msgstr "video's"
+
+#: parsers/i18n.py:21
+msgid "playlists"
+msgstr "afspeellijsten"
+
+#: parsers/i18n.py:21
+msgid "related"
+msgstr "gerelateerd"
