@@ -40,7 +40,7 @@ APP_DATA_DIR = str(
 )
 progress_re = re.compile("Total complete: (\\d+)%")
 item_processing_re = re.compile("(Processing \\w+: .+)")
-cli_filename = "ytmusic-deleter-1.5.6+10.g46ccdd4.exe"
+cli_filename = "ytmusic-deleter-1.6.0.exe"
 REQUIRE_LICENSE = False  # disabling this because...it's just not worth it
 
 
@@ -77,12 +77,14 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.deleteUploadsButton.clicked.connect(self.delete_uploads)
         self.deletePlaylistsButton.clicked.connect(self.delete_playlists)
         self.unlikeAllButton.clicked.connect(self.unlike_all)
+        self.deleteHistoryButton.clicked.connect(self.delete_history)
         self.deleteAllButton.clicked.connect(self.delete_all)
         self.sortPlaylistButton.clicked.connect(self.sort_playlist)
         self.removeLibraryButton.setDisabled(True)
         self.deleteUploadsButton.setDisabled(True)
         self.deletePlaylistsButton.setDisabled(True)
         self.unlikeAllButton.setDisabled(True)
+        self.deleteHistoryButton.setDisabled(True)
         self.deleteAllButton.setDisabled(True)
         self.sortPlaylistButton.setDisabled(True)
         self.donateLabel = ClickableLabel(
@@ -119,11 +121,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 str(Path(self.credential_dir) / constants.OAUTH_FILENAME)
             )
             return True
-        except (JSONDecodeError):
+        except JSONDecodeError:
             if display_message:
                 self.message('Click the "Log In" button to connect to your account.')
             return False
-        
+
     def update_buttons(self):
         if self.is_logged_in(display_message=True):
             self.authIndicator.setText("Log Out")
@@ -131,6 +133,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.deleteUploadsButton.setDisabled(False)
             self.deletePlaylistsButton.setDisabled(False)
             self.unlikeAllButton.setDisabled(False)
+            self.deleteHistoryButton.setDisabled(False)
             self.deleteAllButton.setDisabled(False)
             self.sortPlaylistButton.setDisabled(False)
         else:
@@ -139,10 +142,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.deleteUploadsButton.setDisabled(True)
             self.deletePlaylistsButton.setDisabled(True)
             self.unlikeAllButton.setDisabled(True)
+            self.deleteHistoryButton.setDisabled(True)
             self.deleteAllButton.setDisabled(True)
             self.sortPlaylistButton.setDisabled(True)
-            
-
 
     @Slot()
     def prompt_for_auth(self):
@@ -162,7 +164,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             url_prompt.setText(
                 f"<html>Go to <a href={url!r}>{url}</a>, follow the instructions, and click OK in this window when done.</html>"
             )
-            url_prompt.setInformativeText("<html>This OAuth flow uses the <a href='https://developers.google.com/youtube/v3/guides/auth/devices'>Google API flow for TV devices</a>.</html>")
+            url_prompt.setInformativeText(
+                "<html>This OAuth flow uses the <a href='https://developers.google.com/youtube/v3/guides/auth/devices'>Google API flow for TV devices</a>.</html>"  # noqa
+            )
             url_prompt.exec()
 
             raw_token = oauth.token_from_code(code["device_code"])
@@ -174,9 +178,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                     self.message("Successfully logged in.")
                 else:
                     self.message("Failed to log in. Try again.")
-            except:
+            except Exception:
                 self.message("Failed to log in. Try again.")
-
 
         self.update_buttons()
 
@@ -195,6 +198,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     @Slot()
     def unlike_all(self):
         self.show_dialog(["unlike-all"])
+
+    @Slot()
+    def delete_history(self):
+        self.show_dialog(["delete-history"])
 
     @Slot()
     def delete_all(self):
@@ -232,8 +239,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             text = "This will delete all your playlists, which may also include playlists in regular YouTube.com that have music."
         elif args[0] == "unlike-all":
             text = "This will reset all your Liked songs back to neutral."
+        elif args[0] == "delete-history":
+            text = """
+            This will delete your play history. This does not currently work with brand accounts.
+            Note that the API can only retrieve 200 history items at a time, so the process will appear to start over and repeat multiple times as necessary until all history is deleted."
+            """  # noqa
         elif args[0] == "delete-all":
-            text = "This will run Remove Library, Delete Uploads, Delete Playlists, and Unlike All Songs."
+            text = "This will run Remove Library, Delete Uploads, Delete Playlists, Unlike All Songs, and Delete History."
         else:
             raise ValueError("Unexpected argument provided to confirmation window.")
         confirmation_dialog.setText(f"{text}")

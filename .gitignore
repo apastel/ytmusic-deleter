@@ -1,5 +1,7 @@
 # YTMusic Deleter
 headers_auth.json
+oauth.json
+browser.json
 fbs_pro-*
 ytmusic-deleter*
 secret.json

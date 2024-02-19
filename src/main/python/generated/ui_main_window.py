@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'main_window.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.4.0
+## Created by: Qt User Interface Compiler version 6.6.1
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -28,14 +28,14 @@ class Ui_MainWindow(object):
         self.centralwidget.setObjectName(u"centralwidget")
         self.removeLibraryButton = QPushButton(self.centralwidget)
         self.removeLibraryButton.setObjectName(u"removeLibraryButton")
-        self.removeLibraryButton.setGeometry(QRect(40, 130, 121, 41))
+        self.removeLibraryButton.setGeometry(QRect(220, 110, 101, 41))
         self.consoleTextArea = QPlainTextEdit(self.centralwidget)
         self.consoleTextArea.setObjectName(u"consoleTextArea")
         self.consoleTextArea.setGeometry(QRect(40, 270, 721, 271))
         self.consoleTextArea.setReadOnly(True)
         self.deleteUploadsButton = QPushButton(self.centralwidget)
         self.deleteUploadsButton.setObjectName(u"deleteUploadsButton")
-        self.deleteUploadsButton.setGeometry(QRect(170, 130, 121, 41))
+        self.deleteUploadsButton.setGeometry(QRect(330, 110, 101, 41))
         self.consoleLabel = QLabel(self.centralwidget)
         self.consoleLabel.setObjectName(u"consoleLabel")
         self.consoleLabel.setGeometry(QRect(40, 250, 81, 21))
@@ -45,19 +45,26 @@ class Ui_MainWindow(object):
         self.consoleLabel.setFont(font)
         self.authIndicator = QPushButton(self.centralwidget)
         self.authIndicator.setObjectName(u"authIndicator")
-        self.authIndicator.setGeometry(QRect(40, 30, 101, 41))
+        self.authIndicator.setGeometry(QRect(40, 10, 121, 41))
         self.deletePlaylistsButton = QPushButton(self.centralwidget)
         self.deletePlaylistsButton.setObjectName(u"deletePlaylistsButton")
-        self.deletePlaylistsButton.setGeometry(QRect(300, 130, 121, 41))
+        self.deletePlaylistsButton.setGeometry(QRect(440, 110, 101, 41))
         self.unlikeAllButton = QPushButton(self.centralwidget)
         self.unlikeAllButton.setObjectName(u"unlikeAllButton")
-        self.unlikeAllButton.setGeometry(QRect(430, 130, 121, 41))
+        self.unlikeAllButton.setGeometry(QRect(550, 110, 101, 41))
         self.deleteAllButton = QPushButton(self.centralwidget)
         self.deleteAllButton.setObjectName(u"deleteAllButton")
-        self.deleteAllButton.setGeometry(QRect(570, 130, 121, 41))
+        self.deleteAllButton.setGeometry(QRect(40, 110, 121, 41))
         self.sortPlaylistButton = QPushButton(self.centralwidget)
         self.sortPlaylistButton.setObjectName(u"sortPlaylistButton")
-        self.sortPlaylistButton.setGeometry(QRect(40, 190, 121, 41))
+        self.sortPlaylistButton.setGeometry(QRect(660, 190, 101, 41))
+        self.deleteHistoryButton = QPushButton(self.centralwidget)
+        self.deleteHistoryButton.setObjectName(u"deleteHistoryButton")
+        self.deleteHistoryButton.setGeometry(QRect(660, 110, 101, 41))
+        self.orLabel = QLabel(self.centralwidget)
+        self.orLabel.setObjectName(u"orLabel")
+        self.orLabel.setGeometry(QRect(180, 120, 21, 21))
+        self.orLabel.setFont(font)
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QMenuBar(MainWindow)
         self.menubar.setObjectName(u"menubar")
@@ -75,6 +82,7 @@ class Ui_MainWindow(object):
         self.unlikeAllButton.setDefault(False)
         self.deleteAllButton.setDefault(False)
         self.sortPlaylistButton.setDefault(False)
+        self.deleteHistoryButton.setDefault(False)
 
 
         QMetaObject.connectSlotsByName(MainWindow)
@@ -85,10 +93,12 @@ class Ui_MainWindow(object):
         self.removeLibraryButton.setText(QCoreApplication.translate("MainWindow", u"Remove Library", None))
         self.deleteUploadsButton.setText(QCoreApplication.translate("MainWindow", u"Delete Uploads", None))
         self.consoleLabel.setText(QCoreApplication.translate("MainWindow", u"Console Log", None))
-        self.authIndicator.setText(QCoreApplication.translate("MainWindow", u"Unauthenticated", None))
+        self.authIndicator.setText(QCoreApplication.translate("MainWindow", u"Log In", None))
         self.deletePlaylistsButton.setText(QCoreApplication.translate("MainWindow", u"Delete Playlists", None))
-        self.unlikeAllButton.setText(QCoreApplication.translate("MainWindow", u"Unlike All Songs", None))
+        self.unlikeAllButton.setText(QCoreApplication.translate("MainWindow", u"Unlike All", None))
         self.deleteAllButton.setText(QCoreApplication.translate("MainWindow", u"Delete All", None))
         self.sortPlaylistButton.setText(QCoreApplication.translate("MainWindow", u"Sort Playlist", None))
+        self.deleteHistoryButton.setText(QCoreApplication.translate("MainWindow", u"Delete History", None))
+        self.orLabel.setText(QCoreApplication.translate("MainWindow", u"OR", None))
     # retranslateUi
 
