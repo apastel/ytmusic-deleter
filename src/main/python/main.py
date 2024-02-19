@@ -39,7 +39,7 @@ APP_DATA_DIR = str(
     Path(os.getenv("APPDATA" if os.name == "nt" else "HOME")) / "YTMusic Deleter"
 )
 progress_re = re.compile("Total complete: (\\d+)%")
-item_processing_re = re.compile("(Processing \\w+: .+)")
+item_processing_re = re.compile("(Processing \\w+ .+)")
 cli_filename = "ytmusic-deleter-1.6.0.exe"
 REQUIRE_LICENSE = False  # disabling this because...it's just not worth it
 
