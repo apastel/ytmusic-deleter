@@ -1,0 +1,19 @@
+[project]
+name = "ytmusic-deleter"
+version = "2.0.0"
+description = "Easily delete your YouTube Music library"
+authors = [
+    {name = "apastel", email = "alex.r.pastel@gmail.com"},
+]
+dependencies = []
+requires-python = ">=3.6"
+readme = "README.md"
+license = {text = "GPL-3.0"}
+
+[build-system]
+requires = ["pdm-backend"]
+build-backend = "pdm.backend"
+
+
+[tool.pdm]
+distribution = true
