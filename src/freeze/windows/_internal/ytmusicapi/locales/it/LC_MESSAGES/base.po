@@ -1,0 +1,70 @@
+# Translations for ytmusicapi
+# Copyright (C) 2023 sigma67
+# This file is distributed under the same license as ytmusicapi
+# sigma67 <ytmusicapi@gmail.com>
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2023-11-11 16:22+0100\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: parsers/i18n.py:16
+msgid "artist"
+msgstr "artista"
+
+#: parsers/i18n.py:16
+msgid "playlist"
+msgstr ""
+
+#: parsers/i18n.py:16
+msgid "song"
+msgstr "brano"
+
+#: parsers/i18n.py:16
+msgid "video"
+msgstr ""
+
+#: parsers/i18n.py:16
+msgid "station"
+msgstr "stazione"
+
+#: parsers/i18n.py:16
+msgid "profile"
+msgstr "profilo"
+
+#: parsers/i18n.py:16
+msgid "podcast"
+msgstr ""
+
+#: parsers/i18n.py:16
+msgid "episode"
+msgstr "Puntata"
+
+#: parsers/i18n.py:21
+msgid "albums"
+msgstr "album"
+
+#: parsers/i18n.py:21
+msgid "singles"
+msgstr "singoli"
+
+#: parsers/i18n.py:21
+msgid "videos"
+msgstr "video"
+
+#: parsers/i18n.py:21
+msgid "playlists"
+msgstr "playlist"
+
+#: parsers/i18n.py:21
+msgid "related"
+msgstr "ai fan potrebbe anche piacere"

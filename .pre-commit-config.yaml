@@ -1,3 +1,4 @@
+exclude: ^src/main/python/generated/
 repos:
   - repo: https://github.com/asottile/pyupgrade
     rev: v2.38.0
@@ -27,3 +28,4 @@ repos:
       - id: trailing-whitespace
         exclude: README.md
       - id: end-of-file-fixer
+        exclude: ^src/build/settings/base.json
