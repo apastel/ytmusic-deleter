@@ -18,13 +18,12 @@ license = {text = "GPL-3.0"}
 requires = ["pdm-backend"]
 build-backend = "pdm.backend"
 
-
 [tool.pdm.dev-dependencies]
 lint = [
     "flake8",
-    "black"
+    "black",
 ]
 test = [
     "pytest",
-    "pytest-cov"
+    "pytest-cov",
 ]

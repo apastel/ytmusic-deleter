@@ -29,7 +29,6 @@ from PySide6.QtWidgets import QLabel
 from PySide6.QtWidgets import QMainWindow
 from PySide6.QtWidgets import QMessageBox
 from sort_playlists_dialog import SortPlaylistsDialog
-from ytmusic_deleter import constants
 from ytmusicapi import YTMusic
 from ytmusicapi.auth.oauth import OAuthCredentials
 from ytmusicapi.auth.oauth import RefreshingToken
@@ -41,6 +40,7 @@ APP_DATA_DIR = str(
 progress_re = re.compile("Total complete: (\\d+)%")
 item_processing_re = re.compile("(Processing \\w+ .+)")
 cli_filename = "ytmusic-deleter-1.6.0.exe"
+OAUTH_FILENAME = "oauth.json"
 REQUIRE_LICENSE = False  # disabling this because...it's just not worth it
 
 
@@ -118,7 +118,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def is_logged_in(self, display_message=False):
         try:
             self.ytmusic = YTMusic(
-                str(Path(self.credential_dir) / constants.OAUTH_FILENAME)
+                str(Path(self.credential_dir) / OAUTH_FILENAME)
             )
             return True
         except JSONDecodeError:
@@ -148,7 +148,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     @Slot()
     def prompt_for_auth(self):
-        oauth_file_path = Path(Path(self.credential_dir) / constants.OAUTH_FILENAME)
+        oauth_file_path = Path(Path(self.credential_dir) / OAUTH_FILENAME)
         if self.is_logged_in():
             # log out
             Path.unlink(oauth_file_path)
@@ -262,7 +262,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.p.finished.connect(self.process_finished)
         cli_args = ["-l", self.log_dir, "-c", self.credential_dir, "-p"] + args
         self.message(f"Executing process: {Path(cli_filename).resolve()} {cli_args}")
-        self.p.start(cli_filename, cli_args)
+        self.p.start("ytmusic-deleter", cli_args)
         self.progress_dialog = ProgressDialog(self)
         self.progress_dialog.show()
         if not self.p.waitForStarted():

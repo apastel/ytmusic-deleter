@@ -3,6 +3,8 @@ name = "ytmusic-deleter-gui"
 version = "2.0.0"
 requires-python = "<3.13,>=3.8.1"
 dependencies = [
+    "fbs @ file:///${PROJECT_ROOT}/fbs_pro-1.2.1.tar.gz",
+    "fbs[licensing,sentry,upload]>=1.2.1",
     "PySide6",
 ]
 
