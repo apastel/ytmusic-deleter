@@ -32,7 +32,7 @@ def ensure_auth(credential_dir):
 
 
 @click.group()
-@click.version_option()
+@click.version_option(package_name="ytmusic-deleter")
 @click.option(
     "--log-dir",
     "-l",
@@ -391,7 +391,7 @@ def delete_playlists(ctx):
     logging.info("Finished deleting all playlists")
 
 
-@cli.command
+@cli.command()
 @click.pass_context
 def delete_history(ctx):
     """
