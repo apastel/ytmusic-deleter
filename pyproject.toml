@@ -5,8 +5,12 @@ description = "Easily delete your YouTube Music library"
 authors = [
     {name = "apastel", email = "alex.r.pastel@gmail.com"},
 ]
-dependencies = []
-requires-python = ">=3.6"
+dependencies = [
+    "app @ file:///${PROJECT_ROOT}/packages/app",
+    "cli @ file:///${PROJECT_ROOT}/packages/cli",
+    "ytmusicapi",
+]
+requires-python = "<3.13,>=3.8.1"
 readme = "README.md"
 license = {text = "GPL-3.0"}
 
@@ -15,5 +19,12 @@ requires = ["pdm-backend"]
 build-backend = "pdm.backend"
 
 
-[tool.pdm]
-distribution = true
+[tool.pdm.dev-dependencies]
+lint = [
+    "flake8",
+    "black"
+]
+test = [
+    "pytest",
+    "pytest-cov"
+]

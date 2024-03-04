@@ -1,0 +1,11 @@
+[project]
+name = "ytmusic-deleter-gui"
+version = "2.0.0"
+requires-python = "<3.13,>=3.8.1"
+dependencies = [
+    "PySide6",
+]
+
+[build-system]
+requires = ["pdm-backend"]
+build-backend = "pdm.backend"

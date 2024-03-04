@@ -10,7 +10,7 @@ from time import strftime
 import click
 import enlighten
 import ytmusicapi
-from ytmusic_deleter import constants as const
+import constants as const
 from ytmusicapi import YTMusic
 
 manager = enlighten.get_manager()
