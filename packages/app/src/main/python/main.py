@@ -39,7 +39,6 @@ APP_DATA_DIR = str(
 )
 progress_re = re.compile("Total complete: (\\d+)%")
 item_processing_re = re.compile("(Processing \\w+ .+)")
-cli_filename = "ytmusic-deleter-1.6.0.exe"
 OAUTH_FILENAME = "oauth.json"
 REQUIRE_LICENSE = False  # disabling this because...it's just not worth it
 
@@ -261,7 +260,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.p.stateChanged.connect(self.handle_state)
         self.p.finished.connect(self.process_finished)
         cli_args = ["-l", self.log_dir, "-c", self.credential_dir, "-p"] + args
-        self.message(f"Executing process: {Path(cli_filename).resolve()} {cli_args}")
+        self.message(f"Executing process: ytmusic-deleter {cli_args}")
         self.p.start("ytmusic-deleter", cli_args)
         self.progress_dialog = ProgressDialog(self)
         self.progress_dialog.show()
