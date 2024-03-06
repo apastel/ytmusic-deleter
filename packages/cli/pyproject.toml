@@ -1,10 +1,14 @@
 [project]
-name = "ytmusic-deleter-cli"
-version = "2.0.0"
+name = "ytmusic-deleter"
+version = "2.0.4"
+authors = [{ name = "apastel", email = "alex.r.pastel@gmail.com" }]
+description = "Easily delete your YouTube Music library"
 requires-python = "<3.13,>=3.8.1"
+readme = "../../README.md"
 dependencies = [
     "click",
     "enlighten",
+    "ytmusicapi",
 ]
 
 [build-system]
@@ -15,4 +19,4 @@ build-backend = "pdm.backend"
 distribution = true
 
 [project.scripts]
-ytmusic-deleter = "packages.cli.cli:cli"
+ytmusic-deleter = "cli:cli"

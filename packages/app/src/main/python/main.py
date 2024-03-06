@@ -6,7 +6,7 @@ import sys
 import webbrowser
 from json import JSONDecodeError
 from pathlib import Path
-
+import platform
 import requests
 from fbs_runtime import PUBLIC_SETTINGS
 from fbs_runtime.application_context import cached_property
@@ -15,6 +15,7 @@ from fbs_runtime.application_context.PySide6 import ApplicationContext
 from fbs_runtime.excepthook.sentry import SentryExceptionHandler
 from fbs_runtime.licensing import InvalidKey
 from fbs_runtime.licensing import unpack_license_key
+import subprocess
 from generated.ui_main_window import Ui_MainWindow
 from license_dialog import LicenseDialog
 from progress_dialog import ProgressDialog
@@ -32,6 +33,7 @@ from sort_playlists_dialog import SortPlaylistsDialog
 from ytmusicapi import YTMusic
 from ytmusicapi.auth.oauth import OAuthCredentials
 from ytmusicapi.auth.oauth import RefreshingToken
+from constants import OAUTH_FILENAME
 
 
 APP_DATA_DIR = str(
@@ -39,7 +41,6 @@ APP_DATA_DIR = str(
 )
 progress_re = re.compile("Total complete: (\\d+)%")
 item_processing_re = re.compile("(Processing \\w+ .+)")
-OAUTH_FILENAME = "oauth.json"
 REQUIRE_LICENSE = False  # disabling this because...it's just not worth it
 
 
@@ -114,15 +115,33 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         self.update_buttons()
 
+        try:
+            output = subprocess.check_output(["where" if platform.system() == "Windows" else "which", "ytmusic-deleter"], text=True)
+            self.message(f"Found ytmusic-deleter executable at {output}")
+        except subprocess.CalledProcessError as e:
+            self.message(str(e))
+            self.message("It's likely the ytmusic-deleter executable is not installed and none of the functions will work.")
+
     def is_logged_in(self, display_message=False):
         try:
             self.ytmusic = YTMusic(
                 str(Path(self.credential_dir) / OAUTH_FILENAME)
             )
+            account_info: dict = self.ytmusic.get_account_info()
+            r = requests.get(account_info["accountPhotoUrl"])
+            img = QImage()
+            img.loadFromData(r.content)
+            self.accountNameLabel.setVisible(True)
+            self.accountPhotoLabel.setVisible(True)
+            self.accountNameLabel.setText(account_info["accountName"])
+            self.accountPhotoLabel.setPixmap(QPixmap.fromImage(img))
+            self.message(f"Logged in as {account_info["accountName"]!r}")
             return True
         except JSONDecodeError:
             if display_message:
                 self.message('Click the "Log In" button to connect to your account.')
+            self.accountNameLabel.setVisible(False)
+            self.accountPhotoLabel.setVisible(False)
             return False
 
     def update_buttons(self):

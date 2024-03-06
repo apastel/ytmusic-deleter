@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'main_window.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.6.1
+## Created by: Qt User Interface Compiler version 6.6.2
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -65,6 +65,12 @@ class Ui_MainWindow(object):
         self.orLabel.setObjectName(u"orLabel")
         self.orLabel.setGeometry(QRect(180, 120, 21, 21))
         self.orLabel.setFont(font)
+        self.accountNameLabel = QLabel(self.centralwidget)
+        self.accountNameLabel.setObjectName(u"accountNameLabel")
+        self.accountNameLabel.setGeometry(QRect(190, 80, 101, 31))
+        self.accountPhotoLabel = QLabel(self.centralwidget)
+        self.accountPhotoLabel.setObjectName(u"accountPhotoLabel")
+        self.accountPhotoLabel.setGeometry(QRect(190, 0, 81, 81))
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QMenuBar(MainWindow)
         self.menubar.setObjectName(u"menubar")
@@ -100,5 +106,7 @@ class Ui_MainWindow(object):
         self.sortPlaylistButton.setText(QCoreApplication.translate("MainWindow", u"Sort Playlist", None))
         self.deleteHistoryButton.setText(QCoreApplication.translate("MainWindow", u"Delete History", None))
         self.orLabel.setText(QCoreApplication.translate("MainWindow", u"OR", None))
+        self.accountNameLabel.setText(QCoreApplication.translate("MainWindow", u"Account Name", None))
+        self.accountPhotoLabel.setText(QCoreApplication.translate("MainWindow", u"[Insert Photo Here]", None))
     # retranslateUi
 

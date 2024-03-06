@@ -29,6 +29,8 @@ def ensure_auth(credential_dir):
         ytmusicapi.setup_oauth(filepath=oauth_file_path, open_browser=True)
         youtube_auth = YTMusic(oauth_file_path)
         logging.info(f'Created: {oauth_file_path}"')
+    finally:
+        logging.info(f"Logged in as {youtube_auth.get_account_info().get('accountName')!r}")
 
 
 @click.group()
@@ -455,7 +457,7 @@ def sort_playlist(ctx, shuffle, playlist_titles):
         if playlist["title"].lower() in lowercase_playlist_titles
     ]
     for selected_playlist in selected_playlist_list:
-        logging.info(f'Processing playlist: {selected_playlist["title"]}')
+        logging.info(f'Processing crap: {selected_playlist["title"]}')
         playlist = youtube_auth.get_playlist(
             selected_playlist["playlistId"], sys.maxsize
         )

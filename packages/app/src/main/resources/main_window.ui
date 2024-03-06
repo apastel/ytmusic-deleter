@@ -190,6 +190,32 @@
      <string>OR</string>
     </property>
    </widget>
+   <widget class="QLabel" name="accountNameLabel">
+    <property name="geometry">
+     <rect>
+      <x>190</x>
+      <y>80</y>
+      <width>101</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Account Name</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="accountPhotoLabel">
+    <property name="geometry">
+     <rect>
+      <x>190</x>
+      <y>0</y>
+      <width>81</width>
+      <height>81</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>[Insert Photo Here]</string>
+    </property>
+   </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
