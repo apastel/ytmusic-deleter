@@ -1,4 +1,4 @@
-If this project helped you and you want to thank me, you can get me a beer!
+If this project helped you and you want to thank me, you can <a href="https://www.buymeacoffee.com/jewbix.cube">get me a beer!</a>
 
 <a href="https://www.buymeacoffee.com/jewbix.cube"><img src="https://img.buymeacoffee.com/button-api/?text=Buy me a beer&emoji=🍻&slug=jewbix.cube&button_colour=FFDD00&font_colour=000000&font_family=Arial&outline_colour=000000&coffee_colour=ffffff"></a>
 
@@ -129,3 +129,43 @@ You will see this printed by the [ytmusicapi](https://github.com/sigma67/ytmusic
 Other various exceptions may occur while running ytmusic-deleter because there is a wide swath of possible metadata on your library, and the YouTube Music backend is changing rapidly. Most errors deleting albums have been accounted for and you may just have to delete a couple albums manually that got left behind. If there are any errors that halt the entire program in the middle of deletion, please create an Issue and post the full error.
 
 ---
+# ytmusic-deleter-packager
+A project that aims to package ytmusic-deleter into an easy to install and run application
+
+## Generate forms from UI files:
+pyside6-uic -o src/main/python/generated/ui_main_window.py src/main/resources/main_window.ui
+pyside6-uic -o src/main/python/generated/ui_auth_dialog.py src/main/resources/auth_dialog.ui
+pyside6-uic -o src/main/python/generated/ui_license_dialog.py src/main/resources/license_dialog.ui
+pyside6-uic -o src/main/python/generated/ui_progress_dialog.py src/main/resources/progress_dialog.ui
+pyside6-uic -o src/main/python/generated/ui_sort_playlists_dialog.py src/main/resources/sort_playlists_dialog.ui
+
+
+## Build
+```
+(from venv)
+pip install -r requirements/dev.txt
+pre-commit install
+fbs clean
+fbs freeze
+fbs installer
+```
+
+## Release
+```
+(from venv)
+fbs release
+```
+Release will be uploaded to:
+https://fbs.sh/apastel/YTMusic%20Deleter/YTMusic%20DeleterSetup.exe
+
+# ToDo
+~~* Print stdout to in-app textarea instead of separate terminal window~~
+~~* Don't require running as administrator~~
+~~* Initial screen for inputting request headers (instead of separate terminal window)~~
+~~* Copy ytmusicapi/locales from site-packages instead of including in the project tree~~
+  ~~* Or use cli.exe~~
+* Exceptions aren't displayed to the user when they happen in a Slot
+~~* Exceptions aren't sent to Sentry when they happen on the main thread (https://github.com/mherrmann/fbs/issues/283)~~
+* Output to a single log file instead of two
+* Logging from all dialogs instead of `self.message`
+~~* Closing license dialog closes the app~~
