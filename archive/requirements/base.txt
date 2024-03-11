@@ -1,5 +1,0 @@
-./fbs_pro-1.2.1.tar.gz
-fbs[sentry,upload,licensing]
-PySide6
-ytmusic-deleter==1.6.0
-ytmusicapi>=1.5.2

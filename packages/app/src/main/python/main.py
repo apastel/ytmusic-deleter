@@ -13,11 +13,8 @@ from fbs_runtime.application_context import cached_property
 from fbs_runtime.application_context import is_frozen
 from fbs_runtime.application_context.PySide6 import ApplicationContext
 from fbs_runtime.excepthook.sentry import SentryExceptionHandler
-from fbs_runtime.licensing import InvalidKey
-from fbs_runtime.licensing import unpack_license_key
 import subprocess
 from generated.ui_main_window import Ui_MainWindow
-from license_dialog import LicenseDialog
 from progress_dialog import ProgressDialog
 from PySide6.QtCore import QProcess
 from PySide6.QtCore import QRect
@@ -41,7 +38,6 @@ APP_DATA_DIR = str(
 )
 progress_re = re.compile("Total complete: (\\d+)%")
 item_processing_re = re.compile("(Processing \\w+ .+)")
-REQUIRE_LICENSE = False  # disabling this because...it's just not worth it
 
 
 class MainWindow(QMainWindow, Ui_MainWindow):
@@ -108,10 +104,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.add_to_library = False
 
         self.message(f"Starting version {PUBLIC_SETTINGS['version']}")
-        if REQUIRE_LICENSE and not self.license_key_is_valid():
-            self.message("Prompt for license key.")
-            self.license_dialog = LicenseDialog()
-            self.license_dialog.show()
 
         self.update_buttons()
 
@@ -345,24 +337,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         m = item_processing_re.search(output)
         if m:
             return m.group(1)
-
-    def get_license_key(self):
-        with open(Path(APP_DATA_DIR) / "license_key.txt") as f:
-            key_contents = f.read()
-        return unpack_license_key(key_contents, PUBLIC_SETTINGS["licensing_pubkey"])
-
-    def license_key_is_valid(self):
-        try:
-            license_key = self.get_license_key()
-        except FileNotFoundError:
-            self.message("License key file not found.")
-            return False
-        except InvalidKey:
-            self.message("License key was invalid.")
-            return False
-        else:
-            self.message(f"License key was valid for user {license_key}")
-            return True
 
 
 class AppContext(ApplicationContext):
