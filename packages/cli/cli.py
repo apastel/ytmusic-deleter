@@ -2,35 +2,15 @@ import logging
 import os
 import re
 import sys
-from json import JSONDecodeError
 from pathlib import Path
 from random import shuffle as unsort
 from time import strftime
 
 import click
-import enlighten
-import ytmusicapi
 import constants as const
-from ytmusicapi import YTMusic
-
-manager = enlighten.get_manager()
-progress_bar = None
-
-
-def ensure_auth(credential_dir):
-    global youtube_auth
-    oauth_file_path: str = str(Path(credential_dir) / const.OAUTH_FILENAME)
-    try:
-        logging.info(f"Attempting authentication with: {oauth_file_path}")
-        youtube_auth = YTMusic(oauth_file_path)
-        logging.info(f'Authenticated with: {oauth_file_path}"')
-    except JSONDecodeError:
-        logging.info(f"Creating file: {const.OAUTH_FILENAME}")
-        ytmusicapi.setup_oauth(filepath=oauth_file_path, open_browser=True)
-        youtube_auth = YTMusic(oauth_file_path)
-        logging.info(f'Created: {oauth_file_path}"')
-    finally:
-        logging.info(f"Logged in as {youtube_auth.get_account_info().get('accountName')!r}")
+from packages.cli.auth import ensure_auth
+from packages.cli.progress import manager
+from packages.cli.uploads import maybe_delete_uploaded_albums
 
 
 @click.group()
@@ -69,7 +49,8 @@ def cli(ctx, log_dir, credential_dir, static_progress):
             logging.StreamHandler(sys.stdout),
         ],
     )
-    ensure_auth(credential_dir)
+    global youtube_auth
+    youtube_auth = ensure_auth(credential_dir)
     ctx.ensure_object(dict)
     ctx.obj["STATIC_PROGRESS"] = static_progress
 
@@ -79,155 +60,23 @@ def cli(ctx, log_dir, credential_dir, static_progress):
     "--add-to-library",
     "-a",
     is_flag=True,
-    help="Add corresponding albums to your library before deleting them from uploads.",
+    help="Add the corresponding album to your library before deleting a song from uploads.",
 )
 @click.pass_context
 def delete_uploads(ctx, add_to_library):
-    """Delete all tracks that you have uploaded to your YT Music library."""
-    (albums_deleted, albums_total) = delete_uploaded_albums(ctx, add_to_library)
-    logging.info(f"Deleted {albums_deleted} out of {albums_total} uploaded albums.")
-    if (add_to_library) and albums_total - albums_deleted > 0:
-        logging.info(
-            f"\tRemaining {albums_total - albums_deleted} albums did not have a match in YouTube Music's online catalog."
-        )
-
-    (singles_deleted, singles_total) = delete_uploaded_singles(ctx)
-    logging.info(f"Deleted {singles_deleted} out of {singles_total} uploaded singles.")
-
-
-def delete_uploaded_albums(ctx, add_to_library):
-    logging.info("Retrieving all uploaded albums...")
-    albums_deleted = 0
-    uploaded_albums = youtube_auth.get_library_upload_albums(sys.maxsize)
-    if not uploaded_albums:
-        return (albums_deleted, 0)
-    logging.info(f"Retrieved {len(uploaded_albums)} uploaded albums from your library.")
-
-    global progress_bar
-    progress_bar = manager.counter(
-        total=len(uploaded_albums),
-        desc="Albums Processed",
-        unit="albums",
-        enabled=not ctx.obj["STATIC_PROGRESS"],
+    """Delete all songs that you have uploaded to your YT Music library."""
+    (albums_deleted, albums_total) = maybe_delete_uploaded_albums(
+        ctx, youtube_auth, add_to_library
     )
-    for album in uploaded_albums:
-        try:
-            artist = (
-                album["artists"][0]["name"]
-                if album.get("artists")  # Using `get` ensures key exists and isn't []
-                else const.UNKNOWN_ARTIST
-            )
-            title = album["title"]
-            logging.info(f"Processing album: {artist} - {title}")
-            if add_to_library:
-                if artist == const.UNKNOWN_ARTIST:
-                    logging.warn(
-                        "\tAlbum is missing artist metadata. Skipping match search and will not delete."
-                    )
-                    update_progress(ctx)
-                    continue
-                elif not add_album_to_library(artist, title):
-                    logging.warn(
-                        "\tNo match for uploaded album found in online catalog. Will not delete."
-                    )
-                    update_progress(ctx)
-                    continue
-            response = youtube_auth.delete_upload_entity(album["browseId"])
-            if response == "STATUS_SUCCEEDED":
-                logging.info("\tDeleted album from uploads.")
-                albums_deleted += 1
-            else:
-                logging.error("\tFailed to delete album from uploads")
-        except (AttributeError, TypeError, KeyError) as e:
-            logging.error(f"\tEncountered exception processing album attribute: {e}")
-        update_progress(ctx)
-    return (albums_deleted, len(uploaded_albums))
-
-
-def delete_uploaded_singles(ctx):
-    logging.info("Retrieving all uploaded singles...")
-    singles_deleted = 0
-    uploaded_singles = youtube_auth.get_library_upload_songs(sys.maxsize)
-    if not uploaded_singles:
-        return (singles_deleted, 0)
-
-    # Filter for songs that don't have an album, otherwise songs that
-    # were skipped in the first batch would get deleted here
-    uploaded_singles = [single for single in uploaded_singles if not single["album"]]
     logging.info(
-        f"Retrieved {len(uploaded_singles)} uploaded singles from your library."
+        f"Deleted {albums_deleted} out of {albums_total} uploaded albums (or songs)."
     )
-
-    global progress_bar
-    progress_bar = manager.counter(
-        total=len(uploaded_singles),
-        desc="Singles Processed",
-        unit="singles",
-        enabled=not ctx.obj["STATIC_PROGRESS"],
-    )
-
-    for single in uploaded_singles:
-        try:
-            artist = (
-                single["artist"][0]["name"]
-                if single.get("artist")  # Using `get` ensures key exists and isn't []
-                else const.UNKNOWN_ARTIST
-            )
-            title = single["title"]
-            response = youtube_auth.delete_upload_entity(single["entityId"])
-            if response == "STATUS_SUCCEEDED":
-                logging.info(f"\tDeleted {artist} - {title}")
-                singles_deleted += 1
-            else:
-                logging.error(f"\tFailed to delete {artist} - {title}")
-        except (AttributeError, TypeError) as e:
-            logging.error(e)
-        update_progress(ctx)
-
-    return (singles_deleted, len(uploaded_singles))
-
-
-def add_album_to_library(artist, title):
-    logging.info("\tSearching for album in online catalog...")
-    search_results = youtube_auth.search(f"{artist} {title}")
-    for result in search_results:
-        # Find the first album for which the artist and album title are substrings
-        if result["resultType"] == "album" and match_found(result, artist, title):
-            catalog_album = youtube_auth.get_album(result["browseId"])
-            logging.info(
-                f"\tFound matching album \"{catalog_album['artist'][0]['name'] if 'artist' in catalog_album else ''}"
-                f" - {catalog_album['title']}\" in YouTube Music. Adding to library..."
-            )
-            success = youtube_auth.rate_playlist(
-                catalog_album["audioPlaylistId"], const.LIKE
-            )
-            if success:
-                logging.info("\tAdded album to library.")
-            else:
-                logging.error("\tFailed to add album to library")
-            return True
-    return False
-
-
-def match_found(result, artist, title):
-    try:
-        resultArtist = str(result["artist"]).lower()
-    except KeyError:
-        resultArtist = str(result["artists"][0] if "artists" in result else "").lower()
-    try:
-        resultTitle = str(result["title"]).lower()
-    except KeyError:
-        resultTitle = ""
-    artist = artist.lower()
-    title = title.lower()
-
-    if artist in resultArtist and title in resultTitle:
-        return True
-    else:
-        # Try again but strip out parentheticals and quotes
-        resultTitle = re.sub(r"\(.*?\)|\[.*?\]|\"|\'", "", resultTitle).strip()
-        title = re.sub(r"\(.*?\)|\[.*?\]|\"|\'", "", title).strip()
-        return artist in resultArtist and title in resultTitle
+    remaining_count = albums_total - albums_deleted
+    if (add_to_library) and remaining_count > -1:
+        logging.info(
+            f"\tRemaining {remaining_count} albums (or songs) did not have a match in YouTube Music's online catalog."
+        )
+        logging.info("\tRe-run without the 'Add to library' option to delete the rest.")
 
 
 @cli.command()
