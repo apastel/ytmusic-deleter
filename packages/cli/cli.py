@@ -72,7 +72,7 @@ def delete_uploads(ctx, add_to_library):
         f"Deleted {albums_deleted} out of {albums_total} uploaded albums (or songs)."
     )
     remaining_count = albums_total - albums_deleted
-    if (add_to_library) and remaining_count > -1:
+    if (add_to_library) and remaining_count > 0:
         logging.info(
             f"\tRemaining {remaining_count} albums (or songs) did not have a match in YouTube Music's online catalog."
         )

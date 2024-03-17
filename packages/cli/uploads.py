@@ -82,7 +82,10 @@ def add_album_to_library(youtube_auth: YTMusic, upload_artist, upload_album_titl
         f"\tSearching for '{upload_artist} - {upload_album_title}' in online catalog..."
     )
     search_results = youtube_auth.search(f"{upload_artist} {upload_album_title}")
-    logging.debug(f"There were {len(search_results)} search results.")
+    if not search_results:
+        logging.info("No search results were found. It's possible Google is limiting your requests. Try again later.")
+        return False
+    logging.info(f"There were {len(search_results)} search results.")
     for search_result in search_results:
         # Find the first album for which the artist and album title are substrings
         if search_result["resultType"] == "album" and match_found(
@@ -126,19 +129,29 @@ def match_found(search_result, upload_artist, upload_title):
     """
     upload_artist = upload_artist.lower()
     upload_title = upload_title.lower()
+    logging.info("Get search result's artist name.")
+    search_result_artist = search_result.get("artist")
+    if not search_result_artist:
+        search_result_artist = search_result.get("artists")
+        if not search_result_artist or not isinstance(search_result_artist, list):
+            logging.error("No 'artist(s)' info found in search result. Skipping this result...")
+            logging.info(search_result)
+            return False
+        for artist in search_result_artist:
+            artist_name = artist.get("name")
+            if artist_name:
+                search_result_artist = artist.get("name")
+                if search_result_artist == 'Album' or search_result_artist == 'Single' or not artist.get("id"):
+                    # skip to the next artist bc this could be something like {'name': 'Album', 'id': None}
+                    continue
+        if not artist_name:
+            logging.error("No 'artist(s)' info found in search result. Skipping this result...")
+            logging.info(search_result)
+            return False
+    search_result_artist = search_result_artist.lower()
+
     try:
-        logging.debug("Get search result's artist name.")
-        search_result_artist = str(search_result["artist"]).lower()
-    except KeyError:
-        logging.debug(
-            "Encountered KeyError with artist name, now checking artists list"
-        )
-        logging.debug(search_result)
-        search_result_artist = str(
-            search_result["artists"][1]["name"] if "artists" in search_result else ""
-        ).lower()
-    try:
-        logging.debug("Get search result album title title")
+        logging.info("Get search result album title title")
         search_result_title = str(search_result["title"]).lower()
     except KeyError:
         logging.error(
@@ -147,29 +160,29 @@ def match_found(search_result, upload_artist, upload_title):
         )
         return False
 
-    logging.debug(f"Your upload is: {upload_artist} - {upload_title}")
-    logging.debug(
+    logging.info(f"Your upload is: {upload_artist} - {upload_title}")
+    logging.info(
         f"The possible match online is {search_result_artist} - {search_result_title}"
     )
     if upload_artist in search_result_artist and upload_title in search_result_title:
-        logging.debug("Found a match")
+        logging.info("Found a match")
         return True
     else:
-        logging.debug(
+        logging.info(
             "These are not a match, strip parenthentical expressions and quotes in the album title and try again"
         )
         # Try again but strip out parenthetical expressions at the end of the title, and quotes
         regex = r"\s*\([^)]*\)$|\s*\[[^)]*\]$|\"|\'"
         search_result_title = re.sub(regex, "", search_result_title).strip()
         upload_title = re.sub(regex, "", upload_title).strip()
-        logging.debug("Now after stripping...")
-        logging.debug(f"Your upload is: {upload_artist} - {upload_title}")
-        logging.debug(
+        logging.info("Now after stripping...")
+        logging.info(f"Your upload is: {upload_artist} - {upload_title}")
+        logging.info(
             f"The possible match online is {search_result_artist} - {search_result_title}"
         )
         match = (
             upload_artist in search_result_artist
             and upload_title in search_result_title
         )
-        logging.debug(f"After stripping, this {'is' if match else 'is not'} a match")
+        logging.info(f"After stripping, this {'is' if match else 'is not'} a match")
         return match
