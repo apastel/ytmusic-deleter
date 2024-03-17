@@ -2,8 +2,8 @@ import logging
 import re
 
 import constants as const
-from packages.cli.progress import manager
-from packages.cli.progress import update_progress
+from progress import manager
+from progress import update_progress
 from ytmusicapi import YTMusic
 
 

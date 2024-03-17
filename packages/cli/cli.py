@@ -8,9 +8,9 @@ from time import strftime
 
 import click
 import constants as const
-from packages.cli.auth import ensure_auth
-from packages.cli.progress import manager
-from packages.cli.uploads import maybe_delete_uploaded_albums
+from auth import ensure_auth
+from progress import manager
+from uploads import maybe_delete_uploaded_albums
 
 
 @click.group()
