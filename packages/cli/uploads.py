@@ -169,9 +169,12 @@ def match_found(search_result, upload_artist, upload_title):
             "\t\tThese are not a match, strip parenthentical expressions and quotes in the album title and try again"
         )
         # Try again but strip out parenthetical expressions at the end of the title, and quotes
-        regex = r"\s*\([^)]*\)$|\s*\[[^)]*\]$|[^\w\s]"
-        search_result_title = re.sub(regex, "", search_result_title).strip()
-        upload_title = re.sub(regex, "", upload_title).strip()
+        sanitze_regex = r"\s*\([^)]*\)$|\s*\[[^)]*\]$|[^\w\s]"
+        extra_whitespace_regex = r"\s+"
+        upload_title = re.sub(sanitze_regex, "", upload_title).strip()
+        upload_title = re.sub(extra_whitespace_regex, " ", upload_title)
+        search_result_title = re.sub(sanitze_regex, "", search_result_title).strip()
+        search_result_title = re.sub(extra_whitespace_regex, " ", search_result_title)
         logging.debug("\t\tNow after stripping...")
         logging.info(
             f"\t\tSanitized upload is: {upload_artist} - {upload_title}"

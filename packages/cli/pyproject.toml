@@ -1,6 +1,6 @@
 [project]
 name = "ytmusic-deleter"
-version = "2.0.4-beta5"
+version = "2.0.4-beta6"
 authors = [{ name = "apastel", email = "alex.r.pastel@gmail.com" }]
 description = "Easily delete your YouTube Music library"
 requires-python = "<3.13,>=3.8.1"
