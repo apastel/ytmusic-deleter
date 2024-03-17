@@ -81,16 +81,14 @@ def add_album_to_library(youtube_auth: YTMusic, upload_artist, upload_album_titl
     logging.info(
         f"\tSearching for '{upload_artist} - {upload_album_title}' in online catalog..."
     )
-    search_results = youtube_auth.search(f"{upload_artist} {upload_album_title}")
+    search_results = youtube_auth.search(f"{upload_artist} {upload_album_title}", filter="albums")
     if not search_results:
         logging.info("No search results were found. It's possible Google is limiting your requests. Try again later.")
         return False
-    logging.info(f"There were {len(search_results)} search results.")
-    for search_result in search_results:
-        # Find the first album for which the artist and album title are substrings
-        if search_result["resultType"] == "album" and match_found(
-            search_result, upload_artist, upload_album_title
-        ):
+    logging.info(f"\tThere were {len(search_results)} search results.")
+    for idx, search_result in enumerate(search_results):
+        logging.info(f"\tChecking search result {idx+1} out of {len(search_results)}")
+        if match_found(search_result, upload_artist, upload_album_title):
             catalog_album = youtube_auth.get_album(search_result["browseId"])
             logging.info(
                 f"\tFound matching album \"{catalog_album['artists'][0]['name'] if catalog_album.get('tracks') else const.UNKNOWN_ARTIST}"
@@ -127,14 +125,14 @@ def match_found(search_result, upload_artist, upload_title):
 
     `Returns`: `True` if the `search_result` is a match, `False` otherwise.
     """
+    logging.info("\t\tBegin string comparison")
     upload_artist = upload_artist.lower()
     upload_title = upload_title.lower()
-    logging.info("Get search result's artist name.")
     search_result_artist = search_result.get("artist")
     if not search_result_artist:
         search_result_artist = search_result.get("artists")
         if not search_result_artist or not isinstance(search_result_artist, list):
-            logging.error("No 'artist(s)' info found in search result. Skipping this result...")
+            logging.error("\t\tNo 'artist(s)' info found in search result. Skipping this result...")
             logging.info(search_result)
             return False
         for artist in search_result_artist:
@@ -145,44 +143,45 @@ def match_found(search_result, upload_artist, upload_title):
                     # skip to the next artist bc this could be something like {'name': 'Album', 'id': None}
                     continue
         if not artist_name:
-            logging.error("No 'artist(s)' info found in search result. Skipping this result...")
+            logging.error("\t\tNo 'artist(s)' info found in search result. Skipping this result...")
             logging.info(search_result)
             return False
     search_result_artist = search_result_artist.lower()
 
     try:
-        logging.info("Get search result album title title")
         search_result_title = str(search_result["title"]).lower()
     except KeyError:
         logging.error(
-            "Encountered KeyError getting search result's album title.\
+            "\t\tEncountered KeyError getting search result's album title.\
                       Cannot check this search result for a match."
         )
         return False
 
-    logging.info(f"Your upload is: {upload_artist} - {upload_title}")
+    logging.info(f"\t\tYour upload is:      {upload_artist} - {upload_title}")
     logging.info(
-        f"The possible match online is {search_result_artist} - {search_result_title}"
+        f"\t\tPossible match is:   {search_result_artist} - {search_result_title}"
     )
     if upload_artist in search_result_artist and upload_title in search_result_title:
-        logging.info("Found a match")
+        logging.info("\t\tFound a match")
         return True
     else:
-        logging.info(
-            "These are not a match, strip parenthentical expressions and quotes in the album title and try again"
+        logging.debug(
+            "\t\tThese are not a match, strip parenthentical expressions and quotes in the album title and try again"
         )
         # Try again but strip out parenthetical expressions at the end of the title, and quotes
-        regex = r"\s*\([^)]*\)$|\s*\[[^)]*\]$|\"|\'"
+        regex = r"\s*\([^)]*\)$|\s*\[[^)]*\]$|[^\w\s]"
         search_result_title = re.sub(regex, "", search_result_title).strip()
         upload_title = re.sub(regex, "", upload_title).strip()
-        logging.info("Now after stripping...")
-        logging.info(f"Your upload is: {upload_artist} - {upload_title}")
+        logging.debug("\t\tNow after stripping...")
         logging.info(
-            f"The possible match online is {search_result_artist} - {search_result_title}"
+            f"\t\tSanitized upload is: {upload_artist} - {upload_title}"
+        )
+        logging.info(
+            f"\t\tSanitized match is:  {search_result_artist} - {search_result_title}"
         )
         match = (
             upload_artist in search_result_artist
             and upload_title in search_result_title
         )
-        logging.info(f"After stripping, this {'is' if match else 'is not'} a match")
+        logging.info(f"\t\tThis {'IS' if match else 'is NOT'} a match")
         return match
