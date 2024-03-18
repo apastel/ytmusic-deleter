@@ -17,9 +17,12 @@ build-backend = "pdm.backend"
 lint = ["flake8", "black"]
 test = ["pytest", "pytest-cov"]
 
+[tool.black]
+line-length = 120
+
 [tool.pdm.scripts]
 # Use this to run any 'fbs' commands from the root, ex: `pdm fbs run` or `pdm fbs freeze`
-fbs = { shell = "sh fbs.sh" }
+fbs = "sh fbs.sh"
 # Use this to generate the UI files
 generate = { shell = "cd %PDM_PROJECT_ROOT%/packages/app && generate_ui_files.sh" }
 # Use this to bump all the project versions
