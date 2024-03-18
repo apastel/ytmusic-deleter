@@ -43,9 +43,7 @@ def cli(ctx, log_dir, credential_dir, static_progress):
         format="[%(asctime)s] %(message)s",
         datefmt="%Y-%m-%d %H:%M:%S",
         handlers=[
-            logging.FileHandler(
-                Path(log_dir) / f"ytmusic-deleter_{strftime('%Y-%m-%d')}.log"
-            ),
+            logging.FileHandler(Path(log_dir) / f"ytmusic-deleter_{strftime('%Y-%m-%d')}.log"),
             logging.StreamHandler(sys.stdout),
         ],
     )
@@ -62,15 +60,17 @@ def cli(ctx, log_dir, credential_dir, static_progress):
     is_flag=True,
     help="Add the corresponding album to your library before deleting a song from uploads.",
 )
+@click.option(
+    "--score-cutoff",
+    "-s",
+    default=75,
+    help="When combined with the --add-to-library flag, this optional integer argument between 0 and 100 is used when finding matches in the YTM online catalog. No matches with a score less than this number will be added to your library. Defaults to 75.",
+)
 @click.pass_context
-def delete_uploads(ctx, add_to_library):
+def delete_uploads(ctx, add_to_library, score_cutoff):
     """Delete all songs that you have uploaded to your YT Music library."""
-    (albums_deleted, albums_total) = maybe_delete_uploaded_albums(
-        ctx, youtube_auth, add_to_library
-    )
-    logging.info(
-        f"Deleted {albums_deleted} out of {albums_total} uploaded albums (or songs)."
-    )
+    (albums_deleted, albums_total) = maybe_delete_uploaded_albums(ctx, youtube_auth, add_to_library, score_cutoff)
+    logging.info(f"Deleted {albums_deleted} out of {albums_total} uploaded albums (or songs).")
     remaining_count = albums_total - albums_deleted
     if (add_to_library) and remaining_count > 0:
         logging.info(
@@ -110,9 +110,7 @@ def remove_library(ctx):
     # Filter out songs where album is None (rare but seen here: https://github.com/apastel/ytmusic-deleter/issues/12)
     filtered_songs = list(filter(lambda song: song["album"], library_songs))
     if len(library_songs) - len(filtered_songs) > 0:
-        logging.info(
-            f"{len(library_songs) - len(filtered_songs)} songs are not part of an album and won't be deleted."
-        )
+        logging.info(f"{len(library_songs) - len(filtered_songs)} songs are not part of an album and won't be deleted.")
     # Filter for unique album IDs so that for each song, we can just remove the album it's a part of
     album_unique_songs = list({v["album"]["id"]: v for v in filtered_songs}.values())
     progress_bar = manager.counter(
@@ -193,9 +191,7 @@ def unlike_all(ctx):
         title = track["title"]
         logging.info(f"Processing track: {artist} - {title}")
         if track["album"] is None:
-            logging.info(
-                "\tSkipping deletion as this might be a YouTube video and not a YouTube Music song."
-            )
+            logging.info("\tSkipping deletion as this might be a YouTube video and not a YouTube Music song.")
         else:
             logging.info("\tRemoved track from Likes.")
             youtube_auth.rate_song(track["videoId"], const.INDIFFERENT)
@@ -210,9 +206,7 @@ def delete_playlists(ctx):
     logging.info("Retrieving all your playlists...")
     library_playlists = youtube_auth.get_library_playlists(sys.maxsize)
     # Can't delete "Your Likes" playlist
-    library_playlists = list(
-        filter(lambda playlist: playlist["playlistId"] != "LM", library_playlists)
-    )
+    library_playlists = list(filter(lambda playlist: playlist["playlistId"] != "LM", library_playlists))
     logging.info(f"\tRetrieved {len(library_playlists)} playlists.")
     logging.info("Begin deleting playlists...")
     global progress_bar
@@ -227,17 +221,11 @@ def delete_playlists(ctx):
         try:
             response = youtube_auth.delete_playlist(playlist["playlistId"])
             if response:
-                logging.info(
-                    f"\tRemoved playlist {playlist['title']!r} from your library."
-                )
+                logging.info(f"\tRemoved playlist {playlist['title']!r} from your library.")
             else:
-                logging.error(
-                    f"\tFailed to remove playlist {playlist['title']!r} from your library."
-                )
+                logging.error(f"\tFailed to remove playlist {playlist['title']!r} from your library.")
         except Exception:
-            logging.error(
-                f"\tCould not delete playlist {playlist['title']}. It might be a YT Music curated playlist."
-            )
+            logging.error(f"\tCould not delete playlist {playlist['title']}. It might be a YT Music curated playlist.")
         update_progress(ctx)
     logging.info("Finished deleting all playlists")
 
@@ -292,33 +280,25 @@ def delete_all(ctx):
 
 @cli.command()
 @click.argument("playlist_titles", nargs=-1, required=True)
-@click.option(
-    "--shuffle", "-s", is_flag=True, help="Shuffle the playlist(s) instead of sorting."
-)
+@click.option("--shuffle", "-s", is_flag=True, help="Shuffle the playlist(s) instead of sorting.")
 @click.pass_context
 def sort_playlist(ctx, shuffle, playlist_titles):
     """Sort or shuffle one or more playlists alphabetically by artist and by album"""
     all_playlists = youtube_auth.get_library_playlists(sys.maxsize)
     lowercase_playlist_titles = [title.lower() for title in playlist_titles]
     selected_playlist_list = [
-        playlist
-        for playlist in all_playlists
-        if playlist["title"].lower() in lowercase_playlist_titles
+        playlist for playlist in all_playlists if playlist["title"].lower() in lowercase_playlist_titles
     ]
     for selected_playlist in selected_playlist_list:
         logging.info(f'Processing crap: {selected_playlist["title"]}')
-        playlist = youtube_auth.get_playlist(
-            selected_playlist["playlistId"], sys.maxsize
-        )
+        playlist = youtube_auth.get_playlist(selected_playlist["playlistId"], sys.maxsize)
         current_tracklist = [t for t in playlist["tracks"]]
         if shuffle:
             logging.info(f"\tPlaylist: {selected_playlist['title']} will be shuffled")
             desired_tracklist = [t for t in playlist["tracks"]]
             unsort(desired_tracklist)
         else:
-            desired_tracklist = [
-                t for t in sorted(playlist["tracks"], key=lambda t: make_sort_key(t))
-            ]
+            desired_tracklist = [t for t in sorted(playlist["tracks"], key=lambda t: make_sort_key(t))]
 
         global progress_bar
         progress_bar = manager.counter(
@@ -385,9 +365,7 @@ def update_progress(ctx):
     global progress_bar
     progress_bar.update()
     if ctx.obj["STATIC_PROGRESS"]:
-        logging.info(
-            f"Total complete: {round(progress_bar.count / progress_bar.total * 100)}%"
-        )
+        logging.info(f"Total complete: {round(progress_bar.count / progress_bar.total * 100)}%")
 
 
 if __name__ == "__main__":

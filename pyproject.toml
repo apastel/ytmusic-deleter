@@ -16,9 +16,9 @@ build-backend = "pdm.backend"
 [tool.pdm.dev-dependencies]
 lint = ["flake8", "black"]
 test = ["pytest", "pytest-cov"]
-dev = [
-    "-e file:///${PROJECT_ROOT}/packages/cli#egg=ytmusic-deleter",
-]
+
+[tool.black]
+line-length = 120
 
 [tool.pdm.scripts]
 # Use this to run any 'fbs' commands from the root, ex: `pdm fbs run` or `pdm fbs freeze`
