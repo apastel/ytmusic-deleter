@@ -1,14 +1,19 @@
 import logging
-from typing import Dict, List
+import re
+from typing import Dict
+from typing import List
+from typing import TypedDict
 
 import constants as const
+from click import Context
 from progress import manager
 from progress import update_progress
+from thefuzz import fuzz
+from thefuzz import process
 from ytmusicapi import YTMusic
-from thefuzz import process, fuzz
 
 
-def maybe_delete_uploaded_albums(ctx, youtube_auth: YTMusic, add_to_library, score_cutoff):
+def maybe_delete_uploaded_albums(ctx: Context, youtube_auth: YTMusic) -> tuple[int, int]:
     """
     Retrieve all of the uploaded songs, then filter the list to just songs from unique albums.
     Iterate over each album-unique song. If `add_to_library` is true, search the YTM online catalog
@@ -16,6 +21,8 @@ def maybe_delete_uploaded_albums(ctx, youtube_auth: YTMusic, add_to_library, sco
     add the album to the library and delete the entire uploaded album that it's from. If a match wasn't
     found, keep the uploaded album. If `add_to_library` is false, delete the uploaded album that the
     song is from (or just the song if it wasn't part of an album).
+
+    `Returns`: a tuple of the number of albums deleted, and the total album count
     """
     logging.info("Retrieving all uploaded songs...")
     albums_deleted = 0
@@ -41,7 +48,7 @@ def maybe_delete_uploaded_albums(ctx, youtube_auth: YTMusic, add_to_library, sco
         )
         album_title = song["album"]["name"] if song.get("album") else const.UNKNOWN_ALBUM
         logging.info(f"Processing album: {artist} - {album_title}")
-        if add_to_library:
+        if ctx.params["add_to_library"]:
             if artist == const.UNKNOWN_ARTIST or album_title == const.UNKNOWN_ALBUM:
                 if artist == const.UNKNOWN_ARTIST:
                     logging.warn("\tSong is missing artist metadata.")
@@ -50,7 +57,7 @@ def maybe_delete_uploaded_albums(ctx, youtube_auth: YTMusic, add_to_library, sco
                 logging.warn("\tSkipping match search and will not delete.")
                 update_progress(ctx, progress_bar)
                 continue
-            elif not add_album_to_library(youtube_auth, artist, album_title, score_cutoff):
+            elif not add_album_to_library(ctx, youtube_auth, artist, album_title):
                 logging.warn(
                     f"\tNo album was added to library for '{artist} - {album_title}'. Will not delete from uploads."
                 )
@@ -66,14 +73,14 @@ def maybe_delete_uploaded_albums(ctx, youtube_auth: YTMusic, add_to_library, sco
     return (albums_deleted, len(album_unique_songs))
 
 
-def add_album_to_library(youtube_auth: YTMusic, upload_artist, upload_album_title, score_cutoff):
+def add_album_to_library(ctx: Context, youtube_auth: YTMusic, upload_artist, upload_title) -> bool:
     """
     Search for "<artist> <album title>" in the YTM online catalog.
 
     `Return`: `True` if an album was added to library, `False` otherwise
     """
-    logging.info(f"\tSearching YT Music for albums like: '{upload_artist} - {upload_album_title}'")
-    search_results = youtube_auth.search(f"{upload_artist} {upload_album_title}", filter="albums")
+    logging.info(f"\tSearching YT Music for albums like: '{upload_artist} - {upload_title}'")
+    search_results = youtube_auth.search(f"{upload_artist} {upload_title}", filter="albums")
     if not search_results:
         logging.info("No search results were found. It's possible Google is limiting your requests. Try again later.")
         return False
@@ -91,25 +98,56 @@ def add_album_to_library(youtube_auth: YTMusic, upload_artist, upload_album_titl
         logging.info("\tNone of the search results had the correct artist name.")
         return False
 
-    def scorer(query, choice):
-        return fuzz.partial_ratio(query, choice)
+    if ctx.params["fuzzy"]:
 
-    # Find the best match for the album title among the search results
-    match, score = process.extractOne(
-        upload_album_title, search_results, processor=lambda x: x["title"] if isinstance(x, dict) else x, scorer=scorer
-    )
+        def scorer(query, choice):
+            return fuzz.partial_ratio(query, choice)
 
-    # Make sure this result at least passes the score cutoff
-    if score < score_cutoff:
-        logging.info(
-            f"\tThe best search result '{match['artist']} - {match['title']}' had a match score of {score} which does not pass the score cutoff of {score_cutoff}."
+        # Find the best match for the album title among the search results
+        match, score = process.extractOne(
+            upload_title, search_results, processor=lambda x: x["title"] if isinstance(x, dict) else x, scorer=scorer
         )
-        return False
 
-    # Add the match to the library
-    logging.info(
-        f"\tFound match: '{match['artist']} - {match['title']}' with a matching score of {score}. Adding to library..."
-    )
+        # Make sure this result at least passes the score cutoff
+        if score < ctx.params["score_cutoff"]:
+            logging.info(
+                f"\tThe best search result '{match['artist']} - {match['title']}' had a match score of {score} which does not pass the score cutoff of {ctx.params['score_cutoff']}."  # noqa: B950
+            )
+            return False
+
+        # Add the match to the library
+        logging.info(
+            f"\tFound match: '{match['artist']} - {match['title']}' with a matching score of {score}. Adding to library..."
+        )
+    else:
+        # TODO fix up fuzzy matching algorithms enough to the point where we don't need this anymore
+        match = None
+        for search_result in search_results:
+            search_result_artist = search_result["artist"]
+            search_result_title = search_result["title"]
+            if upload_title in search_result_title:
+                match = search_result
+                logging.info(f"\tFound match: '{match['artist']} - {match['title']}'. Adding to library...")
+                break
+            else:
+                # Try again but strip out parenthetical expressions at the end of the title, and all symbols
+                sanitze_regex = r"\s*\([^)]*\)$|\s*\[[^)]*\]$|[^\w\s]"
+                extra_whitespace_regex = r"\s+"
+                upload_title = re.sub(sanitze_regex, "", upload_title).strip()
+                upload_title = re.sub(extra_whitespace_regex, " ", upload_title)
+                search_result_title = re.sub(sanitze_regex, "", search_result_title).strip()
+                search_result_title = re.sub(extra_whitespace_regex, " ", search_result_title)
+                logging.info(f"\t\tSanitized upload is: {upload_artist} - {upload_title}")
+                logging.info(f"\t\tSanitized match is:  {search_result_artist} - {search_result_title}")
+                if upload_title in search_result_title:
+                    match = search_result
+                    logging.info(f"\tFound match: '{match['artist']} - {match['title']}'. Adding to library...")
+                    break
+            logging.info(f"\t\tThis {'IS' if match else 'is NOT'} a match")
+        if not match:
+            logging.info(f"No matches were found in YTM for `{upload_artist} - {upload_title}`")
+            return False
+
     catalog_album = youtube_auth.get_album(match["browseId"])
     success = youtube_auth.rate_playlist(catalog_album["audioPlaylistId"], const.LIKE)
     if success:
@@ -120,8 +158,22 @@ def add_album_to_library(youtube_auth: YTMusic, upload_artist, upload_album_titl
         return False
 
 
-def simplify_album_results(album_results: List[Dict]) -> List[Dict]:
-    simplified_results = []
+class SearchResult(TypedDict):
+    artist: str
+    title: str
+    browseId: str
+
+
+def simplify_album_results(album_results: List[Dict]) -> List[SearchResult]:
+    """
+    Take the search results response object from YTM and return a simplified list
+    of results that just has the artist, album title, and browseId.
+    Example: [
+        {"artist": "Metallica", "title": "Load", "browseId": "abcdef"},
+        {"artist": "Metallica", "title": "Reload", "browseId": "fedcba"},
+    ]
+    """
+    simplified_results: List[SearchResult] = []
     missing_metadata_count = 0
     for album_result in album_results:
         search_result_artist = album_result.get("artist")
@@ -142,8 +194,11 @@ def simplify_album_results(album_results: List[Dict]) -> List[Dict]:
             continue
 
         simplified_results.append(
-            {"artist": search_result_artist, "title": search_result_title, "browseId": album_result["browseId"]}
+            SearchResult(artist=search_result_artist, title=search_result_title, browseId=album_result["browseId"])
         )
+
     if missing_metadata_count > 0:
-        logging.info(f"\t{missing_metadata_count} of the results were missing artist or title metadata and were skipped.")
+        logging.info(
+            f"\t{missing_metadata_count} of the results were missing artist or title metadata and were skipped."
+        )
     return simplified_results

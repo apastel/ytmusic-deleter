@@ -9,6 +9,7 @@ from time import strftime
 import click
 import constants as const
 from auth import ensure_auth
+from click import Context
 from progress import manager
 from uploads import maybe_delete_uploaded_albums
 
@@ -61,18 +62,24 @@ def cli(ctx, log_dir, credential_dir, static_progress):
     help="Add the corresponding album to your library before deleting a song from uploads.",
 )
 @click.option(
+    "--fuzzy",
+    "-f",
+    is_flag=True,
+    help="When using --add-to-library, this enables 'fuzzy' matching, allowing more flexibility when searching for matches among the YTM online catalog.",  # noqa: B950
+)
+@click.option(
     "--score-cutoff",
     "-s",
-    default=75,
-    help="When combined with the --add-to-library flag, this optional integer argument between 0 and 100 is used when finding matches in the YTM online catalog. No matches with a score less than this number will be added to your library. Defaults to 75.",
+    default=90,
+    help="When combined with the --add-to-library and --fuzzy flags, this optional integer argument between 0 and 100 is used when finding matches in the YTM online catalog. No matches with a score less than this number will be added to your library. Defaults to 90.",  # noqa: B950
 )
 @click.pass_context
-def delete_uploads(ctx, add_to_library, score_cutoff):
+def delete_uploads(ctx: Context, **kwargs):
     """Delete all songs that you have uploaded to your YT Music library."""
-    (albums_deleted, albums_total) = maybe_delete_uploaded_albums(ctx, youtube_auth, add_to_library, score_cutoff)
+    (albums_deleted, albums_total) = maybe_delete_uploaded_albums(ctx, youtube_auth)
     logging.info(f"Deleted {albums_deleted} out of {albums_total} uploaded albums (or songs).")
     remaining_count = albums_total - albums_deleted
-    if (add_to_library) and remaining_count > 0:
+    if (ctx.params["add_to_library"]) and remaining_count > 0:
         logging.info(
             f"\tRemaining {remaining_count} albums (or songs) did not have a match in YouTube Music's online catalog."
         )
@@ -290,7 +297,7 @@ def sort_playlist(ctx, shuffle, playlist_titles):
         playlist for playlist in all_playlists if playlist["title"].lower() in lowercase_playlist_titles
     ]
     for selected_playlist in selected_playlist_list:
-        logging.info(f'Processing crap: {selected_playlist["title"]}')
+        logging.info(f'Processing playlist: {selected_playlist["title"]}')
         playlist = youtube_auth.get_playlist(selected_playlist["playlistId"], sys.maxsize)
         current_tracklist = [t for t in playlist["tracks"]]
         if shuffle:
