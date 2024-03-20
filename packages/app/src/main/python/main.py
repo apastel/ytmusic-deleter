@@ -107,10 +107,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 ["where" if platform.system() == "Windows" else "which", "ytmusic-deleter"], text=True
             )
             self.message(f"Found ytmusic-deleter executable at {output}")
-        except subprocess.CalledProcessError as e:
+        except Exception as e:
             self.message(str(e))
             self.message(
-                "It's likely the ytmusic-deleter executable is not installed and none of the functions will work."
+                "It's possible the ytmusic-deleter executable is not installed and none of the functions will work."
             )
 
     def is_logged_in(self, display_message=False):
