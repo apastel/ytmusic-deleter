@@ -1,6 +1,6 @@
 [project]
 name = "ytmusic-deleter-core"
-version = "2.0.4"
+version = "2.1.0"
 dependencies = [
     "app @ file:///${PROJECT_ROOT}/packages/app",
     "cli @ file:///${PROJECT_ROOT}/packages/cli",
