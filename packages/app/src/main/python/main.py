@@ -1,9 +1,8 @@
 import atexit
 import logging
 import os
-import platform
 import re
-import subprocess
+import shutil
 import sys
 import webbrowser
 from json import JSONDecodeError
@@ -102,15 +101,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         self.update_buttons()
 
-        try:
-            output = subprocess.check_output(
-                ["where" if platform.system() == "Windows" else "which", "ytmusic-deleter"], text=True
-            )
-            self.message(f"Found ytmusic-deleter executable at {output}")
-        except Exception as e:
-            self.message(str(e))
+        cmd_path = shutil.which("ytmusic-deleter")
+        if cmd_path:
+            self.message(f"Found ytmusic-deleter executable at {cmd_path}")
+        else:
             self.message(
-                "It's possible the ytmusic-deleter executable is not installed and none of the functions will work."
+                "'ytmusic-deleter' executable not found. It's possible that it's not installed and none of the functions will work."
             )
 
     def is_logged_in(self, display_message=False):
