@@ -14,9 +14,9 @@ fi
 # Array of files with version numbers
 files=(
   "pyproject.toml"
-  "packages/app/pyproject.toml"
-  "packages/app/src/build/settings/base.json"
-  "packages/cli/pyproject.toml"
+  "app/pyproject.toml"
+  "app/src/build/settings/base.json"
+  "cli/pyproject.toml"
 )
 
 # Function to bump version

@@ -5,7 +5,7 @@
 groups = ["default", "lint", "test"]
 strategy = ["cross_platform", "inherit_metadata"]
 lock_version = "4.4.1"
-content_hash = "sha256:fc1d66d1e4a76f9dc280443bfea7b5fd9b0472df87dfe38b8cf8c08df6428a21"
+content_hash = "sha256:44b6fc5c97e6cb807339d2c0d1235ae3e602121bc9b62c7ba2d0ac9ec735b541"
 
 [[package]]
 name = "altgraph"
@@ -396,7 +396,7 @@ files = [
 [[package]]
 name = "fbs"
 version = "1.2.1"
-path = "./packages/app/fbs_pro-1.2.1.tar.gz"
+path = "./app/fbs_pro-1.2.1.tar.gz"
 summary = "Create cross-platform desktop applications with Python and Qt"
 groups = ["default"]
 dependencies = [
@@ -1047,10 +1047,9 @@ files = [
 
 [[package]]
 name = "ytmusic-deleter"
-version = "2.0.4"
+version = "2.1.0"
 requires_python = "<3.13,>=3.8.1"
-editable = true
-path = "./packages/cli"
+path = "./cli"
 summary = "Easily delete your YouTube Music library"
 groups = ["default"]
 dependencies = [
@@ -1062,14 +1061,14 @@ dependencies = [
 
 [[package]]
 name = "ytmusic-deleter-gui"
-version = "2.0.4"
+version = "2.1.0"
 requires_python = "<3.13,>=3.8.1"
-path = "./packages/app"
+path = "./app"
 summary = ""
 groups = ["default"]
 dependencies = [
     "PySide6",
-    "fbs @ file:///${PROJECT_ROOT}/packages/app/fbs_pro-1.2.1.tar.gz",
+    "fbs @ file:///${PROJECT_ROOT}/app/fbs_pro-1.2.1.tar.gz",
     "fbs[licensing,sentry,upload]>=1.2.1",
     "ytmusicapi",
 ]

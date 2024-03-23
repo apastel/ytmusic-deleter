@@ -35,7 +35,7 @@ Find the .exe file in the [Releases](https://github.com/apastel/ytmusic-deleter/
 > Please note you may get a browser warning when downloading the file, and a Windows warning for installing files from an unknown publisher. Click the "More Info" button, then the "Run Anyway" button to finish installing. This warning appears whenever you install something from an unsigned publisher.
 
 ### (Advanced) Command-line interface for non-Windows users
-See [CLI README](packages/cli/README.md) 
+See [CLI README](cli/README.md) 
 
 ## Setup
 Once installed and running, simply click the "Log In" button to authenticate to your YouTube Music account.
