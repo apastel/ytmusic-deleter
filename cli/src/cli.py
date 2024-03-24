@@ -12,6 +12,7 @@ from auth import ensure_auth
 from click import Context
 from progress import manager
 from uploads import maybe_delete_uploaded_albums
+from ytmusicapi import YTMusic
 
 
 @click.group()
@@ -49,7 +50,10 @@ def cli(ctx, log_dir, credential_dir, static_progress):
         ],
     )
     global youtube_auth
-    youtube_auth = ensure_auth(credential_dir)
+    if ctx.obj is not None:
+        youtube_auth = ctx.obj
+    else:
+        youtube_auth = ensure_auth(credential_dir)
     ctx.ensure_object(dict)
     ctx.obj["STATIC_PROGRESS"] = static_progress
 
@@ -84,6 +88,7 @@ def delete_uploads(ctx: Context, **kwargs):
             f"\tRemaining {remaining_count} albums (or songs) did not have a match in YouTube Music's online catalog."
         )
         logging.info("\tRe-run without the 'Add to library' option to delete the rest.")
+    return (albums_deleted, albums_total)
 
 
 @cli.command()
@@ -127,9 +132,11 @@ def remove_library(ctx):
         enabled=not ctx.obj["STATIC_PROGRESS"],
     )
     albums_removed += remove_library_albums_by_song(ctx, album_unique_songs)
+    albums_total = len(library_albums) + len(album_unique_songs)
     logging.info(
-        f"Removed {albums_removed} out of {len(library_albums) + len(album_unique_songs)} albums from your library."
+        f"Removed {albums_removed} out of {albums_total} albums from your library."
     )
+    return (albums_removed, albums_total)
 
 
 def remove_library_albums(ctx, albums):
@@ -189,6 +196,7 @@ def unlike_all(ctx):
         unit="songs",
         enabled=not ctx.obj["STATIC_PROGRESS"],
     )
+    songs_unliked = 0
     for track in your_likes["tracks"]:
         artist = (
             track["artists"][0]["name"]
@@ -202,8 +210,10 @@ def unlike_all(ctx):
         else:
             logging.info("\tRemoved track from Likes.")
             youtube_auth.rate_song(track["videoId"], const.INDIFFERENT)
+            songs_unliked += 1
         update_progress(ctx)
     logging.info("Finished unliking all songs.")
+    return (songs_unliked, len(your_likes["tracks"]))
 
 
 @cli.command()

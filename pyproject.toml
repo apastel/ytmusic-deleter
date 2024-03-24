@@ -16,6 +16,9 @@ build-backend = "pdm.backend"
 [tool.pdm.dev-dependencies]
 lint = ["flake8", "black"]
 test = ["pytest", "pytest-cov"]
+dev = [
+    "-e file:///${PROJECT_ROOT}/cli#egg=ytmusic-deleter",
+]
 
 [tool.black]
 line-length = 120
@@ -27,3 +30,6 @@ fbs = "sh fbs.sh"
 generate = { shell = "cd %PDM_PROJECT_ROOT%/app && generate_ui_files.sh" }
 # Use this to bump all the project versions
 version = { shell = "bump_versions.sh"}
+
+[tool.pytest.ini_options]
+addopts = "-rA"

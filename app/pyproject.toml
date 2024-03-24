@@ -1,5 +1,5 @@
 [project]
-name = "ytmusic-deleter-gui"
+name = "ytmusic-deleter-app"
 version = "2.1.0"
 requires-python = "<3.13,>=3.8.1"
 dependencies = [
@@ -12,8 +12,3 @@ dependencies = [
 [build-system]
 requires = ["pdm-backend"]
 build-backend = "pdm.backend"
-
-[tool.pdm.dev-dependencies]
-dev = [
-    "-e file:///${PROJECT_ROOT}/../cli#egg=ytmusic-deleter",
-]
