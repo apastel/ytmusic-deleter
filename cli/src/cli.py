@@ -49,13 +49,14 @@ def cli(ctx, log_dir, credential_dir, static_progress):
             logging.StreamHandler(sys.stdout),
         ],
     )
-    global youtube_auth
     if ctx.obj is not None:
-        youtube_auth = ctx.obj
+        # Allows yt_auth to be provided by pytest
+        yt_auth = ctx.obj
     else:
-        youtube_auth = ensure_auth(credential_dir)
+        yt_auth = ensure_auth(credential_dir)
     ctx.ensure_object(dict)
     ctx.obj["STATIC_PROGRESS"] = static_progress
+    ctx.obj["YT_AUTH"] = yt_auth
 
 
 @cli.command()
@@ -80,7 +81,7 @@ def cli(ctx, log_dir, credential_dir, static_progress):
 @click.pass_context
 def delete_uploads(ctx: Context, **kwargs):
     """Delete all songs that you have uploaded to your YT Music library."""
-    (albums_deleted, albums_total) = maybe_delete_uploaded_albums(ctx, youtube_auth)
+    (albums_deleted, albums_total) = maybe_delete_uploaded_albums(ctx)
     logging.info(f"Deleted {albums_deleted} out of {albums_total} uploaded albums (or songs).")
     remaining_count = albums_total - albums_deleted
     if (ctx.params["add_to_library"]) and remaining_count > 0:
@@ -95,9 +96,10 @@ def delete_uploads(ctx: Context, **kwargs):
 @click.pass_context
 def remove_library(ctx):
     """Remove all tracks that you have added to your library from within YouTube Music."""
+    yt_auth: YTMusic = ctx.obj["YT_AUTH"]
     logging.info("Retrieving all library albums...")
     try:
-        library_albums = youtube_auth.get_library_albums(sys.maxsize)
+        library_albums = yt_auth.get_library_albums(sys.maxsize)
         logging.info(f"Retrieved {len(library_albums)} albums from your library.")
     except Exception:
         logging.exception("Failed to get library albums.")
@@ -114,7 +116,7 @@ def remove_library(ctx):
     logging.info("Retrieving all singles...")
     # Aside from actual singles, these might also be individual songs from an album that were added to your library
     try:
-        library_songs = youtube_auth.get_library_songs(sys.maxsize)
+        library_songs = yt_auth.get_library_songs(sys.maxsize)
         logging.info(f"Retrieved {len(library_songs)} singles from your library.")
     except Exception:
         logging.exception("Failed to get library singles.")
@@ -151,15 +153,16 @@ def remove_library_albums(ctx, albums):
 def remove_library_albums_by_song(ctx, songs):
     albums_removed = 0
     for song in songs:
-        if remove_album(song["album"]["id"]):
+        if remove_album(ctx, song["album"]["id"]):
             albums_removed += 1
         update_progress(ctx)
     return albums_removed
 
 
-def remove_album(browseId):
+def remove_album(ctx, browseId):
+    yt_auth: YTMusic = ctx.obj["YT_AUTH"]
     try:
-        album = youtube_auth.get_album(browseId)
+        album = yt_auth.get_album(browseId)
     except Exception:
         logging.exception(
             f"\tFailed to remove album with ID {browseId} from your library, as it could not be retrieved."
@@ -168,7 +171,7 @@ def remove_album(browseId):
     artist = album["artists"][0]["name"] if "artists" in album else const.UNKNOWN_ARTIST
     title = album["title"]
     logging.info(f"Processing album: {artist} - {title}")
-    response = youtube_auth.rate_playlist(album["audioPlaylistId"], const.INDIFFERENT)
+    response = yt_auth.rate_playlist(album["audioPlaylistId"], const.INDIFFERENT)
     if response:
         logging.info(f"\tRemoved {artist} - {title} from your library.")
         return True
@@ -181,9 +184,10 @@ def remove_album(browseId):
 @click.pass_context
 def unlike_all(ctx):
     """Reset all Thumbs Up ratings back to neutral"""
+    yt_auth: YTMusic = ctx.obj["YT_AUTH"]
     logging.info("Retrieving all your liked songs...")
     try:
-        your_likes = youtube_auth.get_liked_songs(sys.maxsize)
+        your_likes = yt_auth.get_liked_songs(sys.maxsize)
     except Exception:
         logging.error("\tNo liked songs found or error retrieving liked songs.")
         return False
@@ -209,7 +213,7 @@ def unlike_all(ctx):
             logging.info("\tSkipping deletion as this might be a YouTube video and not a YouTube Music song.")
         else:
             logging.info("\tRemoved track from Likes.")
-            youtube_auth.rate_song(track["videoId"], const.INDIFFERENT)
+            yt_auth.rate_song(track["videoId"], const.INDIFFERENT)
             songs_unliked += 1
         update_progress(ctx)
     logging.info("Finished unliking all songs.")
@@ -220,8 +224,9 @@ def unlike_all(ctx):
 @click.pass_context
 def delete_playlists(ctx):
     """Delete all playlists"""
+    yt_auth: YTMusic = ctx.obj["YT_AUTH"]
     logging.info("Retrieving all your playlists...")
-    library_playlists = youtube_auth.get_library_playlists(sys.maxsize)
+    library_playlists = yt_auth.get_library_playlists(sys.maxsize)
     # Can't delete "Your Likes" playlist
     library_playlists = list(filter(lambda playlist: playlist["playlistId"] != "LM", library_playlists))
     logging.info(f"\tRetrieved {len(library_playlists)} playlists.")
@@ -236,7 +241,7 @@ def delete_playlists(ctx):
     for playlist in library_playlists:
         logging.info(f"Processing playlist: {playlist['title']}")
         try:
-            response = youtube_auth.delete_playlist(playlist["playlistId"])
+            response = yt_auth.delete_playlist(playlist["playlistId"])
             if response:
                 logging.info(f"\tRemoved playlist {playlist['title']!r} from your library.")
             else:
@@ -255,9 +260,10 @@ def delete_history(ctx):
     The API can only retrieve 200 history items at a time, so the process will appear to
     start over and repeat multiple times if necessary until all history is deleted.
     """
+    yt_auth: YTMusic = ctx.obj["YT_AUTH"]
     logging.info("Begin deleting history...")
     try:
-        history_items = youtube_auth.get_history()
+        history_items = yt_auth.get_history()
     except Exception as e:
         if str(e) == "None":
             logging.info("History is empty, nothing to delete.")
@@ -279,7 +285,7 @@ def delete_history(ctx):
             else const.UNKNOWN_ARTIST
         )
         logging.info(f"Processing {artist} - {item['title']}")
-        youtube_auth.remove_history_items(item["feedbackToken"])
+        yt_auth.remove_history_items(item["feedbackToken"])
         update_progress(ctx)
     ctx.invoke(delete_history)  # repeat until history is empty
 
@@ -301,14 +307,15 @@ def delete_all(ctx):
 @click.pass_context
 def sort_playlist(ctx, shuffle, playlist_titles):
     """Sort or shuffle one or more playlists alphabetically by artist and by album"""
-    all_playlists = youtube_auth.get_library_playlists(sys.maxsize)
+    yt_auth: YTMusic = ctx.obj["YT_AUTH"]
+    all_playlists = yt_auth.get_library_playlists(sys.maxsize)
     lowercase_playlist_titles = [title.lower() for title in playlist_titles]
     selected_playlist_list = [
         playlist for playlist in all_playlists if playlist["title"].lower() in lowercase_playlist_titles
     ]
     for selected_playlist in selected_playlist_list:
         logging.info(f'Processing playlist: {selected_playlist["title"]}')
-        playlist = youtube_auth.get_playlist(selected_playlist["playlistId"], sys.maxsize)
+        playlist = yt_auth.get_playlist(selected_playlist["playlistId"], sys.maxsize)
         current_tracklist = [t for t in playlist["tracks"]]
         if shuffle:
             logging.info(f"\tPlaylist: {selected_playlist['title']} will be shuffled")
@@ -333,7 +340,7 @@ def sort_playlist(ctx, shuffle, playlist_titles):
             )
             if cur_track != track_after:
                 try:
-                    response = youtube_auth.edit_playlist(
+                    response = yt_auth.edit_playlist(
                         playlist["id"],
                         moveItem=(
                             cur_track["setVideoId"],
