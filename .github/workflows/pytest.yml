@@ -1,4 +1,4 @@
-name: Code coverage
+name: Pytest
 
 on:
   push:
@@ -12,6 +12,8 @@ on:
     paths:
       - cli/**
   workflow_dispatch:
+  schedule:
+    - cron: '0 4 * * *'
 
 jobs:
   build:
