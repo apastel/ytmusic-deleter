@@ -13,7 +13,7 @@ from thefuzz import process
 from ytmusicapi import YTMusic
 
 
-def maybe_delete_uploaded_albums(ctx: Context, youtube_auth: YTMusic) -> tuple[int, int]:
+def maybe_delete_uploaded_albums(ctx: Context) -> tuple[int, int]:
     """
     Retrieve all of the uploaded songs, then filter the list to just songs from unique albums.
     Iterate over each album-unique song. If `add_to_library` is true, search the YTM online catalog
@@ -26,7 +26,8 @@ def maybe_delete_uploaded_albums(ctx: Context, youtube_auth: YTMusic) -> tuple[i
     """
     logging.info("Retrieving all uploaded songs...")
     albums_deleted = 0
-    uploaded_songs = youtube_auth.get_library_upload_songs(limit=None)
+    yt_auth: YTMusic = ctx.obj["YT_AUTH"]
+    uploaded_songs = yt_auth.get_library_upload_songs(limit=None)
     if not uploaded_songs:
         return (albums_deleted, 0)
     logging.info(f"Retrieved {len(uploaded_songs)} uploaded songs from your library.")
@@ -57,13 +58,13 @@ def maybe_delete_uploaded_albums(ctx: Context, youtube_auth: YTMusic) -> tuple[i
                 logging.warn("\tSkipping match search and will not delete.")
                 update_progress(ctx, progress_bar)
                 continue
-            elif not add_album_to_library(ctx, youtube_auth, artist, album_title):
+            elif not add_album_to_library(ctx, yt_auth, artist, album_title):
                 logging.warn(
                     f"\tNo album was added to library for '{artist} - {album_title}'. Will not delete from uploads."
                 )
                 update_progress(ctx, progress_bar)
                 continue
-        response = youtube_auth.delete_upload_entity(song["album"]["id"] if song.get("album") else song["entityId"])
+        response = yt_auth.delete_upload_entity(song["album"]["id"] if song.get("album") else song["entityId"])
         if response == "STATUS_SUCCEEDED":
             logging.info("\tDeleted album from uploads.")
             albums_deleted += 1
@@ -73,14 +74,15 @@ def maybe_delete_uploaded_albums(ctx: Context, youtube_auth: YTMusic) -> tuple[i
     return (albums_deleted, len(album_unique_songs))
 
 
-def add_album_to_library(ctx: Context, youtube_auth: YTMusic, upload_artist, upload_title) -> bool:
+def add_album_to_library(ctx: Context, upload_artist, upload_title) -> bool:
     """
     Search for "<artist> <album title>" in the YTM online catalog.
 
     `Return`: `True` if an album was added to library, `False` otherwise
     """
     logging.info(f"\tSearching YT Music for albums like: '{upload_artist} - {upload_title}'")
-    search_results = youtube_auth.search(f"{upload_artist} {upload_title}", filter="albums")
+    yt_auth: YTMusic = ctx.obj["YT_AUTH"]
+    search_results = yt_auth.search(f"{upload_artist} {upload_title}", filter="albums")
     if not search_results:
         logging.info("No search results were found. It's possible Google is limiting your requests. Try again later.")
         return False
@@ -148,8 +150,8 @@ def add_album_to_library(ctx: Context, youtube_auth: YTMusic, upload_artist, upl
             logging.info(f"No matches were found in YTM for `{upload_artist} - {upload_title}`")
             return False
 
-    catalog_album = youtube_auth.get_album(match["browseId"])
-    success = youtube_auth.rate_playlist(catalog_album["audioPlaylistId"], const.LIKE)
+    catalog_album = yt_auth.get_album(match["browseId"])
+    success = yt_auth.rate_playlist(catalog_album["audioPlaylistId"], const.LIKE)
     if success:
         logging.info("\tAdded album to library.")
         return True

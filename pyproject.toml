@@ -15,7 +15,7 @@ build-backend = "pdm.backend"
 
 [tool.pdm.dev-dependencies]
 lint = ["flake8", "black"]
-test = ["pytest", "pytest-cov"]
+test = ["pytest", "pytest-cov", "coverage"]
 dev = [
     "-e file:///${PROJECT_ROOT}/cli#egg=ytmusic-deleter",
 ]
@@ -32,4 +32,10 @@ generate = { shell = "cd %PDM_PROJECT_ROOT%/app && generate_ui_files.sh" }
 version = { shell = "bump_versions.sh"}
 
 [tool.pytest.ini_options]
-addopts = "-rA"
+addopts = "-rA --cov"
+
+[tool.coverage.run]
+source = ["cli/src"]
+
+[tool.coverage.report]
+precision = 2
