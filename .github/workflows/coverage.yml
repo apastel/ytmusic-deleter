@@ -48,3 +48,4 @@ jobs:
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
         slug: apastel/ytmusic-deleter
+    
