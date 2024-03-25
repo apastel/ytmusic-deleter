@@ -12,6 +12,7 @@ on:
       - main
     paths:
       - cli/**
+  workflow_dispatch:
 
 jobs:
   build:
