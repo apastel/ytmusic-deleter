@@ -6,6 +6,8 @@ import pytest
 import time
 from ytmusicapi import YTMusic
 
+import constants
+
 
 def get_resource(file: str) -> str:
     data_dir = Path(__file__).parent
@@ -27,6 +29,12 @@ def fixture_config() -> configparser.RawConfigParser:
 def fixture_sample_album() -> str:
     """Eminem - Revival"""
     return "MPREb_4pL8gzRtw1p"
+
+
+@pytest.fixture(name="sample_album_as_playlist")
+def fixture_sample_album_as_playlist() -> str:
+    """Eminem - Revival"""
+    return "OLAK5uy_nMr9h2VlS-2PULNz3M3XVXQj_P3C2bqaY"
 
 
 @pytest.fixture(name="sample_video")
@@ -98,4 +106,21 @@ def fixture_upload_song(config, yt_browser: YTMusic) -> Dict | None:
         for song in songs:
             if song.get("title") in config["uploads"]["file"]:
                 return song
+        retries_remaining -= 1
+
+
+@pytest.fixture(name="add_library_album")
+def fixture_add_library_album(config, yt_oauth: YTMusic, sample_album_as_playlist):
+    response = yt_oauth.rate_playlist(sample_album_as_playlist, constants.LIKE)
+    assert "actions" in response
+
+    # Wait for album to finish processing
+    retries_remaining = 5
+    while retries_remaining:
+        time.sleep(2)
+        albums = yt_oauth.get_library_albums(limit=None)
+        print(albums)
+        for album in albums:
+            if album.get("title") == "Revival":
+                return album
         retries_remaining -= 1

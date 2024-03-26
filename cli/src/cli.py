@@ -51,9 +51,10 @@ def cli(ctx, log_dir, credential_dir, static_progress):
     )
     if ctx.obj is not None:
         # Allows yt_auth to be provided by pytest
-        yt_auth = ctx.obj
+        yt_auth: YTMusic = ctx.obj
+        logging.info(f"Logged in as {yt_auth.get_account_info().get("accountName")}")
     else:
-        yt_auth = ensure_auth(credential_dir)
+        yt_auth: YTMusic = ensure_auth(credential_dir)
     ctx.ensure_object(dict)
     ctx.obj["STATIC_PROGRESS"] = static_progress
     ctx.obj["YT_AUTH"] = yt_auth
@@ -144,7 +145,7 @@ def remove_library(ctx):
 def remove_library_albums(ctx, albums):
     albums_removed = 0
     for album in albums:
-        if remove_album(album["browseId"]):
+        if remove_album(ctx, album["browseId"]):
             albums_removed += 1
         update_progress(ctx)
     return albums_removed
