@@ -112,6 +112,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def is_logged_in(self, display_message=False):
         try:
             self.ytmusic = YTMusic(str(Path(self.credential_dir) / OAUTH_FILENAME))
+        except JSONDecodeError:
+            if display_message:
+                self.message('Click the "Log In" button to connect to your account.')
+            self.accountNameLabel.setVisible(False)
+            self.accountPhotoLabel.setVisible(False)
+            return False
+        try:
             account_info: dict = self.ytmusic.get_account_info()
             r = requests.get(account_info["accountPhotoUrl"])
             img = QImage()
@@ -121,13 +128,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.accountNameLabel.setText(account_info["accountName"])
             self.accountPhotoLabel.setPixmap(QPixmap.fromImage(img))
             self.message(f"Logged in as {account_info['accountName']!r}")
-            return True
-        except JSONDecodeError:
-            if display_message:
-                self.message('Click the "Log In" button to connect to your account.')
-            self.accountNameLabel.setVisible(False)
-            self.accountPhotoLabel.setVisible(False)
-            return False
+        except KeyError:
+            self.message("Unable to get acccount info")
+        return True
 
     def update_buttons(self):
         if self.is_logged_in(display_message=True):
