@@ -110,17 +110,32 @@ def fixture_upload_song(config, yt_browser: YTMusic) -> Dict | None:
 
 
 @pytest.fixture(name="add_library_album")
-def fixture_add_library_album(config, yt_oauth: YTMusic, sample_album_as_playlist):
+def fixture_add_library_album(yt_oauth: YTMusic, sample_album_as_playlist):
     response = yt_oauth.rate_playlist(sample_album_as_playlist, constants.LIKE)
     assert "actions" in response
 
     # Wait for album to finish processing
     retries_remaining = 5
     while retries_remaining:
-        time.sleep(2)
         albums = yt_oauth.get_library_albums(limit=None)
-        print(albums)
         for album in albums:
             if album.get("title") == "Revival":
                 return album
         retries_remaining -= 1
+        time.sleep(2)
+
+
+@pytest.fixture(name="like_song")
+def fixture_like_song(yt_oauth: YTMusic, sample_video):
+    response = yt_oauth.rate_song(sample_video, constants.LIKE)
+    assert "actions" in response
+
+    # Wait for song to finish processing
+    retries_remaining = 5
+    while retries_remaining:
+        liked_songs = yt_oauth.get_liked_songs(limit=None)
+        for song in liked_songs["tracks"]:
+            if song.get("title") == "Wonderwall":
+                return song
+        retries_remaining -= 1
+        time.sleep(2)

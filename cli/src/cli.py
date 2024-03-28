@@ -188,7 +188,7 @@ def unlike_all(ctx):
     yt_auth: YTMusic = ctx.obj["YT_AUTH"]
     logging.info("Retrieving all your liked songs...")
     try:
-        your_likes = yt_auth.get_liked_songs(sys.maxsize)
+        your_likes = yt_auth.get_liked_songs(limit=None)
     except Exception:
         logging.error("\tNo liked songs found or error retrieving liked songs.")
         return False
