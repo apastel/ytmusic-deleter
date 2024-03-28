@@ -2,7 +2,7 @@ import logging
 
 import enlighten
 
-manager = enlighten.get_manager()
+manager = enlighten.get_manager(no_resize=True)
 
 
 def update_progress(ctx, progress_bar):

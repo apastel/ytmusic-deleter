@@ -5,10 +5,14 @@ import re
 import shutil
 import sys
 import webbrowser
+import traceback
 from json import JSONDecodeError
 from pathlib import Path
 
+import click
+from click.testing import CliRunner
 import requests
+import cli
 from constants import OAUTH_FILENAME
 from fbs_runtime import PUBLIC_SETTINGS
 from fbs_runtime.application_context import cached_property
@@ -17,10 +21,10 @@ from fbs_runtime.application_context.PySide6 import ApplicationContext
 from fbs_runtime.excepthook.sentry import SentryExceptionHandler
 from generated.ui_main_window import Ui_MainWindow
 from progress_dialog import ProgressDialog
-from PySide6.QtCore import QProcess
+from PySide6.QtCore import QProcess, QRunnable, QObject, QThread
 from PySide6.QtCore import QRect
 from PySide6.QtCore import QSettings
-from PySide6.QtCore import Slot
+from PySide6.QtCore import Slot, Signal, QThreadPool
 from PySide6.QtGui import QImage
 from PySide6.QtGui import QPixmap
 from PySide6.QtWidgets import QCheckBox
@@ -38,9 +42,71 @@ progress_re = re.compile("Total complete: (\\d+)%")
 item_processing_re = re.compile("(Processing \\w+ .+)")
 
 
+class Worker(QRunnable):
+    """
+    Worker thread
+    Inherits from QRunnable to handler worker thread setup, signals and wrap-up.
+    :param callback: The function callback to run on this worker thread. Supplied args and
+                     kwargs will be passed through to the runner.
+    :type callback: function
+    :param args: Arguments to pass to the callback function
+    :param kwargs: Keywords to pass to the callback function
+    """
+
+    def __init__(self, fn, *args, **kwargs):
+        super(Worker, self).__init__()
+
+        # Store constructor arguments (re-used for processing)
+        self.fn = fn
+        self.args = args
+        self.kwargs = kwargs
+        self.signals = WorkerSignals()
+
+        # Add the callback to our kwargs
+        self.kwargs['progress_callback'] = self.signals.progress
+
+    @Slot()
+    def run(self):
+        """
+        Initialise the runner function with passed args, kwargs.
+        """
+
+        # Retrieve args/kwargs here; and fire processing using them
+        try:
+            result = self.fn(*self.args, **self.kwargs)
+        except:
+            traceback.print_exc()
+            exc_type, value = sys.exc_info()[:2]
+            self.signals.error.emit((exc_type, value, traceback.format_exc()))
+        else:
+            self.signals.result.emit(result)  # Return the result of the processing
+        finally:
+            self.signals.finished.emit()  # Done
+
+
+class WorkerSignals(QObject):
+    """
+    Defines the signals available from a running worker thread.
+    finished -> None
+        Should always fire even if the callable throws an exception
+    error -> tuple (exctype, value, traceback.format_exc() )
+        Only fired if any exception is caught
+    result -> object
+        If no exception is caught fires your result back to you
+    progress
+        int indicating % progress
+    """
+    finished = Signal()
+    error = Signal(tuple)
+    result = Signal(object)
+    progress = Signal(float)
+
+
 class MainWindow(QMainWindow, Ui_MainWindow):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, *args, **kwargs):
+        super(MainWindow, self).__init__(*args, **kwargs)
+
+        self.worker = None
 
         self.settings = QSettings("apastel", "YTMusic Deleter")
         try:
@@ -63,7 +129,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         )
 
         self.setupUi(self)
-        self.p = None
+        # self.p = None
 
         self.removeLibraryButton.clicked.connect(self.remove_library)
         self.deleteUploadsButton.clicked.connect(self.delete_uploads)
@@ -101,13 +167,15 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         self.update_buttons()
 
-        cmd_path = shutil.which("ytmusic-deleter")
-        if cmd_path:
-            self.message(f"Found ytmusic-deleter executable at {cmd_path}")
-        else:
-            self.message(
-                "'ytmusic-deleter' executable not found. It's possible that it's not installed and none of the functions will work."
-            )
+        self.threadpool = QThreadPool()
+
+        # cmd_path = shutil.which("ytmusic-deleter")
+        # if cmd_path:
+        #     self.message(f"Found ytmusic-deleter executable at {cmd_path}")
+        # else:
+        #     self.message(
+        #         "'ytmusic-deleter' executable not found. It's possible that it's not installed and none of the functions will work."
+        #     )
 
     def is_logged_in(self, display_message=False):
         try:
@@ -218,7 +286,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.show_dialog(["sort-playlist"])
 
     def show_dialog(self, args):
-        if self.p is None and self.is_logged_in():
+        if self.is_logged_in():
             if args[0] == "sort-playlist":
                 self.sort_playlists_dialog = SortPlaylistsDialog(self)
                 self.sort_playlists_dialog.show()
@@ -263,18 +331,29 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         return confirmation_dialog.exec()
 
     def launch_process(self, args):
-        self.p = QProcess()
-        self.p.readyReadStandardOutput.connect(self.handle_stdout)
-        self.p.readyReadStandardError.connect(self.handle_stderr)
-        self.p.stateChanged.connect(self.handle_state)
-        self.p.finished.connect(self.process_finished)
-        cli_args = ["-l", self.log_dir, "-c", self.credential_dir, "-p"] + args
-        self.message(f"Executing process: ytmusic-deleter {cli_args}")
-        self.p.start("ytmusic-deleter", cli_args)
+        # Pass the function to execute
+        self.worker = Worker(self.execute_this_fn)  # Any other args, kwargs are passed to the run function
+        self.worker.signals.result.connect(self.on_success)
+        self.worker.signals.finished.connect(self.on_finish)
+        self.worker.signals.progress.connect(self.update_progress)
+
+        # Execute
+        self.threadpool.start(self.worker)
+
+        # self.p = QProcess()
+        # self.p.readyReadStandardOutput.connect(self.handle_stdout)
+        # self.p.readyReadStandardError.connect(self.handle_stderr)
+        # self.p.stateChanged.connect(self.handle_state)
+        # self.p.finished.connect(self.process_finished)
+        # worker.finished.connect(self.process_finished)
+        # cli_args = ["-l", self.log_dir, "-c", self.credential_dir, "-p"] + args
+        # self.message(f"Executing process: ytmusic-deleter {cli_args}")
+        # self.p.start("ytmusic-deleter", cli_args)
+        # self.threadpool.start(worker)
         self.progress_dialog = ProgressDialog(self)
         self.progress_dialog.show()
-        if not self.p.waitForStarted():
-            self.message(self.p.errorString())
+        # if not self.p.waitForStarted():
+        #     self.message(self.p.errorString())
 
     @Slot()
     def add_to_library_checked(self, is_checked):
@@ -310,11 +389,31 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         state_name = states[state]
         self.message(f"State changed: {state_name}")
 
+    def update_progress(self, n):
+        self.message(f"{n:.0%}")
+
+    def execute_this_fn(self, progress_callback):
+        # causes sys.exit at the end
+        # cli.cli(['-p', 'unlike-all'], obj=self.ytmusic)
+
+        # doesn't play nice with group and subcommand
+        # ctx = click.Context(cli.cli, obj=self.ytmusic)
+        # ctx.invoke(cli.cli, log_dir=self.log_dir)
+
+        # swallows all output and exceptions
+        runner = CliRunner()
+        result = runner.invoke(cli.cli, ["unlike-all"], standalone_mode=False, obj=self.ytmusic)
+        print(result.stdout)
+        return "Calculation Done"
+
+    def on_success(self, s):
+        print(s)
+
     @Slot()
-    def process_finished(self):
+    def on_finish(self):
         self.progress_dialog.close()
         self.message("Process finished.")
-        self.p = None
+        self.worker = None
 
     def message(self, msg):
         msg = msg.rstrip()  # Remove extra newlines
