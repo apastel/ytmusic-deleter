@@ -5,7 +5,7 @@ from typing import List
 from typing import TypedDict
 
 import constants as const
-from click import Context
+from click import get_current_context
 from progress import manager
 from progress import update_progress
 from thefuzz import fuzz
@@ -13,7 +13,7 @@ from thefuzz import process
 from ytmusicapi import YTMusic
 
 
-def maybe_delete_uploaded_albums(ctx: Context) -> tuple[int, int]:
+def maybe_delete_uploaded_albums() -> tuple[int, int]:
     """
     Retrieve all of the uploaded songs, then filter the list to just songs from unique albums.
     Iterate over each album-unique song. If `add_to_library` is true, search the YTM online catalog
@@ -26,7 +26,7 @@ def maybe_delete_uploaded_albums(ctx: Context) -> tuple[int, int]:
     """
     logging.info("Retrieving all uploaded songs...")
     albums_deleted = 0
-    yt_auth: YTMusic = ctx.obj["YT_AUTH"]
+    yt_auth: YTMusic = get_current_context().obj["YT_AUTH"]
     uploaded_songs = yt_auth.get_library_upload_songs(limit=None)
     if not uploaded_songs:
         return (albums_deleted, 0)
@@ -39,7 +39,7 @@ def maybe_delete_uploaded_albums(ctx: Context) -> tuple[int, int]:
         total=len(album_unique_songs),
         desc="Albums Processed",
         unit="albums",
-        enabled=not ctx.obj["STATIC_PROGRESS"],
+        enabled=not get_current_context().obj["STATIC_PROGRESS"],
     )
     for song in album_unique_songs:
         artist = (
@@ -49,20 +49,20 @@ def maybe_delete_uploaded_albums(ctx: Context) -> tuple[int, int]:
         )
         album_title = song["album"]["name"] if song.get("album") else const.UNKNOWN_ALBUM
         logging.info(f"Processing album: {artist} - {album_title}")
-        if ctx.params["add_to_library"]:
+        if get_current_context().params["add_to_library"]:
             if artist == const.UNKNOWN_ARTIST or album_title == const.UNKNOWN_ALBUM:
                 if artist == const.UNKNOWN_ARTIST:
                     logging.warn("\tSong is missing artist metadata.")
                 if album_title == const.UNKNOWN_ALBUM:
                     logging.warn("\tSong is missing album metadata.")
                 logging.warn("\tSkipping match search and will not delete.")
-                update_progress(ctx, progress_bar)
+                update_progress(progress_bar)
                 continue
-            elif not add_album_to_library(ctx, yt_auth, artist, album_title):
+            elif not add_album_to_library(yt_auth, artist, album_title):
                 logging.warn(
                     f"\tNo album was added to library for '{artist} - {album_title}'. Will not delete from uploads."
                 )
-                update_progress(ctx, progress_bar)
+                update_progress(progress_bar)
                 continue
         response = yt_auth.delete_upload_entity(song["album"]["id"] if song.get("album") else song["entityId"])
         if response == "STATUS_SUCCEEDED":
@@ -70,18 +70,18 @@ def maybe_delete_uploaded_albums(ctx: Context) -> tuple[int, int]:
             albums_deleted += 1
         else:
             logging.error("\tFailed to delete album from uploads")
-        update_progress(ctx, progress_bar)
+        update_progress(progress_bar)
     return (albums_deleted, len(album_unique_songs))
 
 
-def add_album_to_library(ctx: Context, upload_artist, upload_title) -> bool:
+def add_album_to_library(upload_artist, upload_title) -> bool:
     """
     Search for "<artist> <album title>" in the YTM online catalog.
 
     `Return`: `True` if an album was added to library, `False` otherwise
     """
     logging.info(f"\tSearching YT Music for albums like: '{upload_artist} - {upload_title}'")
-    yt_auth: YTMusic = ctx.obj["YT_AUTH"]
+    yt_auth: YTMusic = get_current_context().obj["YT_AUTH"]
     search_results = yt_auth.search(f"{upload_artist} {upload_title}", filter="albums")
     if not search_results:
         logging.info("No search results were found. It's possible Google is limiting your requests. Try again later.")
@@ -100,7 +100,7 @@ def add_album_to_library(ctx: Context, upload_artist, upload_title) -> bool:
         logging.info("\tNone of the search results had the correct artist name.")
         return False
 
-    if ctx.params["fuzzy"]:
+    if get_current_context().params["fuzzy"]:
 
         def scorer(query, choice):
             return fuzz.partial_ratio(query, choice)
@@ -111,9 +111,9 @@ def add_album_to_library(ctx: Context, upload_artist, upload_title) -> bool:
         )
 
         # Make sure this result at least passes the score cutoff
-        if score < ctx.params["score_cutoff"]:
+        if score < get_current_context().params["score_cutoff"]:
             logging.info(
-                f"\tThe best search result '{match['artist']} - {match['title']}' had a match score of {score} which does not pass the score cutoff of {ctx.params['score_cutoff']}."  # noqa: B950
+                f"\tThe best search result '{match['artist']} - {match['title']}' had a match score of {score} which does not pass the score cutoff of {get_current_context().params['score_cutoff']}."  # noqa: B950
             )
             return False
 

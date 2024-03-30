@@ -33,9 +33,10 @@ from ytmusicapi.auth.oauth import OAuthCredentials
 from ytmusicapi.auth.oauth import RefreshingToken
 
 
+CLI_EXECUTABLE = "ytmusic-deleter"
 APP_DATA_DIR = str(Path(os.getenv("APPDATA" if os.name == "nt" else "HOME")) / "YTMusic Deleter")
-progress_re = re.compile("Total complete: (\\d+)%")
-item_processing_re = re.compile("(Processing \\w+ .+)")
+progress_re = re.compile(r"Total complete: (\d+)%")
+item_processing_re = re.compile(r"(Processing .+)")
 
 
 class MainWindow(QMainWindow, Ui_MainWindow):
@@ -101,7 +102,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         self.update_buttons()
 
-        cmd_path = shutil.which("ytmusic-deleter")
+        cmd_path = shutil.which(CLI_EXECUTABLE)
         if cmd_path:
             self.message(f"Found ytmusic-deleter executable at {cmd_path}")
         else:
@@ -270,7 +271,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.p.finished.connect(self.process_finished)
         cli_args = ["-l", self.log_dir, "-c", self.credential_dir, "-p"] + args
         self.message(f"Executing process: ytmusic-deleter {cli_args}")
-        self.p.start("ytmusic-deleter", cli_args)
+        self.p.start(CLI_EXECUTABLE, cli_args)
         self.progress_dialog = ProgressDialog(self)
         self.progress_dialog.show()
         if not self.p.waitForStarted():

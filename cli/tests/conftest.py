@@ -1,12 +1,11 @@
 import configparser
+import time
 from pathlib import Path
 from typing import Dict
 
-import pytest
-import time
-from ytmusicapi import YTMusic
-
 import constants
+import pytest
+from ytmusicapi import YTMusic
 
 
 def get_resource(file: str) -> str:
@@ -132,10 +131,16 @@ def fixture_like_song(yt_oauth: YTMusic, sample_video):
 
     # Wait for song to finish processing
     retries_remaining = 5
-    while retries_remaining:
+    song_processed = False
+    while retries_remaining and not song_processed:
         liked_songs = yt_oauth.get_liked_songs(limit=None)
         for song in liked_songs["tracks"]:
             if song.get("title") == "Wonderwall":
-                return song
+                yield song
+                song_processed = True
+                break
         retries_remaining -= 1
         time.sleep(2)
+
+    # Remove song from library to clean up
+    yt_oauth.rate_playlist("OLAK5uy_lZ90LvUqQdKrByCbk99v54d8XpUOmFavo", constants.INDIFFERENT)
