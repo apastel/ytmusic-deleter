@@ -17,9 +17,11 @@ from fbs_runtime.application_context.PySide6 import ApplicationContext
 from fbs_runtime.excepthook.sentry import SentryExceptionHandler
 from generated.ui_main_window import Ui_MainWindow
 from progress_dialog import ProgressDialog
+from PySide6.QtCore import QEvent
 from PySide6.QtCore import QProcess
 from PySide6.QtCore import QRect
 from PySide6.QtCore import QSettings
+from PySide6.QtCore import Qt
 from PySide6.QtCore import Slot
 from PySide6.QtGui import QImage
 from PySide6.QtGui import QPixmap
@@ -43,6 +45,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def __init__(self):
         super().__init__()
 
+        # Initialize settings
         self.settings = QSettings("apastel", "YTMusic Deleter")
         try:
             self.resize(self.settings.value("mainwindow/size"))
@@ -51,8 +54,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             pass
         self.log_dir = self.settings.value("log_dir", APP_DATA_DIR)
         self.credential_dir = self.settings.value("credential_dir", APP_DATA_DIR)
+
+        # Ensure directory exists where we're storing logs and writing creds
         Path(self.log_dir).mkdir(parents=True, exist_ok=True)
         Path(self.credential_dir).mkdir(parents=True, exist_ok=True)
+
+        # Initialize a logger
         logging.basicConfig(
             level=logging.INFO,
             format="[%(asctime)s] %(message)s",
@@ -63,26 +70,34 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             ],
         )
 
+        # Initailize UI from generated files
         self.setupUi(self)
         self.p = None
 
-        self.removeLibraryButton.clicked.connect(self.remove_library)
-        self.deleteUploadsButton.clicked.connect(self.delete_uploads)
-        self.deletePlaylistsButton.clicked.connect(self.delete_playlists)
-        self.unlikeAllButton.clicked.connect(self.unlike_all)
-        self.deleteHistoryButton.clicked.connect(self.delete_history)
-        self.deleteAllButton.clicked.connect(self.delete_all)
-        self.sortPlaylistButton.clicked.connect(self.sort_playlist)
-        self.removeLibraryButton.setDisabled(True)
-        self.deleteUploadsButton.setDisabled(True)
-        self.deletePlaylistsButton.setDisabled(True)
-        self.unlikeAllButton.setDisabled(True)
-        self.deleteHistoryButton.setDisabled(True)
-        self.deleteAllButton.setDisabled(True)
-        self.sortPlaylistButton.setDisabled(True)
-        self.donateLabel = ClickableLabel(self.centralwidget, "https://www.buymeacoffee.com/jewbix.cube")
+        self.centralWidget.installEventFilter(self)
+        self.photo_button_stylesheet = self.accountPhotoButton.styleSheet()
+        self.signOutButton.setStyleSheet(
+            "QPushButton { background-color: #666666; border-radius: 20px; border: 1px solid; }"
+        )
+        self.accountNameLabel.setStyleSheet("QLabel { border: none; color: black; }")
+        self.accountWidgetCloseButton.setStyleSheet(
+            "QPushButton { border: none; background-color: none; color: black; }"
+        )
+        self.accountPhotoButton.clicked.connect(self.account_button_clicked)
+        self.signOutButton.clicked.connect(self.sign_out)
+        self.accountWidgetCloseButton.clicked.connect(self.accountWidget.close)
+        self.removeLibraryButton.clicked.connect(self.prepare_to_invoke)
+        self.deleteUploadsButton.clicked.connect(self.prepare_to_invoke)
+        self.deletePlaylistsButton.clicked.connect(self.prepare_to_invoke)
+        self.unlikeAllButton.clicked.connect(self.prepare_to_invoke)
+        self.deleteHistoryButton.clicked.connect(self.prepare_to_invoke)
+        self.deleteAllButton.clicked.connect(self.prepare_to_invoke)
+        self.sortPlaylistButton.clicked.connect(self.prepare_to_invoke)
+
+        # Create donate button
+        self.donateLabel = ClickableLabel(self.centralWidget, "https://www.buymeacoffee.com/jewbix.cube")
         self.donateLabel.setObjectName("donateLabel")
-        self.donateLabel.setGeometry(QRect(545, 30, 260, 50))
+        self.donateLabel.setGeometry(QRect(40, 30, 260, 50))
         r = requests.get(
             "https://img.buymeacoffee.com/button-api/?text=Buy me a beer!&emoji=🍺&slug=jewbix.cube&button_colour=FFDD00&"
             "font_colour=000000&font_family=Cookie&outline_colour=000000&coffee_colour=ffffff"
@@ -91,10 +106,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         img.loadFromData(r.content)
         self.donateLabel.setPixmap(QPixmap.fromImage(img))
         self.donateLabel.setToolTip(
-            "It's a donate button! Sorry it looks like crap. But if this tool saved you a lot of time, consider buying me a beer!"
+            "It's a donate button! If this tool saved you a lot of time, consider buying me a beer!"
         )
 
-        self.authIndicator.clicked.connect(self.prompt_for_auth)
+        self.signInButton.clicked.connect(self.prompt_for_auth)
+        self.accountWidget.hide()
 
         self.add_to_library = False
 
@@ -107,35 +123,56 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.message(f"Found ytmusic-deleter executable at {cmd_path}")
         else:
             self.message(
-                "'ytmusic-deleter' executable not found. It's possible that it's not installed and none of the functions will work."
+                f"{CLI_EXECUTABLE!r} executable not found. It's possible that it's not installed and none of the functions will work."  # noqa
             )
 
-    def is_logged_in(self, display_message=False):
+    def eventFilter(self, obj, event):
+        """Closes accountWidget when clicking outside of it."""
+        # Alternative to this is setting the Qt.Popup flag but that causes
+        # the accountWidget to appear way outside the bounds of the app.
+        if obj == self.centralWidget and event.type() == QEvent.MouseButtonRelease:
+            if not self.accountWidget.geometry().contains(event.position().toPoint()):
+                self.accountWidget.close()
+        return super().eventFilter(obj, event)
+
+    def is_signed_in(self, display_message=False) -> bool:
+        """Check if user is signed in. If true, display their account info."""
         try:
+            # Check for oauth.json
             self.ytmusic = YTMusic(str(Path(self.credential_dir) / OAUTH_FILENAME))
         except JSONDecodeError:
+            # User is not signed in
             if display_message:
-                self.message('Click the "Log In" button to connect to your account.')
-            self.accountNameLabel.setVisible(False)
-            self.accountPhotoLabel.setVisible(False)
+                self.message("Click the 'Sign In' button to connect to your account.")
             return False
+
         try:
+            # Display account name in popover
             account_info: dict = self.ytmusic.get_account_info()
-            r = requests.get(account_info["accountPhotoUrl"])
-            img = QImage()
-            img.loadFromData(r.content)
-            self.accountNameLabel.setVisible(True)
-            self.accountPhotoLabel.setVisible(True)
-            self.accountNameLabel.setText(account_info["accountName"])
-            self.accountPhotoLabel.setPixmap(QPixmap.fromImage(img))
-            self.message(f"Logged in as {account_info['accountName']!r}")
+            account_name = account_info["accountName"]
+            self.accountNameLabel.setText(account_name)
+
+            # Display account photo
+            response = requests.get(account_info["accountPhotoUrl"])
+            pixmap = QPixmap()
+            pixmap.loadFromData(response.content)
+            pixmap = pixmap.scaled(self.accountPhotoButton.size(), Qt.KeepAspectRatio, Qt.SmoothTransformation)
+            photo_path = str(Path(Path(APP_DATA_DIR) / "account_photo.jpg"))
+            pixmap.save(photo_path)
+            background_photo_style = f"\nQPushButton {{ background-image: url({Path(photo_path).as_posix()}); }}"
+            self.accountPhotoButton.setStyleSheet(self.photo_button_stylesheet + background_photo_style)
+
+            if display_message:
+                self.message(f"Signed in as {account_name!r}")
         except KeyError:
             self.message("Unable to get acccount info")
         return True
 
     def update_buttons(self):
-        if self.is_logged_in(display_message=True):
-            self.authIndicator.setText("Log Out")
+        """Update the display status of the buttons when initializing or signing in/out"""
+        if self.is_signed_in(display_message=True):
+            self.accountPhotoButton.show()
+            self.signInButton.hide()
             self.removeLibraryButton.setDisabled(False)
             self.deleteUploadsButton.setDisabled(False)
             self.deletePlaylistsButton.setDisabled(False)
@@ -144,7 +181,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.deleteAllButton.setDisabled(False)
             self.sortPlaylistButton.setDisabled(False)
         else:
-            self.authIndicator.setText("Log In")
+            self.accountPhotoButton.hide()
+            self.signInButton.show()
             self.removeLibraryButton.setDisabled(True)
             self.deleteUploadsButton.setDisabled(True)
             self.deletePlaylistsButton.setDisabled(True)
@@ -154,72 +192,62 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.sortPlaylistButton.setDisabled(True)
 
     @Slot()
-    def prompt_for_auth(self):
-        oauth_file_path = Path(Path(self.credential_dir) / OAUTH_FILENAME)
-        if self.is_logged_in():
-            # log out
-            Path.unlink(oauth_file_path)
-            self.message("Logged out of YTMusic Deleter.")
+    def account_button_clicked(self):
+        """Hide/show accountWidget when clicking profile photo"""
+        if self.accountWidget.isVisible():
+            self.accountWidget.hide()
         else:
-            oauth = OAuthCredentials()
-            code = oauth.get_code()
+            self.accountWidget.show()
 
-            self.message("Showing login prompt.")
-            url_prompt = QMessageBox()
-            url_prompt.setIcon(QMessageBox.Information)
-            url = f"{code['verification_url']}?user_code={code['user_code']}"
-            url_prompt.setText(
-                f"<html>Go to <a href={url!r}>{url}</a>, follow the instructions, and click OK in this window when done.</html>"
-            )
-            url_prompt.setInformativeText(
-                "<html>This OAuth flow uses the <a href='https://developers.google.com/youtube/v3/guides/auth/devices'>Google API flow for TV devices</a>.</html>"  # noqa
-            )
-            url_prompt.exec()
+    @Slot()
+    def sign_out(self):
+        Path.unlink(Path(Path(self.credential_dir) / OAUTH_FILENAME))
+        self.message("Signed out of YTMusic Deleter.")
+        self.accountWidget.hide()
+        self.accountPhotoButton.hide()
+        self.signInButton.show()
+        self.update_buttons()
 
-            raw_token = oauth.token_from_code(code["device_code"])
-            try:
-                ref_token = RefreshingToken(credentials=oauth, **raw_token)
-                # store the token in oauth.json
-                ref_token.store_token(oauth_file_path)
-                if self.is_logged_in():
-                    self.message("Successfully logged in.")
-                else:
-                    self.message("Failed to log in. Try again.")
-            except Exception:
-                self.message("Failed to log in. Try again.")
+    @Slot()
+    def prompt_for_auth(self):
+        oauth = OAuthCredentials()
+        code = oauth.get_code()
+
+        self.message("Showing login prompt.")
+        url_prompt = QMessageBox()
+        url_prompt.setIcon(QMessageBox.Information)
+        url = f"{code['verification_url']}?user_code={code['user_code']}"
+        url_prompt.setText(
+            f"<html>Go to <a href={url!r}>{url}</a>, follow the instructions, and click OK in this window when done.</html>"
+        )
+        url_prompt.setInformativeText(
+            "<html>This OAuth flow uses the <a href='https://developers.google.com/youtube/v3/guides/auth/devices'>Google API flow for TV devices</a>.</html>"  # noqa
+        )
+        url_prompt.exec()
+
+        raw_token = oauth.token_from_code(code["device_code"])
+        try:
+            ref_token = RefreshingToken(credentials=oauth, **raw_token)
+            # store the token in oauth.json
+            ref_token.store_token(Path(Path(self.credential_dir) / OAUTH_FILENAME))
+            if self.is_signed_in():
+                self.message("Successfully signed in.")
+            else:
+                self.message("Failed to sign in. Try again.")
+        except Exception:
+            self.message("Failed to sign in. Try again.")
 
         self.update_buttons()
 
     @Slot()
-    def remove_library(self):
-        self.show_dialog(["remove-library"])
-
-    @Slot()
-    def delete_uploads(self):
-        self.show_dialog(["delete-uploads"])
-
-    @Slot()
-    def delete_playlists(self):
-        self.show_dialog(["delete-playlists"])
-
-    @Slot()
-    def unlike_all(self):
-        self.show_dialog(["unlike-all"])
-
-    @Slot()
-    def delete_history(self):
-        self.show_dialog(["delete-history"])
-
-    @Slot()
-    def delete_all(self):
-        self.show_dialog(["delete-all"])
-
-    @Slot()
-    def sort_playlist(self):
-        self.show_dialog(["sort-playlist"])
+    def prepare_to_invoke(self):
+        button_text = self.sender().text()
+        self.message(f"{button_text} clicked.")
+        # Turn "Remove Library" into "remove-library" for example
+        self.show_dialog([button_text.lower().replace(" ", "-")])
 
     def show_dialog(self, args):
-        if self.p is None and self.is_logged_in():
+        if self.p is None and self.is_signed_in():
             if args[0] == "sort-playlist":
                 self.sort_playlists_dialog = SortPlaylistsDialog(self)
                 self.sort_playlists_dialog.show()

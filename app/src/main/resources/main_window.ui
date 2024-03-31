@@ -6,14 +6,14 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>800</width>
-    <height>600</height>
+    <width>900</width>
+    <height>685</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>YTMusic Deleter</string>
   </property>
-  <widget class="QWidget" name="centralwidget">
+  <widget class="QWidget" name="centralWidget">
    <widget class="QPushButton" name="removeLibraryButton">
     <property name="geometry">
      <rect>
@@ -22,6 +22,9 @@
       <width>101</width>
       <height>41</height>
      </rect>
+    </property>
+    <property name="statusTip">
+     <string>Remove all tracks that you have added to your library from within YouTube Music.</string>
     </property>
     <property name="text">
      <string>Remove Library</string>
@@ -34,9 +37,9 @@
     <property name="geometry">
      <rect>
       <x>40</x>
-      <y>270</y>
-      <width>721</width>
-      <height>271</height>
+      <y>320</y>
+      <width>811</width>
+      <height>311</height>
      </rect>
     </property>
     <property name="readOnly">
@@ -52,6 +55,9 @@
       <height>41</height>
      </rect>
     </property>
+    <property name="statusTip">
+     <string>Delete all songs that you have uploaded to your YT Music library.</string>
+    </property>
     <property name="text">
      <string>Delete Uploads</string>
     </property>
@@ -62,8 +68,8 @@
    <widget class="QLabel" name="consoleLabel">
     <property name="geometry">
      <rect>
-      <x>40</x>
-      <y>250</y>
+      <x>50</x>
+      <y>300</y>
       <width>81</width>
       <height>21</height>
      </rect>
@@ -78,17 +84,23 @@
      <string>Console Log</string>
     </property>
    </widget>
-   <widget class="QPushButton" name="authIndicator">
+   <widget class="QPushButton" name="signInButton">
     <property name="geometry">
      <rect>
-      <x>40</x>
-      <y>50</y>
-      <width>121</width>
+      <x>770</x>
+      <y>20</y>
+      <width>81</width>
       <height>41</height>
      </rect>
     </property>
+    <property name="font">
+     <font>
+      <weight>75</weight>
+      <bold>true</bold>
+     </font>
+    </property>
     <property name="text">
-     <string>Log In</string>
+     <string>Sign In</string>
     </property>
    </widget>
    <widget class="QPushButton" name="deletePlaylistsButton">
@@ -99,6 +111,9 @@
       <width>101</width>
       <height>41</height>
      </rect>
+    </property>
+    <property name="statusTip">
+     <string>Delete all playlists.</string>
     </property>
     <property name="text">
      <string>Delete Playlists</string>
@@ -116,6 +131,9 @@
       <height>41</height>
      </rect>
     </property>
+    <property name="statusTip">
+     <string>Reset all Thumbs Up ratings back to neutral.</string>
+    </property>
     <property name="text">
      <string>Unlike All</string>
     </property>
@@ -132,6 +150,9 @@
       <height>41</height>
      </rect>
     </property>
+    <property name="statusTip">
+     <string>Executes each of the deletion functions in sequential order.</string>
+    </property>
     <property name="text">
      <string>Delete All</string>
     </property>
@@ -142,11 +163,14 @@
    <widget class="QPushButton" name="sortPlaylistButton">
     <property name="geometry">
      <rect>
-      <x>220</x>
-      <y>210</y>
+      <x>40</x>
+      <y>240</y>
       <width>101</width>
       <height>41</height>
      </rect>
+    </property>
+    <property name="statusTip">
+     <string>Sort or shuffle one or more playlists alphabetically by artist and by album.</string>
     </property>
     <property name="text">
      <string>Sort Playlist</string>
@@ -163,6 +187,9 @@
       <width>101</width>
       <height>41</height>
      </rect>
+    </property>
+    <property name="statusTip">
+     <string>Delete your play history. This does not currently work with brand accounts.</string>
     </property>
     <property name="text">
      <string>Delete History</string>
@@ -190,30 +217,146 @@
      <string>OR</string>
     </property>
    </widget>
-   <widget class="QLabel" name="accountNameLabel">
+   <widget class="QPushButton" name="accountPhotoButton">
     <property name="geometry">
      <rect>
-      <x>330</x>
-      <y>50</y>
-      <width>161</width>
-      <height>31</height>
+      <x>790</x>
+      <y>10</y>
+      <width>60</width>
+      <height>60</height>
      </rect>
     </property>
+    <property name="styleSheet">
+     <string notr="true">QPushButton {
+    background-position: center;
+    background-repeat: no-repeat;
+    border-radius: 30px;
+    border: 2px solid #FF0000
+}</string>
+    </property>
     <property name="text">
-     <string>Account Name</string>
+     <string/>
     </property>
    </widget>
-   <widget class="QLabel" name="accountPhotoLabel">
+   <widget class="QLabel" name="playlistFunctionsLabel">
     <property name="geometry">
      <rect>
-      <x>190</x>
-      <y>10</y>
-      <width>108</width>
-      <height>108</height>
+      <x>40</x>
+      <y>210</y>
+      <width>101</width>
+      <height>20</height>
      </rect>
     </property>
     <property name="text">
-     <string>[Insert Photo Here]</string>
+     <string>Playlist Functions</string>
+    </property>
+   </widget>
+   <widget class="QWidget" name="accountWidget" native="true">
+    <property name="geometry">
+     <rect>
+      <x>680</x>
+      <y>80</y>
+      <width>171</width>
+      <height>101</height>
+     </rect>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">QWidget {
+	background-color: rgb(202, 202, 202);
+    border-radius: 20px;
+    border: 2px solid
+}</string>
+    </property>
+    <widget class="QLabel" name="accountNameLabel">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>10</y>
+       <width>151</width>
+       <height>31</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Account Name</string>
+     </property>
+     <property name="textFormat">
+      <enum>Qt::AutoText</enum>
+     </property>
+     <property name="scaledContents">
+      <bool>false</bool>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="signOutButton">
+     <property name="geometry">
+      <rect>
+       <x>50</x>
+       <y>60</y>
+       <width>75</width>
+       <height>23</height>
+      </rect>
+     </property>
+     <property name="styleSheet">
+      <string notr="true"/>
+     </property>
+     <property name="text">
+      <string>Sign Out</string>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="accountWidgetCloseButton">
+     <property name="geometry">
+      <rect>
+       <x>150</x>
+       <y>0</y>
+       <width>16</width>
+       <height>23</height>
+      </rect>
+     </property>
+     <property name="font">
+      <font>
+       <family>Courier</family>
+       <pointsize>8</pointsize>
+       <weight>50</weight>
+       <bold>false</bold>
+       <strikeout>false</strikeout>
+       <kerning>true</kerning>
+      </font>
+     </property>
+     <property name="text">
+      <string>✖</string>
+     </property>
+    </widget>
+   </widget>
+   <widget class="QPushButton" name="removeDupesButton">
+    <property name="enabled">
+     <bool>false</bool>
+    </property>
+    <property name="geometry">
+     <rect>
+      <x>160</x>
+      <y>240</y>
+      <width>101</width>
+      <height>41</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>8</pointsize>
+     </font>
+    </property>
+    <property name="toolTip">
+     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Coming soon!&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+    </property>
+    <property name="statusTip">
+     <string>This feature is not yet available. Coming soon!</string>
+    </property>
+    <property name="text">
+     <string>Remove Duplicates</string>
+    </property>
+    <property name="default">
+     <bool>false</bool>
     </property>
    </widget>
   </widget>
@@ -222,7 +365,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>800</width>
+     <width>900</width>
      <height>21</height>
     </rect>
    </property>
