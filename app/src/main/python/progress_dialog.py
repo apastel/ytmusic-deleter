@@ -5,7 +5,7 @@ from PySide6.QtWidgets import QDialog
 
 class ProgressDialog(QDialog, Ui_ProgressDialog):
     def __init__(self, parent):
-        super(ProgressDialog, self).__init__(parent)
+        super().__init__(parent)
         # self.setAttribute(QtCore.Qt.WA_DeleteOnClose, True) # also closes parent window now for some reason
         self.setupUi(self)
 
@@ -13,4 +13,5 @@ class ProgressDialog(QDialog, Ui_ProgressDialog):
 
     @Slot()
     def abort(self):
-        pass
+        self.parentWidget().message("Abort button clicked!")
+        self.parentWidget().p.kill()

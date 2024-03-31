@@ -7,7 +7,7 @@ from PySide6.QtWidgets import QMessageBox
 
 class SortPlaylistsDialog(QDialog, Ui_SortPlaylistsDialog):
     def __init__(self, parent):
-        super(SortPlaylistsDialog, self).__init__(parent)
+        super().__init__(parent)
         self.setupUi(self)
 
         self.enable_ok_button()
@@ -21,15 +21,11 @@ class SortPlaylistsDialog(QDialog, Ui_SortPlaylistsDialog):
         if not selected_playlists:
             QMessageBox.critical(self, "Error", "No playlists selected!")
         if selected_playlists:
-            sort_playlist_args = ["sort-playlist"] + [
-                playlist.text() for playlist in selected_playlists
-            ]
+            sort_playlist_args = ["sort-playlist"] + [playlist.text() for playlist in selected_playlists]
             if self.shuffleCheckBox.isChecked():
                 sort_playlist_args.insert(1, "-s")
             self.parentWidget().launch_process(sort_playlist_args)
 
     @Slot()
     def enable_ok_button(self):
-        self.buttonBox.button(QDialogButtonBox.Ok).setEnabled(
-            len(self.playlistList.selectedItems()) > 0
-        )
+        self.buttonBox.button(QDialogButtonBox.Ok).setEnabled(len(self.playlistList.selectedItems()) > 0)
