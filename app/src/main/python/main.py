@@ -80,6 +80,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             "QPushButton { background-color: #666666; border-radius: 20px; border: 1px solid; }"
         )
         self.accountNameLabel.setStyleSheet("QLabel { border: none; color: black; }")
+        self.channelHandleLabel.setStyleSheet("QLabel { border: none; color: black; }")
         self.accountWidgetCloseButton.setStyleSheet(
             "QPushButton { border: none; background-color: none; color: black; }"
         )
@@ -151,6 +152,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             account_info: dict = self.ytmusic.get_account_info()
             account_name = account_info["accountName"]
             self.accountNameLabel.setText(account_name)
+            channel_handle = account_info["channelHandle"]
+            self.channelHandleLabel.setText(f"({channel_handle})")
 
             # Display account photo
             response = requests.get(account_info["accountPhotoUrl"])

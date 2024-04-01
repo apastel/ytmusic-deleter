@@ -82,7 +82,7 @@ class Ui_MainWindow(object):
         self.playlistFunctionsLabel.setGeometry(QRect(40, 210, 101, 20))
         self.accountWidget = QWidget(self.centralWidget)
         self.accountWidget.setObjectName(u"accountWidget")
-        self.accountWidget.setGeometry(QRect(680, 80, 171, 101))
+        self.accountWidget.setGeometry(QRect(680, 80, 171, 121))
         self.accountWidget.setStyleSheet(u"QWidget {\n"
 "	background-color: rgb(202, 202, 202);\n"
 "    border-radius: 20px;\n"
@@ -96,7 +96,7 @@ class Ui_MainWindow(object):
         self.accountNameLabel.setAlignment(Qt.AlignCenter)
         self.signOutButton = QPushButton(self.accountWidget)
         self.signOutButton.setObjectName(u"signOutButton")
-        self.signOutButton.setGeometry(QRect(50, 60, 75, 23))
+        self.signOutButton.setGeometry(QRect(50, 80, 75, 23))
         self.signOutButton.setStyleSheet(u"")
         self.accountWidgetCloseButton = QPushButton(self.accountWidget)
         self.accountWidgetCloseButton.setObjectName(u"accountWidgetCloseButton")
@@ -108,6 +108,12 @@ class Ui_MainWindow(object):
         font2.setStrikeOut(False)
         font2.setKerning(True)
         self.accountWidgetCloseButton.setFont(font2)
+        self.channelHandleLabel = QLabel(self.accountWidget)
+        self.channelHandleLabel.setObjectName(u"channelHandleLabel")
+        self.channelHandleLabel.setGeometry(QRect(10, 40, 151, 31))
+        self.channelHandleLabel.setTextFormat(Qt.AutoText)
+        self.channelHandleLabel.setScaledContents(False)
+        self.channelHandleLabel.setAlignment(Qt.AlignCenter)
         self.removeDupesButton = QPushButton(self.centralWidget)
         self.removeDupesButton.setObjectName(u"removeDupesButton")
         self.removeDupesButton.setEnabled(False)
@@ -177,6 +183,7 @@ class Ui_MainWindow(object):
         self.accountNameLabel.setText(QCoreApplication.translate("MainWindow", u"Account Name", None))
         self.signOutButton.setText(QCoreApplication.translate("MainWindow", u"Sign Out", None))
         self.accountWidgetCloseButton.setText(QCoreApplication.translate("MainWindow", u"\u2716", None))
+        self.channelHandleLabel.setText(QCoreApplication.translate("MainWindow", u"ChannelHandle", None))
 #if QT_CONFIG(tooltip)
         self.removeDupesButton.setToolTip(QCoreApplication.translate("MainWindow", u"<html><head/><body><p>Coming soon!</p></body></html>", None))
 #endif // QT_CONFIG(tooltip)

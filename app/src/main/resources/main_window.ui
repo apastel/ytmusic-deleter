@@ -257,7 +257,7 @@
       <x>680</x>
       <y>80</y>
       <width>171</width>
-      <height>101</height>
+      <height>121</height>
      </rect>
     </property>
     <property name="styleSheet">
@@ -293,7 +293,7 @@
      <property name="geometry">
       <rect>
        <x>50</x>
-       <y>60</y>
+       <y>80</y>
        <width>75</width>
        <height>23</height>
       </rect>
@@ -326,6 +326,28 @@
      </property>
      <property name="text">
       <string>✖</string>
+     </property>
+    </widget>
+    <widget class="QLabel" name="channelHandleLabel">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>40</y>
+       <width>151</width>
+       <height>31</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>ChannelHandle</string>
+     </property>
+     <property name="textFormat">
+      <enum>Qt::AutoText</enum>
+     </property>
+     <property name="scaledContents">
+      <bool>false</bool>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignCenter</set>
      </property>
     </widget>
    </widget>
