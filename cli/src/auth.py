@@ -2,7 +2,7 @@ import logging
 from json import JSONDecodeError
 from pathlib import Path
 
-import constants as const
+from .. import constants as const
 import ytmusicapi
 from ytmusicapi import YTMusic
 

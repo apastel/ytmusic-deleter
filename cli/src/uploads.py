@@ -4,10 +4,10 @@ from typing import Dict
 from typing import List
 from typing import TypedDict
 
-import constants as const
+from .. import constants as const
 from click import get_current_context
-from progress import manager
-from progress import update_progress
+from .progress import manager
+from .progress import update_progress
 from thefuzz import fuzz
 from thefuzz import process
 from ytmusicapi import YTMusic

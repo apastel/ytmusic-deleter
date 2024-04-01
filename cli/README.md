@@ -1,5 +1,18 @@
-# (Advanced) Command-line interface install using Python / PIP (for non-Windows users)
-The CLI version of YTMusic Deleter is for advanced users who would rather use a command-line or aren't running Windows.
+# ytmusic-deleter: Delete your YouTube Music library
+![GitHub Downloads (all assets, all releases)](https://img.shields.io/github/downloads/apastel/ytmusic-deleter/total?label=.exe%20Downloads)
+![PyPI - Downloads](https://img.shields.io/pypi/dm/ytmusic-deleter?label=PyPI%20Downloads)
+![GitHub Release](https://img.shields.io/github/v/release/apastel/ytmusic-deleter)
+![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/apastel/ytmusic-deleter/pytest.yml?branch=main&label=tests)
+![Codecov](https://img.shields.io/codecov/c/github/apastel/ytmusic-deleter?color=green)
+![Discord](https://img.shields.io/discord/1156973782741827686?logo=discord)
+
+This is the command-line interface for ytmusic-deleter. For the graphical Windows .exe edition, visit the [main page](https://github.com/apastel/ytmusic-deleter)
+
+## Command-line interface install using Python / PIP
+The CLI version of ytmusic-deleter is for advanced users who would rather use a command-line or aren't running Windows.
+> For the graphical Windows .exe edition, visit the [main page](https://github.com/apastel/ytmusic-deleter)
+
+Installtion instructions of this command-line interface:
 1. Install [Python](https://www.python.org/downloads/). Make sure it is available on your PATH.
 1. Open a command prompt and type `pip install ytmusic-deleter`. Use a [virtual environment](https://virtualenv.pypa.io/en/latest/) if you're familiar with the process.
 1. Run ytmusic-deleter by simply entering `ytmusic-deleter` at the command line.

@@ -7,12 +7,13 @@ from random import shuffle as unsort
 from time import strftime
 
 import click
-import constants as const
-from auth import ensure_auth
 from click import get_current_context
-from progress import manager
-from uploads import maybe_delete_uploaded_albums
 from ytmusicapi import YTMusic
+
+from .. import constants as const
+from .auth import ensure_auth
+from .progress import manager
+from .uploads import maybe_delete_uploaded_albums
 
 
 @click.group()
@@ -189,7 +190,7 @@ def unlike_all(ctx: click.Context):
         your_likes = yt_auth.get_liked_songs(limit=None)
     except Exception:
         logging.error("\tNo liked songs found or error retrieving liked songs.")
-        return False
+        raise
     logging.info(f"\tRetrieved {len(your_likes['tracks'])} liked songs.")
     logging.info("Begin unliking songs...")
     global progress_bar

@@ -1,5 +1,5 @@
 from click.testing import CliRunner
-from cli import cli
+from cli.src.cli import cli
 from ytmusicapi import YTMusic
 import time
 

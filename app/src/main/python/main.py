@@ -9,7 +9,6 @@ from json import JSONDecodeError
 from pathlib import Path
 
 import requests
-from constants import OAUTH_FILENAME
 from fbs_runtime import PUBLIC_SETTINGS
 from fbs_runtime.application_context import cached_property
 from fbs_runtime.application_context import is_frozen
@@ -36,6 +35,7 @@ from ytmusicapi.auth.oauth import RefreshingToken
 
 
 CLI_EXECUTABLE = "ytmusic-deleter"
+OAUTH_FILENAME = "oauth.json"
 APP_DATA_DIR = str(Path(os.getenv("APPDATA" if os.name == "nt" else "HOME")) / "YTMusic Deleter")
 progress_re = re.compile(r"Total complete: (\d+)%")
 item_processing_re = re.compile(r"(Processing .+)")

@@ -33,7 +33,7 @@ jobs:
         dir: "cli/tests/resources"
         json: ${{ secrets.OAUTH_JSON }}
     - name: Install dependencies
-      run: pdm install
+      run: pdm install -dG test,pytest
     - name: Generate coverage report
       env:
         HEADERS_AUTH: ${{ secrets.BROWSER_JSON }}

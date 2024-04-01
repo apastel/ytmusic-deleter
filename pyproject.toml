@@ -1,12 +1,16 @@
 [project]
-name = "ytmusic-deleter-core"
-version = "2.1.1"
+name = "ytmusic-deleter"
+version = "2.1.2a2"
+authors = [{ name = "apastel", email = "alex.r.pastel@gmail.com" }]
+description = "Easily delete your YouTube Music library"
 dependencies = [
-    "app @ file:///${PROJECT_ROOT}/app",
-    "cli @ file:///${PROJECT_ROOT}/cli",
+    "click",
+    "enlighten",
+    "thefuzz",
+    "ytmusicapi",
 ]
 requires-python = "<3.13,>=3.8.1"
-readme = "README.md"
+readme = "cli/README.md"
 license = { text = "GPL-3.0" }
 
 [build-system]
@@ -14,14 +18,23 @@ requires = ["pdm-backend"]
 build-backend = "pdm.backend"
 
 [tool.pdm.dev-dependencies]
-lint = ["flake8", "black"]
-test = ["pytest", "pytest-cov", "coverage"]
-dev = [
-    "-e file:///${PROJECT_ROOT}/cli#egg=ytmusic-deleter",
+lint = [
+    "flake8",
+    "black"
+]
+test = [
+    "pytest",
+    "pytest-cov",
+    "coverage"
+]
+app = [
+    "fbs @ file:///${PROJECT_ROOT}/fbs_pro-1.2.1.tar.gz",
+    "fbs[licensing,sentry,upload]>=1.2.1",
+    "PySide6"
 ]
 
-[tool.black]
-line-length = 120
+[project.scripts]
+ytmusic-deleter = "cli.src.cli:cli"
 
 [tool.pdm.scripts]
 # Use this to run any 'fbs' commands from the root, ex: `pdm fbs run` or `pdm fbs freeze`
@@ -31,6 +44,10 @@ generate = { shell = "cd %PDM_PROJECT_ROOT%/app && generate_ui_files.sh" }
 # Use this to bump all the project versions
 version = { shell = "bump_versions.sh"}
 
+[tool.pdm.build]
+includes = ["cli/**/*.py"]
+excludes = ["cli/tests/*.*"]
+
 [tool.pytest.ini_options]
 addopts = "-rA --cov"
 
@@ -39,3 +56,6 @@ source = ["cli/src"]
 
 [tool.coverage.report]
 precision = 2
+
+[tool.black]
+line-length = 120
