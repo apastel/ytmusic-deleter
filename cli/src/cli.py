@@ -209,7 +209,7 @@ def unlike_all(ctx: click.Context):
         title = track["title"]
         logging.info(f"Processing track: {artist} - {title}")
         if track["album"] is None:
-            logging.info("\tSkipping deletion as this might be a YouTube video and not a YouTube Music song.")
+            logging.info("\tSkipping unliking as this might be a YouTube video and not a YouTube Music song.")
         else:
             logging.info("\tRemoved track from Likes.")
             yt_auth.rate_song(track["videoId"], const.INDIFFERENT)
