@@ -4,10 +4,10 @@ version = "2.1.2a2"
 authors = [{ name = "apastel", email = "alex.r.pastel@gmail.com" }]
 description = "Easily delete your YouTube Music library"
 dependencies = [
-    "click",
-    "enlighten",
-    "thefuzz",
-    "ytmusicapi",
+    "click>=8.1.7",
+    "enlighten>=1.12.4",
+    "thefuzz>=0.22.1",
+    "ytmusicapi>=1.6.0",
 ]
 requires-python = "<3.13,>=3.8.1"
 readme = "cli/README.md"
@@ -17,36 +17,8 @@ license = { text = "GPL-3.0" }
 requires = ["pdm-backend"]
 build-backend = "pdm.backend"
 
-[tool.pdm.dev-dependencies]
-lint = [
-    "flake8",
-    "black"
-]
-test = [
-    "pytest",
-    "pytest-cov",
-    "coverage"
-]
-app = [
-    "fbs @ file:///${PROJECT_ROOT}/fbs_pro-1.2.1.tar.gz",
-    "fbs[licensing,sentry,upload]>=1.2.1",
-    "PySide6"
-]
-
 [project.scripts]
 ytmusic-deleter = "cli.src.cli:cli"
-
-[tool.pdm.scripts]
-# Use this to run any 'fbs' commands from the root, ex: `pdm fbs run` or `pdm fbs freeze`
-fbs = "sh fbs.sh"
-# Use this to generate the UI files
-generate = { shell = "cd %PDM_PROJECT_ROOT%/app && generate_ui_files.sh" }
-# Use this to bump all the project versions
-version = { shell = "bump_versions.sh"}
-
-[tool.pdm.build]
-includes = ["cli/**/*.py"]
-excludes = ["cli/tests/*.*"]
 
 [tool.pytest.ini_options]
 addopts = "-rA --cov"
@@ -59,3 +31,31 @@ precision = 2
 
 [tool.black]
 line-length = 120
+
+[tool.pdm.dev-dependencies]
+lint = [
+    "flake8>=7.0.0",
+    "black>=24.3.0",
+]
+test = [
+    "pytest>=8.1.1",
+    "pytest-cov>=5.0.0",
+    "coverage>=7.4.4",
+]
+app = [
+    "fbs @ file:///${PROJECT_ROOT}/fbs_pro-1.2.1.tar.gz",
+    "fbs[licensing,sentry,upload]>=1.2.1",
+    "PySide6>=6.6.3.1",
+]
+
+[tool.pdm.scripts]
+# Use this to run any 'fbs' commands from the root, ex: `pdm fbs run` or `pdm fbs freeze`
+fbs = "sh fbs.sh"
+# Use this to generate the UI files
+generate = { shell = "cd %PDM_PROJECT_ROOT%/app && generate_ui_files.sh" }
+# Use this to bump all the project versions
+version = { shell = "bump_versions.sh"}
+
+[tool.pdm.build]
+includes = ["cli/**/*.py"]
+excludes = ["cli/tests/*.*"]
