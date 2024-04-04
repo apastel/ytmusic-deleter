@@ -29,13 +29,13 @@ from PySide6.QtWidgets import QLabel
 from PySide6.QtWidgets import QMainWindow
 from PySide6.QtWidgets import QMessageBox
 from sort_playlists_dialog import SortPlaylistsDialog
+from ytmusic_deleter import constants as const
 from ytmusicapi import YTMusic
 from ytmusicapi.auth.oauth import OAuthCredentials
 from ytmusicapi.auth.oauth import RefreshingToken
 
 
 CLI_EXECUTABLE = "ytmusic-deleter"
-OAUTH_FILENAME = "oauth.json"
 APP_DATA_DIR = str(Path(os.getenv("APPDATA" if os.name == "nt" else "HOME")) / "YTMusic Deleter")
 progress_re = re.compile(r"Total complete: (\d+)%")
 item_processing_re = re.compile(r"(Processing .+)")
@@ -140,7 +140,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         """Check if user is signed in. If true, display their account info."""
         try:
             # Check for oauth.json
-            self.ytmusic = YTMusic(str(Path(self.credential_dir) / OAUTH_FILENAME))
+            self.ytmusic = YTMusic(str(Path(self.credential_dir) / const.OAUTH_FILENAME))
         except JSONDecodeError:
             # User is not signed in
             if display_message:
@@ -204,7 +204,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     @Slot()
     def sign_out(self):
-        Path.unlink(Path(Path(self.credential_dir) / OAUTH_FILENAME))
+        Path.unlink(Path(Path(self.credential_dir) / const.OAUTH_FILENAME))
         self.message("Signed out of YTMusic Deleter.")
         self.accountWidget.hide()
         self.accountPhotoButton.hide()
@@ -232,7 +232,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         try:
             ref_token = RefreshingToken(credentials=oauth, **raw_token)
             # store the token in oauth.json
-            ref_token.store_token(Path(Path(self.credential_dir) / OAUTH_FILENAME))
+            ref_token.store_token(Path(Path(self.credential_dir) / const.OAUTH_FILENAME))
             if self.is_signed_in():
                 self.message("Successfully signed in.")
             else:
