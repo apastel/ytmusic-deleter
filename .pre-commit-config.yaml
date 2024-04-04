@@ -1,10 +1,10 @@
 exclude: ^gui/src/main/python/generated/
 repos:
   - repo: https://github.com/asottile/pyupgrade
-    rev: v3.15.1
+    rev: v3.15.2
     hooks:
       - id: pyupgrade
-        args: ["--py36-plus"]
+        args: ["--py38-plus"]
   - repo: https://github.com/asottile/reorder_python_imports
     rev: v3.12.0
     hooks:
