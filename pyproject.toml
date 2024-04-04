@@ -10,7 +10,7 @@ dependencies = [
     "ytmusicapi>=1.6.0",
 ]
 requires-python = "<3.13,>=3.8.1"
-readme = "cli/README.md"
+readme = "ytmusic_deleter/README.md"
 license = { text = "GPL-3.0" }
 
 [build-system]
@@ -18,13 +18,13 @@ requires = ["pdm-backend"]
 build-backend = "pdm.backend"
 
 [project.scripts]
-ytmusic-deleter = "cli.src.cli:cli"
+ytmusic-deleter = "ytmusic_deleter.cli:cli"
 
 [tool.pytest.ini_options]
 addopts = "-rA --cov"
 
 [tool.coverage.run]
-source = ["cli/src"]
+source = ["ytmusic_deleter"]
 
 [tool.coverage.report]
 precision = 2
@@ -42,7 +42,7 @@ test = [
     "pytest-cov>=5.0.0",
     "coverage>=7.4.4",
 ]
-app = [
+gui = [
     "fbs @ file:///${PROJECT_ROOT}/fbs_pro-1.2.1.tar.gz",
     "fbs[licensing,sentry,upload]>=1.2.1",
     "PySide6>=6.6.3.1",
@@ -52,10 +52,9 @@ app = [
 # Use this to run any 'fbs' commands from the root, ex: `pdm fbs run` or `pdm fbs freeze`
 fbs = "sh fbs.sh"
 # Use this to generate the UI files
-generate = { shell = "cd %PDM_PROJECT_ROOT%/app && generate_ui_files.sh" }
+generate = { shell = "cd %PDM_PROJECT_ROOT%/gui && generate_ui_files.sh" }
 # Use this to bump all the project versions
 version = { shell = "bump_versions.sh"}
 
 [tool.pdm.build]
-includes = ["cli/**/*.py"]
-excludes = ["cli/tests/*.*"]
+includes = ["ytmusic_deleter/**/*.py"]

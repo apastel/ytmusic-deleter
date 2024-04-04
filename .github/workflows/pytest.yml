@@ -5,12 +5,14 @@ on:
     branches:
       - main
     paths:
-      - cli/**
+      - ytmusic_deleter/**
+      - tests/**
   pull_request:
     branches:
       - main
     paths:
-      - cli/**
+      - ytmusic_deleter/**
+      - tests/**
   workflow_dispatch:
   schedule:
     - cron: '0 10 * * *'
@@ -30,18 +32,18 @@ jobs:
       uses: jsdaniell/create-json@v1.2.3
       with:
         name: "oauth.json"
-        dir: "cli/tests/resources"
+        dir: "tests/resources"
         json: ${{ secrets.OAUTH_JSON }}
     - name: Install dependencies
-      run: pdm install -dG test,pytest
+      run: pdm install -dG test
     - name: Generate coverage report
       env:
         HEADERS_AUTH: ${{ secrets.BROWSER_JSON }}
         TEST_CFG: ${{ secrets.TEST_CFG }}
       run: |
-        curl -o cli/tests/resources/test.mp3 https://www.kozco.com/tech/piano2-CoolEdit.mp3
-        cat <<< "$HEADERS_AUTH" > cli/tests/resources/browser.json
-        cat <<< "$TEST_CFG" > cli/tests/resources/test.cfg
+        curl -o tests/resources/test.mp3 https://www.kozco.com/tech/piano2-CoolEdit.mp3
+        cat <<< "$HEADERS_AUTH" > tests/resources/browser.json
+        cat <<< "$TEST_CFG" > tests/resources/test.cfg
         (echo "===== tests attempt: 1 ====" && pdm run pytest) || \
         (echo "===== tests attempt: 2 ====" && pdm run pytest)
         pdm run coverage xml

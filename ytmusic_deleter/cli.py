@@ -10,7 +10,7 @@ import click
 from click import get_current_context
 from ytmusicapi import YTMusic
 
-from .. import constants as const
+from . import constants as const
 from .auth import ensure_auth
 from .progress import manager
 from .uploads import maybe_delete_uploaded_albums

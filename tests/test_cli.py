@@ -1,7 +1,8 @@
-from click.testing import CliRunner
-from cli.src.cli import cli
-from ytmusicapi import YTMusic
 import time
+
+from click.testing import CliRunner
+from ytmusic_deleter.cli import cli
+from ytmusicapi import YTMusic
 
 
 class TestCli:

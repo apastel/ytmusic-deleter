@@ -1,4 +1,4 @@
-exclude: ^app/src/main/python/generated/
+exclude: ^gui/src/main/python/generated/
 repos:
   - repo: https://github.com/asottile/pyupgrade
     rev: v3.15.1

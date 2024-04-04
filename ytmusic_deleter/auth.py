@@ -2,9 +2,10 @@ import logging
 from json import JSONDecodeError
 from pathlib import Path
 
-from .. import constants as const
 import ytmusicapi
 from ytmusicapi import YTMusic
+
+from . import constants as const
 
 
 def ensure_auth(credential_dir) -> YTMusic:
