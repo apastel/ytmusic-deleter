@@ -30,6 +30,7 @@ def maybe_delete_uploaded_albums() -> tuple[int, int]:
     yt_auth: YTMusic = get_current_context().obj["YT_AUTH"]
     uploaded_songs = yt_auth.get_library_upload_songs(limit=None)
     if not uploaded_songs:
+        logging.info("No uploaded songs were found.")
         return (albums_deleted, 0)
     logging.info(f"Retrieved {len(uploaded_songs)} uploaded songs from your library.")
 
