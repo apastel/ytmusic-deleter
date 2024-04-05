@@ -1,6 +1,6 @@
 [project]
 name = "ytmusic-deleter"
-version = "2.1.2a2"
+version = "2.1.2"
 authors = [{ name = "apastel", email = "alex.r.pastel@gmail.com" }]
 description = "Easily delete your YouTube Music library"
 dependencies = [

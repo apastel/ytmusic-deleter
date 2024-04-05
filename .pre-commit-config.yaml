@@ -1,4 +1,4 @@
-exclude: ^gui/src/main/python/generated/
+exclude: ^(gui/src/main/python/generated/|gui/src/freeze/)
 repos:
   - repo: https://github.com/asottile/pyupgrade
     rev: v3.15.2

@@ -7,11 +7,10 @@ from typing import TypedDict
 from click import get_current_context
 from thefuzz import fuzz
 from thefuzz import process
+from ytmusic_deleter import constants as const
+from ytmusic_deleter.progress import manager
+from ytmusic_deleter.progress import update_progress
 from ytmusicapi import YTMusic
-
-from . import constants as const
-from .progress import manager
-from .progress import update_progress
 
 
 def maybe_delete_uploaded_albums() -> tuple[int, int]:

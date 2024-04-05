@@ -3,6 +3,7 @@ import logging
 import os
 import re
 import shutil
+import subprocess
 import sys
 import webbrowser
 from json import JSONDecodeError
@@ -35,7 +36,8 @@ from ytmusicapi.auth.oauth import OAuthCredentials
 from ytmusicapi.auth.oauth import RefreshingToken
 
 
-CLI_EXECUTABLE = "ytmusic-deleter"
+internal_directory = os.path.dirname(os.path.abspath(__file__))
+CLI_EXECUTABLE = f"{internal_directory}/ytmusic-deleter" if is_frozen() else "ytmusic-deleter"
 APP_DATA_DIR = str(Path(os.getenv("APPDATA" if os.name == "nt" else "HOME")) / "YTMusic Deleter")
 progress_re = re.compile(r"Total complete: (\d+)%")
 item_processing_re = re.compile(r"(Processing .+)")
@@ -115,13 +117,17 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         self.add_to_library = False
 
-        self.message(f"Starting version {PUBLIC_SETTINGS['version']}")
-
         self.update_buttons()
 
-        cmd_path = shutil.which(CLI_EXECUTABLE)
-        if cmd_path:
-            self.message(f"Found ytmusic-deleter executable at {cmd_path}")
+        self.message(f"GUI version: {PUBLIC_SETTINGS['version']}")
+        cli_path = shutil.which(CLI_EXECUTABLE)
+        if cli_path:
+            self.message(f"CLI path: {cli_path}")
+            try:
+                version_str = subprocess.check_output([CLI_EXECUTABLE, "--version"], text=True)
+                self.message(f"CLI version: {version_str}")
+            except subprocess.CalledProcessError as e:
+                self.message(f"Error getting the version of the CLI executable, {e}")
         else:
             self.message(
                 f"{CLI_EXECUTABLE!r} executable not found. It's possible that it's not installed and none of the functions will work."  # noqa

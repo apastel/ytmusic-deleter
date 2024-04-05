@@ -8,12 +8,11 @@ from time import strftime
 
 import click
 from click import get_current_context
+from ytmusic_deleter import constants as const
+from ytmusic_deleter.auth import ensure_auth
+from ytmusic_deleter.progress import manager
+from ytmusic_deleter.uploads import maybe_delete_uploaded_albums
 from ytmusicapi import YTMusic
-
-from . import constants as const
-from .auth import ensure_auth
-from .progress import manager
-from .uploads import maybe_delete_uploaded_albums
 
 
 @click.group()
