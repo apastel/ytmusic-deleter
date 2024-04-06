@@ -124,7 +124,15 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         if cli_path:
             self.message(f"CLI path: {cli_path}")
             try:
-                version_str = subprocess.check_output([CLI_EXECUTABLE, "--version"], text=True)
+                p = subprocess.Popen(
+                    [CLI_EXECUTABLE, "--version"],
+                    shell=True,
+                    stdin=subprocess.PIPE,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.STDOUT,
+                    close_fds=True,
+                )
+                version_str = p.stdout.read().decode("UTF-8")
                 self.message(f"CLI version: {version_str}")
             except subprocess.CalledProcessError as e:
                 self.message(f"Error getting the version of the CLI executable, {e}")
