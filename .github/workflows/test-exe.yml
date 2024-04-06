@@ -5,11 +5,7 @@ name: Run .exe
 
 on:
   push:
-    branches:
-      - "main"
   pull_request:
-    branches:
-      - "main"
   workflow_dispatch:
   schedule:
     - cron: '0 10 * * *'
@@ -17,9 +13,42 @@ on:
 permissions:
   contents: read
 
+defaults:
+  run:
+    shell: bash
+  
 jobs:
-  build:
+  test_on_linux:
+    runs-on: ubuntu-latest
 
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up Python 3.10
+      uses: actions/setup-python@v3
+      with:
+        python-version: "3.10"
+    - name: Setup PDM
+      uses: pdm-project/setup-pdm@v4
+    - name: Download fbs
+      env:
+        FBS_URL_ID: ${{ secrets.FBS_URL_ID }}
+      run: |
+        curl -L https://drive.google.com/uc?id=$FBS_URL_ID --output fbs_pro-1.2.1.tar.gz
+    - name: Install dependencies
+      run: |
+        sudo apt update && sudo apt install -y libegl1-mesa libegl1
+        pdm install -dG gui
+    - name: Run editable CLI from venv
+      id: run-cli
+      run: |
+        . .venv/bin/activate
+        ytmusic-deleter
+        echo "version=$(ytmusic-deleter --version)" >> $GITHUB_OUTPUT
+    - name: Run fbs app
+      run: |
+        ./gui/test_run_exe.sh "${{ steps.run-cli.outputs.version }}"
+
+  test_on_windows:
     runs-on: windows-latest
 
     steps:
@@ -37,7 +66,13 @@ jobs:
         curl -L https://drive.google.com/uc?id=$FBS_URL_ID --output fbs_pro-1.2.1.tar.gz
     - name: Install dependencies
       run: |
-        pdm install
-    - name: Run editable CLI
+        pdm install -dG gui
+    - name: Run editable CLI from venv
+      id: run-cli
       run: |
+        . .venv/Scripts/activate
         ytmusic-deleter
+        echo "version=$(ytmusic-deleter --version)" >> $GITHUB_OUTPUT
+    - name: Run fbs app
+      run: |
+        ./gui/test_run_exe.sh "${{ steps.run-cli.outputs.version }}"
