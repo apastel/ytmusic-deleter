@@ -126,7 +126,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             try:
                 p = subprocess.Popen(
                     [CLI_EXECUTABLE, "--version"],
-                    shell=True,
                     stdin=subprocess.PIPE,
                     stdout=subprocess.PIPE,
                     stderr=subprocess.STDOUT,

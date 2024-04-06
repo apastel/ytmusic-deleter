@@ -52,10 +52,11 @@ gui = [
 [tool.pdm.scripts]
 # Use this to run any 'fbs' commands from the root, ex: `pdm fbs run` or `pdm fbs freeze`
 fbs = "sh fbs.sh"
-# Use this to generate the UI files
+# Use this to generate the UI files (Windows only)
 generate = { shell = "cd %PDM_PROJECT_ROOT%/gui && generate_ui_files.sh" }
 # Use this to bump all the project versions
 version = { shell = "bump_versions.sh"}
+release-prep = "bash gui_release.sh"
 
 [tool.pdm.build]
 includes = ["ytmusic_deleter/**/*.py"]
