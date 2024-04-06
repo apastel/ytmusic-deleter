@@ -2,16 +2,17 @@
 set -e
 
 VENV_PATH=$PDM_PROJECT_ROOT/.venv
-echo $PDM_PROJECT_ROOT
-VENV_BIN=bin
+if [[ $(uname) == "Linux" ]]; then
+    VENV_BIN="bin"
+    SITE_PACKAGES=$(python -c "import site; print(site.getsitepackages()[0])")
+else
+    VENV_BIN="Scripts"
+    SITE_PACKAGES=$VENV_PATH/Lib/site-packages
+fi
 EXE_PATH=$VENV_PATH/$VENV_BIN/ytmusic-deleter
 FREEZE_DIR=$PDM_PROJECT_ROOT/gui/src/freeze
 
-# Activate the virtual environment
 source "$VENV_PATH/$VENV_BIN/activate"
-
-# Get the site-packages directory
-SITE_PACKAGES=$(python -c "import site; print(site.getsitepackages()[0])")
 
 pdm install --no-editable
 mkdir -p $FREEZE_DIR/linux/_internal/ytmusicapi

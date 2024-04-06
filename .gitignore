@@ -6,6 +6,7 @@ fbs_pro-*
 ytmusic-deleter*
 secret.json
 cache/
+freeze/
 test.cfg
 *.mp3
 
