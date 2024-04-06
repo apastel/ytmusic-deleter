@@ -1,4 +1,11 @@
 # Developer's Guide
+## Operating System
+Windows and Linux are both supported for developing, testing, releasing, and installing YTMusic Deleter.
+Mac may be supported but never been thoroughly tested.
+Things to note:
+* Git Bash is recommmended for Windows development
+* Linux debian package may not produce a desktop icon (have to run /opt/YTMusic_Deleter/YTMusic_Deleter after installing .deb package)
+
 ## Setup
 * Install [Python](https://www.python.org/)
 * Install [pdm](https://pdm-project.org/en/latest/#installation)
@@ -7,6 +14,7 @@
   * `pdm install`
 * Activate .venv
 * `pre-commit install`
+
 ## Run
 * `ytmusic-deleter` to run CLI
 * `pdm fbs run` to run GUI
@@ -20,8 +28,13 @@
 
 ## Releases
 * `pdm version [major|minor|patch]` to bump version
+
 ### Publish CLI
 * `pdm publish`
+
 ### Create GUI .exe
-* `pdm fbs freeze`
-* `pdm fbs installer`
+```
+pdm freeze-prep
+pdm fbs freeze
+pdm fbs installer
+```

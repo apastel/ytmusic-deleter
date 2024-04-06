@@ -56,7 +56,7 @@ fbs = "sh fbs.sh"
 generate = { shell = "cd %PDM_PROJECT_ROOT%/gui && generate_ui_files.sh" }
 # Use this to bump all the project versions
 version = { shell = "bump_versions.sh"}
-release-prep = "bash gui_release.sh"
+freeze-prep = "bash gui/freeze_prep.sh"
 
 [tool.pdm.build]
 includes = ["ytmusic_deleter/**/*.py"]

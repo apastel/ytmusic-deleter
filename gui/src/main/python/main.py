@@ -38,7 +38,7 @@ from ytmusicapi.auth.oauth import RefreshingToken
 
 internal_directory = os.path.dirname(os.path.abspath(__file__))
 CLI_EXECUTABLE = f"{internal_directory}/ytmusic-deleter" if is_frozen() else "ytmusic-deleter"
-APP_DATA_DIR = str(Path(os.getenv("APPDATA" if os.name == "nt" else "HOME")) / "YTMusic Deleter")
+APP_DATA_DIR = str(Path(os.getenv("APPDATA" if os.name == "nt" else "HOME")) / PUBLIC_SETTINGS["app_name"])
 progress_re = re.compile(r"Total complete: (\d+)%")
 item_processing_re = re.compile(r"(Processing .+)")
 
@@ -48,7 +48,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         super().__init__()
 
         # Initialize settings
-        self.settings = QSettings("apastel", "YTMusic Deleter")
+        self.settings = QSettings("apastel", PUBLIC_SETTINGS["app_name"])
         try:
             self.resize(self.settings.value("mainwindow/size"))
             self.move(self.settings.value("mainwindow/pos"))
