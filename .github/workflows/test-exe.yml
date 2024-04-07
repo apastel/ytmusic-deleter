@@ -1,7 +1,7 @@
 # This workflow will install Python dependencies, run tests and lint with a single version of Python
 # For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-python
 
-name: Run .exe
+name: Verify executables
 
 on:
   push:
@@ -16,15 +16,15 @@ permissions:
 defaults:
   run:
     shell: bash
-  
+
 jobs:
   test_on_linux:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4.1.2
     - name: Set up Python 3.10
-      uses: actions/setup-python@v3
+      uses: actions/setup-python@v5.1.0
       with:
         python-version: "3.10"
     - name: Setup PDM
@@ -41,20 +41,19 @@ jobs:
     - name: Run editable CLI from venv
       id: run-cli
       run: |
-        . .venv/bin/activate
-        ytmusic-deleter
-        echo "version=$(ytmusic-deleter --version)" >> $GITHUB_OUTPUT
+        pdm ytmusic-deleter
+        echo "version=$(pdm ytmusic-deleter --version)" >> $GITHUB_OUTPUT
     - name: Run fbs app
       run: |
-        ./gui/test_run_exe.sh "${{ steps.run-cli.outputs.version }}"
+        ./gui/scripts/test_run_exe.sh "${{ steps.run-cli.outputs.version }}"
 
   test_on_windows:
     runs-on: windows-latest
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4.1.2
     - name: Set up Python 3.10
-      uses: actions/setup-python@v3
+      uses: actions/setup-python@v5.1.0
       with:
         python-version: "3.10"
     - name: Setup PDM
@@ -75,4 +74,4 @@ jobs:
         echo "version=$(ytmusic-deleter --version)" >> $GITHUB_OUTPUT
     - name: Run fbs app
       run: |
-        ./gui/test_run_exe.sh "${{ steps.run-cli.outputs.version }}"
+        ./gui/scripts/test_run_exe.sh "${{ steps.run-cli.outputs.version }}"
