@@ -5,6 +5,11 @@ name: Verify executables
 
 on:
   push:
+    paths-ignore:
+      - '**.md'
+      - '.flake8'
+      - '.gitignore'
+      - '.pre-commit-comfig.yaml'
   pull_request:
   workflow_dispatch:
   schedule:

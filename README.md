@@ -1,9 +1,10 @@
 # ytmusic-deleter: Delete your YouTube Music library
-![GitHub Downloads (all assets, all releases)](https://img.shields.io/github/downloads/apastel/ytmusic-deleter/total?label=.exe%20Downloads)
-![PyPI - Downloads](https://img.shields.io/pypi/dm/ytmusic-deleter?label=PyPI%20Downloads)
-![GitHub Release](https://img.shields.io/github/v/release/apastel/ytmusic-deleter)
-[![Pytest](https://github.com/apastel/ytmusic-deleter/actions/workflows/pytest.yml/badge.svg)](https://github.com/apastel/ytmusic-deleter/actions/workflows/pytest.yml)
-![Codecov](https://img.shields.io/codecov/c/github/apastel/ytmusic-deleter?color=green)
+![GitHub Downloads (all assets, all releases)](https://img.shields.io/github/downloads/apastel/ytmusic-deleter/total?label=.exe%20Downloads)  
+![PyPI - Downloads](https://img.shields.io/pypi/dm/ytmusic-deleter?logo=pypi&logoColor=yellow&label=PyPI%20Downloads&link=https%3A%2F%2Fpypi.org%2Fproject%2Fytmusic-deleter%2F)  
+![GitHub Release](https://img.shields.io/github/v/release/apastel/ytmusic-deleter)  
+[![Release test](https://github.com/apastel/ytmusic-deleter/actions/workflows/test-exe.yml/badge.svg)](https://github.com/apastel/ytmusic-deleter/actions/workflows/test-exe.yml)  
+[![Pytest](https://github.com/apastel/ytmusic-deleter/actions/workflows/pytest.yml/badge.svg)](https://github.com/apastel/ytmusic-deleter/actions/workflows/pytest.yml)  
+![Codecov](https://img.shields.io/codecov/c/github/apastel/ytmusic-deleter?color=green)  
 ![Discord](https://img.shields.io/discord/1156973782741827686?logo=discord)
 
 YTMusic Deleter is an installable program for performing batch delete operations on your YouTube Music library, since
