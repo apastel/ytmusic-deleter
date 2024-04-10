@@ -129,7 +129,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                     stdin=subprocess.PIPE,
                     stdout=subprocess.PIPE,
                     stderr=subprocess.STDOUT,
-                    close_fds=True,
                 )
                 version_str = p.stdout.read().decode("UTF-8")
                 self.message(f"CLI version: {version_str}")

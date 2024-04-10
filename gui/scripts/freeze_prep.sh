@@ -17,7 +17,7 @@ echo Activate the venv
 source "$VENV_PATH/$VENV_BIN/activate"
 
 echo Build the CLI executable in non-editable mode
-pdm install --no-editable
+pdm install -dG gui --no-editable
 
 echo Clean and re-create the freeze directories
 rm -rf "$FREEZE_DIR"
