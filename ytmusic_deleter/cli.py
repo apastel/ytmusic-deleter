@@ -50,7 +50,7 @@ def cli(ctx, log_dir, credential_dir, static_progress):
             logging.StreamHandler(sys.stdout),
         ],
     )
-    logging.info("what the fuck")
+
     if ctx.obj is not None:
         # Allows yt_auth to be provided by pytest
         yt_auth: YTMusic = ctx.obj
