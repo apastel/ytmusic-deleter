@@ -3,6 +3,7 @@ import logging
 import os
 import re
 import shutil
+import subprocess
 import sys
 import webbrowser
 from json import JSONDecodeError
@@ -125,7 +126,17 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         cli_path = shutil.which(CLI_EXECUTABLE)
         if cli_path:
             self.message(f"CLI path: {cli_path}")
-            self.launch_process(["--version"])
+            try:
+                p = subprocess.Popen(
+                    [CLI_EXECUTABLE, "--version"],
+                    stdin=subprocess.PIPE,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.STDOUT,
+                )
+                version_str = p.stdout.read().decode("UTF-8")
+                self.message(f"CLI version: {version_str}")
+            except subprocess.CalledProcessError as e:
+                self.message(f"Error getting the version of the CLI executable, {e}")
         else:
             self.message(
                 f"{CLI_EXECUTABLE!r} executable not found. It's possible that it's not installed and none of the functions will work."  # noqa
