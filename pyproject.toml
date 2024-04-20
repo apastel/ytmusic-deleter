@@ -1,6 +1,6 @@
 [project]
 name = "ytmusic-deleter"
-version = "2.1.2"
+dynamic = ["version"]
 authors = [{ name = "apastel", email = "alex.r.pastel@gmail.com" }]
 description = "Easily delete your YouTube Music library"
 dependencies = [
@@ -62,3 +62,9 @@ freeze-prep = "bash gui/scripts/freeze_prep.sh"
 
 [tool.pdm.build]
 includes = ["ytmusic_deleter/**/*.py"]
+
+[tool.pdm.version]
+source = "scm"
+write_to = "ytmusic_deleter/_version.py"
+write_template = "__version__ = \"{}\"\n"
+fallback_version = "0.0.0"

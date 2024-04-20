@@ -4,6 +4,12 @@ name: Build and test (Linux)
 
 on:
   push:
+    paths-ignore:
+      - '**.md'
+      - '.flake8'
+      - '.gitignore'
+      - '.pre-commit-comfig.yaml'
+      - '**/test-exe.yml'
   pull_request:
   workflow_dispatch:
   schedule:
@@ -42,6 +48,7 @@ jobs:
         echo "version=$(ytmusic-deleter --version)" >> $GITHUB_OUTPUT
     - name: Run fbs app
       run: |
+
         # Store the version argument
         version_str="${{ steps.run-cli.outputs.version }}"
 
@@ -55,10 +62,10 @@ jobs:
         output=$(timeout 10s pdm fbs run || true)
 
         # Check if the output contains the right CLI version
-        if grep -q "CLI version: $version_str" <<< "$output"; then
+        if grep -q "$version_str" <<< "$output"; then
             echo "GUI is running the right CLI version: $version_str"
         else
-            echo "CLI version: $version_str not found in output, which was the following:"
+            echo "$version_str not found in output, which was the following:"
             echo $output
             exit 1
         fi
@@ -70,6 +77,7 @@ jobs:
         pdm fbs freeze
     - name: Run frozen exe
       run: |
+
         # Store the version argument
         version_str="${{ steps.run-cli.outputs.version }}"
 
@@ -80,10 +88,10 @@ jobs:
         output=$(timeout 10s ./gui/target/YTMusic_Deleter/YTMusic_Deleter || true)
 
         # Check if the output contains the right CLI version
-        if grep -q "CLI version: $version_str" <<< "$output"; then
+        if grep -q "$version_str" <<< "$output"; then
             echo "GUI is running the right CLI version: $version_str"
         else
-            echo "CLI version: $version_str not found in output, which was the following:"
+            echo "$version_str not found in output, which was the following:"
             echo $output
             exit 1
         fi
@@ -121,23 +129,19 @@ jobs:
           sudo dpkg -i ./YTMusic_Deleter-${{ needs.build.outputs.installer-version }}-Setup.deb
       - name: Install dependencies
         run: |
-          sudo apt update && sudo apt install -y libegl1 libegl1-mesa libgl1
+          sudo apt update && sudo apt install -y libegl1 libegl1-mesa
       - name: Run application
         run: |
+
           # Makes app run headless
           export QT_QPA_PLATFORM=offscreen
-
+          logfile="$HOME/YTMusic_Deleter/ytmusic-deleter-packager.log"
           timeout 10s /opt/YTMusic_Deleter/YTMusic_Deleter || true
           version_str="${{ needs.build.outputs.cli-version }}"
-          logfile=$HOME/YTMusic_Deleter/ytmusic-deleter-packager.log
-          if [[ ! -f "$logfile" ]]
-          then
-              echo "Log file does not exist at $logfile"
-          fi
-          if grep -q "CLI version: $version_str" $logfile; then
+          if grep -q "$version_str" $logfile; then
             echo "GUI is running the right CLI version: $version_str"
           else
-            echo "The string "CLI version: $version_str" was not found in $logfile, contents below:"
+            echo "The string "$version_str" was not found in $logfile, contents below:"
             cat $logfile
             exit 1
           fi

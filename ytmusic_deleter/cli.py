@@ -9,6 +9,7 @@ from time import strftime
 import click
 from click import get_current_context
 from ytmusic_deleter import constants as const
+from ytmusic_deleter._version import __version__
 from ytmusic_deleter.auth import ensure_auth
 from ytmusic_deleter.progress import manager
 from ytmusic_deleter.uploads import maybe_delete_uploaded_albums
@@ -16,7 +17,7 @@ from ytmusicapi import YTMusic
 
 
 @click.group()
-@click.version_option(package_name="ytmusic-deleter")
+@click.version_option(__version__)
 @click.option(
     "--log-dir",
     "-l",
@@ -49,6 +50,7 @@ def cli(ctx, log_dir, credential_dir, static_progress):
             logging.StreamHandler(sys.stdout),
         ],
     )
+    logging.info("what the fuck")
     if ctx.obj is not None:
         # Allows yt_auth to be provided by pytest
         yt_auth: YTMusic = ctx.obj

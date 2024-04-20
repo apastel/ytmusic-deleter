@@ -9,6 +9,7 @@ on:
       - '.flake8'
       - '.gitignore'
       - '.pre-commit-comfig.yaml'
+      - '**/test-deb.yml'
   pull_request:
   workflow_dispatch:
   schedule:
@@ -46,6 +47,7 @@ jobs:
         echo "version=$(ytmusic-deleter --version)" >> $GITHUB_OUTPUT
     - name: Run fbs app
       run: |
+
         # Store the version argument
         version_str="${{ steps.run-cli.outputs.version }}"
 
@@ -59,10 +61,10 @@ jobs:
         output=$(timeout 10s pdm fbs run || true)
 
         # Check if the output contains the right CLI version
-        if grep -q "CLI version: $version_str" <<< "$output"; then
+        if grep -q "$version_str" <<< "$output"; then
             echo "GUI is running the right CLI version: $version_str"
         else
-            echo "CLI version: $version_str not found in output, which was the following:"
+            echo "$version_str" not found in output, which was the following:
             echo $output
             exit 1
         fi
@@ -83,6 +85,7 @@ jobs:
         pdm fbs freeze
     - name: Run frozen exe
       run: |
+
         # Store the version argument
         version_str="${{ steps.run-cli.outputs.version }}"
 
@@ -93,10 +96,10 @@ jobs:
         output=$(timeout 10s ./gui/target/YTMusic_Deleter/YTMusic_Deleter.exe || true)
 
         # Check if the output contains the right CLI version
-        if grep -q "CLI version: $version_str" <<< "$output"; then
+        if grep -q "$version_str" <<< "$output"; then
             echo "GUI is running the right CLI version: $version_str"
         else
-            echo "CLI version: $version_str not found in output, which was the following:"
+            echo "$version_str" not found in output, which was the following:
             echo $output
             exit 1
         fi
@@ -129,17 +132,16 @@ jobs:
           .\YTMusic_Deleter-${{ needs.build.outputs.installer-version }}-Setup.exe /S
       - name: Run application
         run: |
+
+          # Makes app run headless
+          export QT_QPA_PLATFORM=offscreen
+          logfile="$APPDATA\YTMusic_Deleter\ytmusic-deleter-packager.log"
           timeout 10s /c/Program\ Files\ \(x86\)/YTMusic_Deleter/YTMusic_Deleter.exe || true
           version_str="${{ needs.build.outputs.cli-version }}"
-          logfile="$APPDATA\YTMusic_Deleter\ytmusic-deleter-packager.log"
-          if [[ ! -f "$logfile" ]]
-          then
-            echo "Log file does not exist at $logfile"
-          fi
-          if grep -q "CLI version: $version_str" $logfile; then
+          if grep -q "$version_str" $logfile; then
             echo "GUI is running the right CLI version: $version_str"
           else
-            echo "The string "CLI version: $version_str" was not found in $logfile, contents below:"
+            echo "The string "$version_str" was not found in $logfile, contents below:"
             cat $logfile
             exit 1
           fi

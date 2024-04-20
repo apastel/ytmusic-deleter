@@ -10,14 +10,11 @@ else
     VENV_BIN="Scripts"
     SITE_PACKAGES=$VENV_PATH/Lib/site-packages
 fi
-EXE_PATH=$VENV_PATH/$VENV_BIN/ytmusic-deleter
+EXE_PATH=$PDM_PROJECT_ROOT/dist/ytmusic-deleter
 FREEZE_DIR=$PDM_PROJECT_ROOT/gui/src/freeze
 
-echo Activate the venv
-source "$VENV_PATH/$VENV_BIN/activate"
-
-echo Build the CLI executable in non-editable mode
-pdm install -dG gui --no-editable
+echo Create CLI executable
+pyinstaller ytmusic_deleter.spec
 
 echo Clean and re-create the freeze directories
 rm -rf "$FREEZE_DIR"

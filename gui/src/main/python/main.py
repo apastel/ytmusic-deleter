@@ -3,11 +3,11 @@ import logging
 import os
 import re
 import shutil
-import subprocess
 import sys
 import webbrowser
 from json import JSONDecodeError
 from pathlib import Path
+from typing import List
 
 import requests
 from fbs_runtime import PUBLIC_SETTINGS
@@ -71,6 +71,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 logging.StreamHandler(sys.stdout),
             ],
         )
+        # Add a handler for unhandled exceptions
+        sys.excepthook = self.log_unhandled_exception
 
         # Initailize UI from generated files
         self.setupUi(self)
@@ -123,17 +125,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         cli_path = shutil.which(CLI_EXECUTABLE)
         if cli_path:
             self.message(f"CLI path: {cli_path}")
-            try:
-                p = subprocess.Popen(
-                    [CLI_EXECUTABLE, "--version"],
-                    stdin=subprocess.PIPE,
-                    stdout=subprocess.PIPE,
-                    stderr=subprocess.STDOUT,
-                )
-                version_str = p.stdout.read().decode("UTF-8")
-                self.message(f"CLI version: {version_str}")
-            except subprocess.CalledProcessError as e:
-                self.message(f"Error getting the version of the CLI executable, {e}")
+            self.launch_process(["--version"])
         else:
             self.message(
                 f"{CLI_EXECUTABLE!r} executable not found. It's possible that it's not installed and none of the functions will work."  # noqa
@@ -261,7 +253,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         # Turn "Remove Library" into "remove-library" for example
         self.show_dialog([button_text.lower().replace(" ", "-")])
 
-    def show_dialog(self, args):
+    def show_dialog(self, args: List[str]):
         if self.p is None and self.is_signed_in():
             if args[0] == "sort-playlist":
                 self.sort_playlists_dialog = SortPlaylistsDialog(self)
@@ -275,7 +267,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                         self.add_to_library_checked(False)
                     self.launch_process(args)
 
-    def confirm(self, args):
+    def confirm(self, args: List[str]):
         confirmation_dialog = QMessageBox()
         confirmation_dialog.setIcon(QMessageBox.Warning)
         if args[0] == "remove-library":
@@ -306,14 +298,14 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         confirmation_dialog.setStandardButtons(QMessageBox.Ok | QMessageBox.Cancel)
         return confirmation_dialog.exec()
 
-    def launch_process(self, args):
+    def launch_process(self, args: List[str]):
         self.p = QProcess()
         self.p.readyReadStandardOutput.connect(self.handle_stdout)
         self.p.readyReadStandardError.connect(self.handle_stderr)
         self.p.stateChanged.connect(self.handle_state)
         self.p.finished.connect(self.process_finished)
-        cli_args = ["-l", self.log_dir, "-c", self.credential_dir, "-p"] + args
-        self.message(f"Executing process: ytmusic-deleter {cli_args}")
+        cli_args: List[str] = ["-l", self.log_dir, "-c", self.credential_dir, "-p"] + args
+        self.message(f"Executing process: {CLI_EXECUTABLE} {" ".join(cli_args)}")
         self.p.start(CLI_EXECUTABLE, cli_args)
         self.progress_dialog = ProgressDialog(self)
         self.progress_dialog.show()
@@ -379,6 +371,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         m = item_processing_re.search(output)
         if m:
             return m.group(1)
+
+    def log_unhandled_exception(self, exc_type, exc_value, exc_traceback):
+        print("we in here or what")
+        logging.exception("Unhandled exception occurred", exc_info=(exc_type, exc_value, exc_traceback))
 
 
 class AppContext(ApplicationContext):
