@@ -10,6 +10,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
+      - name: Download fbs
+        env:
+            FBS_URL_ID: ${{ secrets.FBS_URL_ID }}
+        run: |
+            curl -L https://drive.google.com/uc?id=$FBS_URL_ID --output fbs_pro-1.2.1.tar.gz
       - name: Update dependencies
         uses: pdm-project/update-deps-action@main
