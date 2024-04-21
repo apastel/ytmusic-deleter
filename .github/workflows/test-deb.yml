@@ -10,6 +10,7 @@ on:
       - '.gitignore'
       - '.pre-commit-comfig.yaml'
       - '**/test-exe.yml'
+      - '**/pytest.yml'
   pull_request:
   workflow_dispatch:
   schedule:

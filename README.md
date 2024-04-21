@@ -20,7 +20,7 @@ If this project helped you and you want to thank me, you can <a href="https://ww
 
 Features
 --------
-* Remove all songs from your Library
+* Remove all songs and podcasts from your Library
 * Delete all of your Uploads
   * Option to automatically add the corresponding album to your library from within YT Music
 * Delete all of your playlists

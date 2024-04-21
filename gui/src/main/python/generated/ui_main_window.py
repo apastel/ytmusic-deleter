@@ -148,7 +148,7 @@ class Ui_MainWindow(object):
     def retranslateUi(self, MainWindow):
         MainWindow.setWindowTitle(QCoreApplication.translate("MainWindow", u"YTMusic Deleter", None))
 #if QT_CONFIG(statustip)
-        self.removeLibraryButton.setStatusTip(QCoreApplication.translate("MainWindow", u"Remove all tracks that you have added to your library from within YouTube Music.", None))
+        self.removeLibraryButton.setStatusTip(QCoreApplication.translate("MainWindow", u"Remove all songs and podcasts that you have added to your library from within YouTube Music.", None))
 #endif // QT_CONFIG(statustip)
         self.removeLibraryButton.setText(QCoreApplication.translate("MainWindow", u"Remove Library", None))
 #if QT_CONFIG(statustip)

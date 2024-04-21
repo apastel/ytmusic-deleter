@@ -2,14 +2,11 @@ name: Pytest
 
 on:
   push:
-    branches:
-      - main
     paths:
       - ytmusic_deleter/**
       - tests/**
+      - '**/pytest.yml'
   pull_request:
-    branches:
-      - main
     paths:
       - ytmusic_deleter/**
       - tests/**
@@ -18,33 +15,33 @@ on:
     - cron: '0 10 * * *'
 
 jobs:
-  build:
+  pytest:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@master
+    - uses: actions/checkout@v4
     - name: Setup Python
       uses: actions/setup-python@v5
       with:
         python-version: 3.x
     - name: Setup PDM
       uses: pdm-project/setup-pdm@v4
-    - name: create-json
-      uses: jsdaniell/create-json@v1.2.3
-      with:
-        name: "oauth.json"
-        dir: "tests/resources"
-        json: ${{ secrets.OAUTH_JSON }}
     - name: Install dependencies
       run: pdm install -dG test
-    - name: Generate coverage report
+    - name: Create test resources
       env:
         HEADERS_AUTH: ${{ secrets.BROWSER_JSON }}
+        OAUTH_JSON: ${{ secrets.OAUTH_JSON }}
         TEST_CFG: ${{ secrets.TEST_CFG }}
       run: |
         curl -o tests/resources/test.mp3 https://www.kozco.com/tech/piano2-CoolEdit.mp3
         cat <<< "$HEADERS_AUTH" > tests/resources/browser.json
+        cat <<< "$OAUTH_JSON" > tests/resources/oauth.json
         cat <<< "$TEST_CFG" > tests/resources/test.cfg
+    - name: Run pytest
+      run: |
         pdm run pytest
+    - name: Generate coverage report
+      run: |
         pdm run coverage xml
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v4.0.1

@@ -24,7 +24,7 @@
      </rect>
     </property>
     <property name="statusTip">
-     <string>Remove all tracks that you have added to your library from within YouTube Music.</string>
+     <string>Remove all songs and podcasts that you have added to your library from within YouTube Music.</string>
     </property>
     <property name="text">
      <string>Remove Library</string>

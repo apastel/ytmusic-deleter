@@ -98,11 +98,11 @@ def delete_uploads(ctx: click.Context, **kwargs):
 @cli.command()
 @click.pass_context
 def remove_library(ctx: click.Context):
-    """Remove all tracks that you have added to your library from within YouTube Music."""
+    """Remove all songs and podcasts that you have added to your library from within YouTube Music."""
     yt_auth: YTMusic = ctx.obj["YT_AUTH"]
     logging.info("Retrieving all library albums...")
     try:
-        library_albums = yt_auth.get_library_albums(sys.maxsize)
+        library_albums = yt_auth.get_library_albums(limit=None)
         logging.info(f"Retrieved {len(library_albums)} albums from your library.")
     except Exception:
         logging.exception("Failed to get library albums.")
@@ -119,7 +119,7 @@ def remove_library(ctx: click.Context):
     logging.info("Retrieving all singles...")
     # Aside from actual singles, these might also be individual songs from an album that were added to your library
     try:
-        library_songs = yt_auth.get_library_songs(sys.maxsize)
+        library_songs = yt_auth.get_library_songs(limit=None)
         logging.info(f"Retrieved {len(library_songs)} singles from your library.")
     except Exception:
         logging.exception("Failed to get library singles.")
@@ -137,9 +137,45 @@ def remove_library(ctx: click.Context):
         enabled=not ctx.obj["STATIC_PROGRESS"],
     )
     albums_removed += remove_library_albums_by_song(album_unique_songs)
-    albums_total = len(library_albums) + len(album_unique_songs)
-    logging.info(f"Removed {albums_removed} out of {albums_total} albums from your library.")
+
+    podcasts_removed, library_podcasts = remove_library_podcasts()
+
+    albums_removed += podcasts_removed
+
+    albums_total = len(library_albums) + len(album_unique_songs) + len(library_podcasts)
+    logging.info(f"Removed {albums_removed} out of {albums_total} albums and podcasts from your library.")
     return (albums_removed, albums_total)
+
+
+def remove_library_podcasts():
+    yt_auth: YTMusic = get_current_context().obj["YT_AUTH"]
+    logging.info("Retreiving all podcasts...")
+    library_podcasts = yt_auth.get_library_podcasts(limit=None)
+    # Filter out the "New Episodes" auto-playlist that can't be deleted
+    library_podcasts = list(filter(lambda podcast: podcast["channel"]["id"], library_podcasts))
+    logging.info(f"Retrieved {len(library_podcasts)} from your library.")
+    global progress_bar
+    progress_bar = manager.counter(
+        total=len(library_podcasts),
+        desc="Podcasts Removed",
+        unit="podcasts",
+        enabled=not get_current_context().obj["STATIC_PROGRESS"],
+    )
+    podcasts_removed = 0
+    for podcast in library_podcasts:
+        id = podcast.get("podcastId")
+        if not id:
+            logging.debug(f"\tCan't delete podcast {podcast.get('title')!r} because it doesn't have an ID.")
+            continue
+        response = yt_auth.rate_playlist(id, const.INDIFFERENT)
+        if "actions" in response:
+            logging.info(f"\tRemoved {podcast.get('title')!r} from your library.")
+            podcasts_removed += 1
+        else:
+            logging.error(f"\tFailed to remove {podcast.get('title')!r} from your library.")
+        update_progress()
+    logging.info(f"Removed {podcasts_removed} out of {len(library_podcasts)} podcasts from your library.")
+    return podcasts_removed, library_podcasts
 
 
 def remove_library_albums(albums):

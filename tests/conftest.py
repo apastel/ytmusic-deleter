@@ -48,6 +48,12 @@ def fixture_sample_playlist() -> str:
     return "PL6bPxvf5dW5clc3y9wAoslzqUrmkZ5c-u"
 
 
+@pytest.fixture(name="sample_podcast")
+def fixture_sample_podcast() -> str:
+    """JRE Archive"""
+    return "PLk1Sqn_f33KuU_aJDvMPPAy_SoxXTt_ub"
+
+
 @pytest.fixture(name="browser_filepath")
 def fixture_browser_filepath(config) -> str:
     return get_resource(config["auth"]["browser_file"])
@@ -120,6 +126,22 @@ def fixture_add_library_album(yt_oauth: YTMusic, sample_album_as_playlist):
         for album in albums:
             if album.get("title") == "Revival":
                 return album
+        retries_remaining -= 1
+        time.sleep(2)
+
+
+@pytest.fixture(name="add_podcast")
+def fixtrue_add_podcast(yt_oauth: YTMusic, sample_podcast):
+    response = yt_oauth.rate_playlist(sample_podcast, constants.LIKE)
+    assert "actions" in response
+
+    # Wait for podcast to be in library
+    retries_remaining = 5
+    while retries_remaining:
+        podcasts = yt_oauth.get_library_podcasts(limit=None)
+        for podcast in podcasts:
+            if podcast.get("title") == "JRE Archive - Episodes #701 - 1000":
+                return podcast
         retries_remaining -= 1
         time.sleep(2)
 

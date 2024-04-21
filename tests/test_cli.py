@@ -16,16 +16,36 @@ class TestCli:
         uploads_remaining = yt_browser.get_library_upload_songs(limit=None)
         assert len(uploads_remaining) == 0
 
-    def test_remove_library(self, yt_oauth: YTMusic, add_library_album):
+    def test_remove_library(self, yt_oauth: YTMusic, add_library_album, add_podcast):
+        # Verify that items were added to the library
         assert add_library_album
+        assert add_podcast
+
+        # Run the remove-library command
         runner = CliRunner()
         result = runner.invoke(cli, ["remove-library"], standalone_mode=False, obj=yt_oauth)
         print(result.stdout)
         assert result.exit_code == 0
         albums_deleted, albums_total = result.return_value
+
+        # Verify at least one album was removed
         assert albums_deleted >= 1, f"No library albums were removed. {albums_total} albums were found."
+
+        # Verify there are no songs remaining in the library
         songs_remaining = yt_oauth.get_library_songs(limit=None)
-        assert len(songs_remaining) == 0
+        assert len(songs_remaining) == 0, f"Not all songs were removed. {len(songs_remaining)} still remain."
+
+        # Verify there are no podcasts remaining in the library
+        # For some reason podcasts are taking longer to register that they've been deleted, so try it a few times
+        retries_remaining = 5
+        while retries_remaining:
+            podcasts_remaining = yt_oauth.get_library_podcasts(limit=None)
+            podcasts_remaining = list(filter(lambda podcast: podcast["channel"]["id"], podcasts_remaining))
+            if len(podcasts_remaining) == 0:
+                break
+            retries_remaining -= 1
+            time.sleep(2)
+        assert len(podcasts_remaining) == 0, f"Not all podcasts were removed. {len(podcasts_remaining)} still remain."
 
     def test_unlike_all_songs(self, yt_oauth: YTMusic, like_song):
         assert like_song
