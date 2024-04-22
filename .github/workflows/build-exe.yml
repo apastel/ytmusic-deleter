@@ -1,6 +1,6 @@
-# This workflow runs the executable files of YTMusic Deleter to verify they are working
+# This workflow builds and tests the Windows installer for YTMusic Deleterr.
 
-name: Build and test (Linux)
+name: Build and test (Windows)
 
 on:
   push:
@@ -9,7 +9,7 @@ on:
       - '.flake8'
       - '.gitignore'
       - '.pre-commit-comfig.yaml'
-      - '**/test-exe.yml'
+      - '**/test-deb.yml'
       - '**/pytest.yml'
   pull_request:
   workflow_dispatch:
@@ -25,7 +25,7 @@ defaults:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     outputs:
       installer-version: ${{ steps.json-properties.outputs.version }}
       cli-version: ${{ steps.run-cli.outputs.version }}
@@ -39,12 +39,11 @@ jobs:
         curl -L https://drive.google.com/uc?id=$FBS_URL_ID --output fbs_pro-1.2.1.tar.gz
     - name: Install dependencies
       run: |
-        sudo apt update && sudo apt install -y libegl1 libegl1-mesa
         pdm install -dG gui --no-editable
     - name: Run CLI from venv
       id: run-cli
       run: |
-        . .venv/bin/activate
+        . .venv/Scripts/activate
         ytmusic-deleter
         echo "version=$(ytmusic-deleter --version)" >> $GITHUB_OUTPUT
     - name: Run fbs app
@@ -66,13 +65,22 @@ jobs:
         if grep -q "$version_str" <<< "$output"; then
             echo "GUI is running the right CLI version: $version_str"
         else
-            echo "$version_str not found in output, which was the following:"
+            echo "$version_str" not found in output, which was the following:
             echo $output
             exit 1
         fi
     - name: Freeze prep
       run: |
         pdm freeze-prep
+    - uses: nuget/setup-nuget@v2
+    - name: Install C++ Redist
+      shell: pwsh
+      run: |
+        Install-Module -Name VcRedist -Force
+        New-Item -Path C:\Temp\VcRedist -ItemType Directory
+        $VcList = Get-VcList -Export All | Where-Object { $_.Release -in "2010","2012" -and $_.Architecture -eq "x64" }
+        Save-VcRedist -VcList $VcList -Path C:\Temp\VcRedist
+        Install-VcRedist -VcList $VcList -Silent
     - name: Freeze exe
       run: |
         pdm fbs freeze
@@ -86,22 +94,16 @@ jobs:
         export QT_QPA_PLATFORM=offscreen
 
         # Launch the fbs app and kill it after 10 seconds, saving the output.
-        output=$(timeout 10s ./gui/target/YTMusic_Deleter/YTMusic_Deleter || true)
+        output=$(timeout 10s ./gui/target/YTMusic_Deleter/YTMusic_Deleter.exe || true)
 
         # Check if the output contains the right CLI version
         if grep -q "$version_str" <<< "$output"; then
             echo "GUI is running the right CLI version: $version_str"
         else
-            echo "$version_str not found in output, which was the following:"
+            echo "$version_str" not found in output, which was the following:
             echo $output
             exit 1
         fi
-    - uses: ruby/setup-ruby@v1
-      with:
-        ruby-version: ruby
-    - name: Install fpm
-      run: |
-        sudo gem install fpm
     - name: Create installer
       run: |
         pdm fbs installer
@@ -110,34 +112,32 @@ jobs:
       uses: zoexx/github-action-json-file-properties@1.0.6
       with:
         file_path: gui/src/build/settings/base.json
-    - name: Save .deb as artifact
-      id: upload_deb
+    - name: Save .exe as artifact
+      id: upload_exe
       uses: actions/upload-artifact@v4
       with:
-        name: installer-deb
-        path: ./gui/target/YTMusic_Deleter-${{ steps.json-properties.outputs.version }}-Setup.deb
+        name: installer-exe
+        path: ./gui/target/YTMusic_Deleter-${{ steps.json-properties.outputs.version }}-Setup.exe
 
   test:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     needs: build
     steps:
       - name: Download Artifact
         uses: actions/download-artifact@v4
         with:
-          name: installer-deb
+          name: installer-exe
       - name: Run installer
+        shell: cmd
         run: |
-          sudo dpkg -i ./YTMusic_Deleter-${{ needs.build.outputs.installer-version }}-Setup.deb
-      - name: Install dependencies
-        run: |
-          sudo apt update && sudo apt install -y libegl1 libegl1-mesa
+          .\YTMusic_Deleter-${{ needs.build.outputs.installer-version }}-Setup.exe /S
       - name: Run application
         run: |
 
           # Makes app run headless
           export QT_QPA_PLATFORM=offscreen
-          logfile="$HOME/YTMusic_Deleter/ytmusic-deleter-packager.log"
-          timeout 10s /opt/YTMusic_Deleter/YTMusic_Deleter || true
+          logfile="$APPDATA\YTMusic_Deleter\ytmusic-deleter-packager.log"
+          timeout 10s /c/Program\ Files\ \(x86\)/YTMusic_Deleter/YTMusic_Deleter.exe || true
           version_str="${{ needs.build.outputs.cli-version }}"
           if grep -q "$version_str" $logfile; then
             echo "GUI is running the right CLI version: $version_str"

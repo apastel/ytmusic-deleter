@@ -67,4 +67,3 @@ includes = ["ytmusic_deleter/**/*.py"]
 source = "scm"
 write_to = "ytmusic_deleter/_version.py"
 write_template = "__version__ = \"{}\"\n"
-fallback_version = "0.0.0"
