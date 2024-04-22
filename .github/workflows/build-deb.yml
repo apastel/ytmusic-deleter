@@ -121,9 +121,9 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: installer-deb
-        path: ./gui/target/YTMusic_Deleter-${{ steps.json-properties.outputs.version }}-Setup.deb
+        path: ./gui/target/YTMusic_Deleter-${{ steps.json-properties.outputs.version }}-Linux-Installer.deb
 
-  test:
+  verify:
     runs-on: ubuntu-latest
     needs: build
     steps:
@@ -133,7 +133,7 @@ jobs:
           name: installer-deb
       - name: Run installer
         run: |
-          sudo dpkg -i ./YTMusic_Deleter-${{ needs.build.outputs.installer-version }}-Setup.deb
+          sudo dpkg -i ./YTMusic_Deleter-${{ needs.build.outputs.installer-version }}-Linux-Installer.deb
       - name: Install dependencies
         run: |
           sudo apt update && sudo apt install -y libegl1 libegl1-mesa

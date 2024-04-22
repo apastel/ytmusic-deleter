@@ -1,3 +1,3 @@
 {
-    "installer": "${app_name}-${version}-Setup.exe"
+    "installer": "${app_name}-${version}-Windows-Installer.exe"
 }

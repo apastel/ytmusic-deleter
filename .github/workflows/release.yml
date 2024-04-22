@@ -9,8 +9,10 @@ on:
 jobs:
   build-exe:
     uses: ./.github/workflows/build-exe.yml
+    secrets: inherit
   build-deb:
     uses: ./.github/workflows/build-deb.yml
+    secrets: inherit
 
   build-wheel:
     name: Build PyPI dist
@@ -22,7 +24,7 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - name: Set up Python
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
         python-version: "3.x"
     - uses: pdm-project/setup-pdm@v4
@@ -40,9 +42,6 @@ jobs:
     needs:
     - build-wheel
     runs-on: ubuntu-latest
-    # environment:
-    #   name: pypi
-    #   url: https://pypi.org/p/ytmusic-deleter
     permissions:
       id-token: write  # IMPORTANT: mandatory for trusted publishing
 
@@ -54,11 +53,9 @@ jobs:
         path: dist/
     - name: Publish distribution 📦 to PyPI
       uses: pypa/gh-action-pypi-publish@release/v1
-      with:
-        repository-url: https://test.pypi.org/legacy/
 
   github-release:
-    name: Create GitHub Release
+    name: Draft GitHub Release
     needs:
       - publish-to-pypi
     runs-on: ubuntu-latest
@@ -79,14 +76,14 @@ jobs:
         inputs: |
           ./dist/*.tar.gz
           ./dist/*.whl
-    - name: Create GitHub Release
+    - name: Draft GitHub Release
       env:
         GITHUB_TOKEN: ${{ github.token }}
       run: |
-        gh release create
-        '${{ github.ref_name }}'
-        --repo '${{ github.repository }}'
-        --notes ""
+        gh release create \
+        '${{ github.ref_name }}' \
+        --repo '${{ github.repository }}' \
+        --generate-notes \
         --draft
     - name: Upload artifact signatures to GitHub Release
       env:
@@ -95,24 +92,24 @@ jobs:
       # `dist/` contains the built packages, and the
       # sigstore-produced signatures and certificates.
       run: |
-        gh release upload
-        '${{ github.ref_name }}' dist/**
-        --repo '${{ github.repository }}'
+        gh release upload \
+        '${{ github.ref_name }}' \
+        --repo '${{ github.repository }}' \
+        dist/**
     - name: Download Windows installer
-      uses: dawidd6/action-download-artifact@v3
+      uses: actions/download-artifact@v4
       with:
-        workflow: build-exe.yml
-        branch: '${{ github.ref_name }}'
+        name: installer-exe
     - name: Download Linux installer
-      uses: dawidd6/action-download-artifact@v3
+      uses: actions/download-artifact@v4
       with:
-        workflow: build-deb.yml
-        branch: '${{ github.ref_name }}'
+        name: installer-deb
     - name: Upload executable installers to Github Release
       env:
         GITHUB_TOKEN: ${{ github.token }}
       run: |
-        gh release upload
-        '${{ github.ref_name }}'
-        YTMusic_Deleter-${{ github.ref_name }}-Setup.exe
-        YTMusic_Deleter-${{ github.ref_name }}-Setup.deb
+        gh release upload \
+        '${{ github.ref_name }}' \
+        --repo '${{ github.repository }}' \
+        YTMusic_Deleter-${{ github.ref_name }}-Windows-Installer.exe \
+        YTMusic_Deleter-${{ github.ref_name }}-Linux-Installer.deb

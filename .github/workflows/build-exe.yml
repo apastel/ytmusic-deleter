@@ -123,9 +123,9 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: installer-exe
-        path: ./gui/target/YTMusic_Deleter-${{ steps.json-properties.outputs.version }}-Setup.exe
+        path: ./gui/target/YTMusic_Deleter-${{ steps.json-properties.outputs.version }}-Windows-Installer.exe
 
-  test:
+  verify:
     runs-on: windows-latest
     needs: build
     steps:
@@ -136,7 +136,7 @@ jobs:
       - name: Run installer
         shell: cmd
         run: |
-          .\YTMusic_Deleter-${{ needs.build.outputs.installer-version }}-Setup.exe /S
+          .\YTMusic_Deleter-${{ needs.build.outputs.installer-version }}-Windows-Installer.exe /S
       - name: Run application
         run: |
 
