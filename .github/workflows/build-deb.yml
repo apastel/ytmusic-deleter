@@ -4,6 +4,8 @@ name: Build and test (Linux)
 
 on:
   push:
+    branches: # prevent push on tags since that's handled by another workflow
+      - '**'
     paths-ignore:
       - '**.md'
       - '.flake8'
@@ -13,6 +15,7 @@ on:
       - '**/pytest.yml'
   pull_request:
   workflow_dispatch:
+  workflow_call:
   schedule:
     - cron: '0 10 * * *'
 
