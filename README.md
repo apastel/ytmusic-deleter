@@ -2,7 +2,8 @@
 ![GitHub Downloads (all assets, all releases)](https://img.shields.io/github/downloads/apastel/ytmusic-deleter/total?label=.exe%20Downloads)  
 [![PyPI - Downloads](https://img.shields.io/pypi/dm/ytmusic-deleter?logo=pypi&logoColor=yellow&label=PyPI%20Downloads)](https://pypi.org/project/ytmusic-deleter/)  
 ![GitHub Release](https://img.shields.io/github/v/release/apastel/ytmusic-deleter)  
-[![Release test](https://github.com/apastel/ytmusic-deleter/actions/workflows/test-exe.yml/badge.svg)](https://github.com/apastel/ytmusic-deleter/actions/workflows/test-exe.yml)  
+[![Release test](https://github.com/apastel/ytmusic-deleter/actions/workflows/build-exe.yml/badge.svg)](https://github.com/apastel/ytmusic-deleter/actions/workflows/build-exe.yml)  
+[![Release test](https://github.com/apastel/ytmusic-deleter/actions/workflows/build-deb.yml/badge.svg)](https://github.com/apastel/ytmusic-deleter/actions/workflows/build-deb.yml)  
 [![Pytest](https://github.com/apastel/ytmusic-deleter/actions/workflows/pytest.yml/badge.svg)](https://github.com/apastel/ytmusic-deleter/actions/workflows/pytest.yml)  
 ![Codecov](https://img.shields.io/codecov/c/github/apastel/ytmusic-deleter?color=green)  
 ![Discord](https://img.shields.io/discord/1156973782741827686?logo=discord)
@@ -38,7 +39,7 @@ Find the .exe file in the [Releases](https://github.com/apastel/ytmusic-deleter/
 > Please note you may get a browser warning when downloading the file, and a Windows warning for installing files from an unknown publisher. Click the "More Info" button, then the "Run Anyway" button to finish installing. This warning appears whenever you install something from an unsigned publisher.
 
 ### (Advanced) Command-line interface for non-Windows users
-See [CLI README](cli/README.md) 
+See [CLI README](ytmusic_deleter/README.md) 
 
 ## Setup
 Once installed and running, simply click the "Log In" button to authenticate to your YouTube Music account.

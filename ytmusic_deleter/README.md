@@ -1,9 +1,11 @@
 # ytmusic-deleter: Delete your YouTube Music library
-![GitHub Downloads (all assets, all releases)](https://img.shields.io/github/downloads/apastel/ytmusic-deleter/total?label=.exe%20Downloads)
-![PyPI - Downloads](https://img.shields.io/pypi/dm/ytmusic-deleter?label=PyPI%20Downloads)
-![GitHub Release](https://img.shields.io/github/v/release/apastel/ytmusic-deleter)
-![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/apastel/ytmusic-deleter/pytest.yml?branch=main&label=tests)
-![Codecov](https://img.shields.io/codecov/c/github/apastel/ytmusic-deleter?color=green)
+![GitHub Downloads (all assets, all releases)](https://img.shields.io/github/downloads/apastel/ytmusic-deleter/total?label=.exe%20Downloads)  
+[![PyPI - Downloads](https://img.shields.io/pypi/dm/ytmusic-deleter?logo=pypi&logoColor=yellow&label=PyPI%20Downloads)](https://pypi.org/project/ytmusic-deleter/)  
+![GitHub Release](https://img.shields.io/github/v/release/apastel/ytmusic-deleter)  
+[![Release test](https://github.com/apastel/ytmusic-deleter/actions/workflows/build-exe.yml/badge.svg)](https://github.com/apastel/ytmusic-deleter/actions/workflows/build-exe.yml)  
+[![Release test](https://github.com/apastel/ytmusic-deleter/actions/workflows/build-deb.yml/badge.svg)](https://github.com/apastel/ytmusic-deleter/actions/workflows/build-deb.yml)  
+[![Pytest](https://github.com/apastel/ytmusic-deleter/actions/workflows/pytest.yml/badge.svg)](https://github.com/apastel/ytmusic-deleter/actions/workflows/pytest.yml)  
+![Codecov](https://img.shields.io/codecov/c/github/apastel/ytmusic-deleter?color=green)  
 ![Discord](https://img.shields.io/discord/1156973782741827686?logo=discord)
 
 This is the command-line interface for ytmusic-deleter. For the graphical Windows .exe edition, visit the [main page](https://github.com/apastel/ytmusic-deleter)
