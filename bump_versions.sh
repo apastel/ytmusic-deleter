@@ -13,17 +13,17 @@ fi
 
 # Array of files with version numbers
 files=(
-  "pyproject.toml"
+  "ytmusic_deleter/_version.py"
   "gui/src/build/settings/base.json"
 )
 
 # Function to bump version
-bump_version_toml() {
+bump_version_py() {
   local file=$1
   local version_part=$2
 
   # Extract current version (limit to 1 match)
-  current_version=$(grep -m 1 "version =" "$file" | cut -d\" -f2)
+  current_version=$(grep -m 1 "__version__ =" "$file" | cut -d\" -f2)
   major=$(echo "$current_version" | cut -d. -f1)
   minor=$(echo "$current_version" | cut -d. -f2)
   patch=$(echo "$current_version" | cut -d. -f3)
@@ -39,7 +39,7 @@ bump_version_toml() {
   new_version="${major}.${minor}.${patch}"
 
   # Replace old version with new version in the file
-  sed -i "s/version = \"$current_version\"/version = \"$new_version\"/" "$file"
+  sed -i "s/__version__ = \"$current_version\"/__version__ = \"$new_version\"/" "$file"
 }
 
 # Function to bump version in JSON
@@ -82,8 +82,8 @@ bump_version_json() {
 
 # Iterate over files and bump version
 for file in "${files[@]}"; do
-  if [[ "${file##*.}" == "toml" ]]; then
-    bump_version_toml "$file" "$1"
+  if [[ "${file##*.}" == "py" ]]; then
+    bump_version_py "$file" "$1"
   else
     bump_version_json "$file" "$1"
   fi

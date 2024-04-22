@@ -316,7 +316,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.p.stateChanged.connect(self.handle_state)
         self.p.finished.connect(self.process_finished)
         cli_args: List[str] = ["-l", self.log_dir, "-c", self.credential_dir, "-p"] + args
-        self.message(f"Executing process: {CLI_EXECUTABLE} {" ".join(cli_args)}")
+        self.message(f"Executing process: {CLI_EXECUTABLE} {' '.join(cli_args)}")
         self.p.start(CLI_EXECUTABLE, cli_args)
         self.progress_dialog = ProgressDialog(self)
         self.progress_dialog.show()
