@@ -1,0 +1,116 @@
+name: Release and Publish
+
+on:
+  push:
+    tags:
+      - '**'
+
+jobs:
+  build-exe:
+    uses: ./.github/workflows/build-exe.yml
+  build-deb:
+    uses: ./.github/workflows/build-deb.yml
+
+  build-wheel:
+    name: Build distribution 📦
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.x"
+    - uses: pdm-project/setup-pdm@v4
+    - name: Build a binary wheel and a source tarball
+      run: pdm build
+    - name: Store the distribution packages
+      uses: actions/upload-artifact@v4
+      with:
+        name: python-package-distributions
+        path: dist/
+
+  publish-to-pypi:
+    name: |
+      Publish Python 🐍 distribution 📦 to PyPI
+    needs:
+    - build-wheel
+    runs-on: ubuntu-latest
+    # environment:
+    #   name: pypi
+    #   url: https://pypi.org/p/ytmusic-deleter
+    permissions:
+      id-token: write  # IMPORTANT: mandatory for trusted publishing
+
+    steps:
+    - name: Download all the dists
+      uses: actions/download-artifact@v4
+      with:
+        name: python-package-distributions
+        path: dist/
+    - name: Publish distribution 📦 to PyPI
+      uses: pypa/gh-action-pypi-publish@release/v1
+      with:
+        repository-url: https://test.pypi.org/legacy/
+
+  github-release:
+    name: |
+      Sign the Python 🐍 distribution 📦 with Sigstore
+      and upload them to GitHub Release
+    needs:
+    - publish-to-pypi
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write  # IMPORTANT: mandatory for making GitHub Releases
+      id-token: write  # IMPORTANT: mandatory for sigstore
+
+    steps:
+    - name: Download all the dists
+      uses: actions/download-artifact@v4
+      with:
+        name: python-package-distributions
+        path: dist/
+    - name: Sign the dists with Sigstore
+      uses: sigstore/gh-action-sigstore-python@main
+      with:
+        inputs: |
+          ./dist/*.tar.gz
+          ./dist/*.whl
+    - name: Create GitHub Release
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
+      run: |
+        gh release create
+        '${{ github.ref_name }}'
+        --repo '${{ github.repository }}'
+        --notes ""
+        --draft
+    - name: Upload artifact signatures to GitHub Release
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
+      # Upload to GitHub Release using the `gh` CLI.
+      # `dist/` contains the built packages, and the
+      # sigstore-produced signatures and certificates.
+      run: |
+        gh release upload
+        '${{ github.ref_name }}' dist/**
+        --repo '${{ github.repository }}'
+    - name: Download Windows installer
+      uses: dawidd6/action-download-artifact@v3
+      with:
+        workflow: build-exe.yml
+        branch: '${{ github.ref_name }}'
+    - name: Download Linux installer
+      uses: dawidd6/action-download-artifact@v3
+      with:
+        workflow: build-deb.yml
+        branch: '${{ github.ref_name }}'
+    - name: Upload executable installers to Github Release
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
+      run: |
+        gh release upload
+        '${{ github.ref_name }}'
+        YTMusic_Deleter-${{ github.ref_name }}-Setup.exe
+        YTMusic_Deleter-${{ github.ref_name }}-Setup.deb
