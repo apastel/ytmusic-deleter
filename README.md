@@ -32,10 +32,10 @@ Features
 ![YTMusic Deleter screenshot](https://i.imgur.com/ZmGl58E.gif)  
 
 ## Installation
-### Easy Install (Windows Only)
-Windows users can download an .exe to install the YTMusic Deleter GUI (Graphical User Interface).
+### Easy Install (Windows or Debian Linux Only)
+Windows or Debian Linux users (including Ubuntu) can download an .exe (or .deb, for Linux) to install the YTMusic Deleter GUI (Graphical User Interface).
 
-Find the .exe file in the [Releases](https://github.com/apastel/ytmusic-deleter/releases) area. Just click the latest release and look at the Assets section.  
+Find the .exe (or .deb) file in the [Releases](https://github.com/apastel/ytmusic-deleter/releases) area. Just click the latest release and look at the Assets section.  
 > Please note you may get a browser warning when downloading the file, and a Windows warning for installing files from an unknown publisher. Click the "More Info" button, then the "Run Anyway" button to finish installing. This warning appears whenever you install something from an unsigned publisher.
 
 ### (Advanced) Command-line interface for non-Windows users

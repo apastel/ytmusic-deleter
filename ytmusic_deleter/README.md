@@ -11,8 +11,8 @@
 This is the command-line interface for ytmusic-deleter. For the graphical Windows .exe edition, visit the [main page](https://github.com/apastel/ytmusic-deleter)
 
 ## Command-line interface install using Python / PIP
-The CLI version of ytmusic-deleter is for advanced users who would rather use a command-line or aren't running Windows.
-> For the graphical Windows .exe edition, visit the [main page](https://github.com/apastel/ytmusic-deleter)
+The CLI version of ytmusic-deleter is for advanced users who would rather use a command-line or are running macOS.
+> For the graphical Windows .exe edition (or Linux), visit the [main page](https://github.com/apastel/ytmusic-deleter)
 
 Installtion instructions of this command-line interface:
 1. Install [Python](https://www.python.org/downloads/). Make sure it is available on your PATH.
