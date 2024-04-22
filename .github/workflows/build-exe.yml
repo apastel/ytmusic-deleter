@@ -13,6 +13,7 @@ on:
       - '.pre-commit-comfig.yaml'
       - '**/test-deb.yml'
       - '**/pytest.yml'
+      - '**/release.yml'
   pull_request:
   workflow_dispatch:
   workflow_call:
