@@ -35,6 +35,8 @@ jobs:
       cli-version: ${{ steps.run-cli.outputs.version }}
     steps:
     - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
     - uses: pdm-project/setup-pdm@v4
     - name: Download fbs
       env:
