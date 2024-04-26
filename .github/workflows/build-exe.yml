@@ -1,6 +1,6 @@
 # This workflow builds and tests the Windows installer for YTMusic Deleterr.
 
-name: Build and test (Windows)
+name: Build and Verify (Windows)
 
 on:
   push:

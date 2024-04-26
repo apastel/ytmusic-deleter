@@ -1,6 +1,6 @@
 # This workflow builds and tests the Linux installer for YTMusic Deleterr.
 
-name: Build and test (Linux)
+name: Build and Verify (Linux)
 
 on:
   push:
