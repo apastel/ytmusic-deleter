@@ -20,6 +20,10 @@ on:
   schedule:
     - cron: '0 10 * * *'
 
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: true
+
 permissions:
   contents: read
 
