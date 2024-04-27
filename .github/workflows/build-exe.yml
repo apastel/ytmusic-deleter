@@ -11,7 +11,7 @@ on:
       - '.flake8'
       - '.gitignore'
       - '.pre-commit-comfig.yaml'
-      - '**/test-deb.yml'
+      - '**/build-deb.yml'
       - '**/pytest.yml'
       - '**/release.yml'
   pull_request:

@@ -6,13 +6,22 @@ on:
       - ytmusic_deleter/**
       - tests/**
       - '**/pytest.yml'
+      - pyproject.toml
+      - pdm.lock
   pull_request:
     paths:
       - ytmusic_deleter/**
       - tests/**
+      - '**/pytest.yml'
+      - pyproject.toml
+      - pdm.lock
   workflow_dispatch:
   schedule:
     - cron: '0 10 * * *'
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: true
 
 jobs:
   pytest:
