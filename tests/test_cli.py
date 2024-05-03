@@ -60,11 +60,23 @@ class TestCli:
         likes_remaining = yt_oauth.get_liked_songs(limit=None)["tracks"]
         assert len(likes_remaining) == 0, f"There were still {len(likes_remaining)} liked songs remaining"
 
+    def test_delete_playlists(self, yt_oauth: YTMusic, create_playlist):
+        assert create_playlist
+        runner = CliRunner()
+        result = runner.invoke(cli, ["delete-playlists"], standalone_mode=False, obj=yt_oauth)
+        print(result.stdout)
+        assert result.exit_code == 0
+
+        playlists_deleted, playlists_total = result.return_value
+        assert playlists_deleted >= 1, f"No playlists were deleted. {playlists_total} were found in total."
+
     def test_delete_playlist_duplicates(self, yt_oauth: YTMusic, playlist_with_dupes):
         assert playlist_with_dupes
-        assert len(check_for_duplicates(playlist_with_dupes, yt_oauth)) > 0
+        assert (
+            len(check_for_duplicates(playlist_with_dupes, yt_oauth)) > 0
+        ), "Playlist to work on did not contain any duplicates"
         runner = CliRunner()
-        result = runner.invoke(cli, ["remove-duplicates", "Playlist With Dupes"], standalone_mode=False, obj=yt_oauth)
+        result = runner.invoke(cli, ["remove-duplicates", "Test Playlist"], standalone_mode=False, obj=yt_oauth)
         print(result.stdout)
         assert result.exit_code == 0
 

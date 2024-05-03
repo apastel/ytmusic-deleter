@@ -42,7 +42,7 @@ def fixture_sample_video() -> str:
     return "hpSrLjc5SMs"
 
 
-@pytest.fixture(name="sample_playlist")
+@pytest.fixture(name="sample_public_playlist")
 def fixture_sample_playlist() -> str:
     """'00s Metal"""
     return "RDCLAK5uy_kx0d2-VPr69KAkIQOTVFq04hCBsJE9LaI"
@@ -168,12 +168,19 @@ def fixture_like_song(yt_oauth: YTMusic, sample_video):
     yt_oauth.rate_playlist("OLAK5uy_lZ90LvUqQdKrByCbk99v54d8XpUOmFavo", constants.INDIFFERENT)
 
 
+@pytest.fixture(name="create_playlist")
+def fixture_playlist(yt_oauth: YTMusic, sample_public_playlist) -> str:
+    playlist_id = yt_oauth.create_playlist("Test Playlist", "a test playlist", source_playlist=sample_public_playlist)
+
+    return playlist_id
+
+
 @pytest.fixture(name="playlist_with_dupes")
-def fixture_playlist_with_dupes(yt_oauth: YTMusic, sample_playlist):
-    playlist_id = yt_oauth.create_playlist(
-        "Playlist With Dupes", "a test playlist used for duplicate removal", source_playlist=sample_playlist
-    )
-    items_to_add = ["mUEsqQpact0"]
+def fixture_playlist_with_dupes(yt_oauth: YTMusic, create_playlist):
+    playlist_id = create_playlist
+    playlist = yt_oauth.get_playlist(playlist_id)
+    sample_video_id = playlist.get("tracks")[0].get("videoId")
+    items_to_add = [sample_video_id]
     yt_oauth.add_playlist_items(playlist_id, items_to_add, duplicates=True)
 
     yield playlist_id

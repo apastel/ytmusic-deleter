@@ -65,6 +65,12 @@ def cli(ctx, log_dir, credential_dir, static_progress):
 
 
 @cli.command()
+def whoami():
+    """Print the name of the authenticated user, or sign in"""
+    pass
+
+
+@cli.command()
 @click.option(
     "--add-to-library",
     "-a",
@@ -155,7 +161,7 @@ def remove_library_podcasts():
     library_podcasts = yt_auth.get_library_podcasts(limit=None)
     # Filter out the "New Episodes" auto-playlist that can't be deleted
     library_podcasts = list(filter(lambda podcast: podcast["channel"]["id"], library_podcasts))
-    logging.info(f"Retrieved {len(library_podcasts)} from your library.")
+    logging.info(f"Retrieved {len(library_podcasts)} podcasts from your library.")
     global progress_bar
     progress_bar = manager.counter(
         total=len(library_podcasts),
@@ -277,18 +283,21 @@ def delete_playlists(ctx: click.Context):
         unit="playlists",
         enabled=not ctx.obj["STATIC_PROGRESS"],
     )
+    playlists_deleted = 0
     for playlist in library_playlists:
         logging.info(f"Processing playlist: {playlist['title']}")
         try:
             response = yt_auth.delete_playlist(playlist["playlistId"])
             if response:
                 logging.info(f"\tRemoved playlist {playlist['title']!r} from your library.")
+                playlists_deleted += 1
             else:
                 logging.error(f"\tFailed to remove playlist {playlist['title']!r} from your library.")
         except Exception:
             logging.error(f"\tCould not delete playlist {playlist['title']}. It might be a YT Music curated playlist.")
         update_progress()
-    logging.info("Finished deleting all playlists")
+    logging.info(f"Deleted {playlists_deleted} out of {len(library_playlists)} from your library.")
+    return (playlists_deleted, len(library_playlists))
 
 
 @cli.command()
