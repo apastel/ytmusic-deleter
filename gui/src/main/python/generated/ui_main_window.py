@@ -116,7 +116,7 @@ class Ui_MainWindow(object):
         self.channelHandleLabel.setAlignment(Qt.AlignCenter)
         self.removeDupesButton = QPushButton(self.centralWidget)
         self.removeDupesButton.setObjectName(u"removeDupesButton")
-        self.removeDupesButton.setEnabled(False)
+        self.removeDupesButton.setEnabled(True)
         self.removeDupesButton.setGeometry(QRect(160, 240, 101, 41))
         font3 = QFont()
         font3.setPointSize(8)
@@ -188,7 +188,7 @@ class Ui_MainWindow(object):
         self.removeDupesButton.setToolTip(QCoreApplication.translate("MainWindow", u"<html><head/><body><p>Coming soon!</p></body></html>", None))
 #endif // QT_CONFIG(tooltip)
 #if QT_CONFIG(statustip)
-        self.removeDupesButton.setStatusTip(QCoreApplication.translate("MainWindow", u"This feature is not yet available. Coming soon!", None))
+        self.removeDupesButton.setStatusTip(QCoreApplication.translate("MainWindow", u"Remove duplicate tracks in a playlist.", None))
 #endif // QT_CONFIG(statustip)
         self.removeDupesButton.setText(QCoreApplication.translate("MainWindow", u"Remove Duplicates", None))
     # retranslateUi

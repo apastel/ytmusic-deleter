@@ -44,8 +44,8 @@ def fixture_sample_video() -> str:
 
 @pytest.fixture(name="sample_playlist")
 def fixture_sample_playlist() -> str:
-    """very large playlist"""
-    return "PL6bPxvf5dW5clc3y9wAoslzqUrmkZ5c-u"
+    """'00s Metal"""
+    return "RDCLAK5uy_kx0d2-VPr69KAkIQOTVFq04hCBsJE9LaI"
 
 
 @pytest.fixture(name="sample_podcast")
@@ -166,3 +166,16 @@ def fixture_like_song(yt_oauth: YTMusic, sample_video):
 
     # Remove song from library to clean up
     yt_oauth.rate_playlist("OLAK5uy_lZ90LvUqQdKrByCbk99v54d8XpUOmFavo", constants.INDIFFERENT)
+
+
+@pytest.fixture(name="playlist_with_dupes")
+def fixture_playlist_with_dupes(yt_oauth: YTMusic, sample_playlist):
+    playlist_id = yt_oauth.create_playlist(
+        "Playlist With Dupes", "a test playlist used for duplicate removal", source_playlist=sample_playlist
+    )
+    items_to_add = ["mUEsqQpact0"]
+    yt_oauth.add_playlist_items(playlist_id, items_to_add, duplicates=True)
+
+    yield playlist_id
+
+    yt_oauth.delete_playlist(playlist_id)

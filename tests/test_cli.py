@@ -1,6 +1,7 @@
 import time
 
 from click.testing import CliRunner
+from ytmusic_deleter.cli import check_for_duplicates
 from ytmusic_deleter.cli import cli
 from ytmusicapi import YTMusic
 
@@ -58,3 +59,14 @@ class TestCli:
         time.sleep(5)
         likes_remaining = yt_oauth.get_liked_songs(limit=None)["tracks"]
         assert len(likes_remaining) == 0, f"There were still {len(likes_remaining)} liked songs remaining"
+
+    def test_delete_playlist_duplicates(self, yt_oauth: YTMusic, playlist_with_dupes):
+        assert playlist_with_dupes
+        assert len(check_for_duplicates(playlist_with_dupes, yt_oauth)) > 0
+        runner = CliRunner()
+        result = runner.invoke(cli, ["remove-duplicates", "Playlist With Dupes"], standalone_mode=False, obj=yt_oauth)
+        print(result.stdout)
+        assert result.exit_code == 0
+
+        playlist_without_dupes = yt_oauth.get_playlist(playlist_with_dupes, limit=None)["id"]
+        assert len(check_for_duplicates(playlist_without_dupes, yt_oauth)) == 0, "Playlist still contained duplicates"

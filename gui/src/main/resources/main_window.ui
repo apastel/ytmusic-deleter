@@ -353,7 +353,7 @@
    </widget>
    <widget class="QPushButton" name="removeDupesButton">
     <property name="enabled">
-     <bool>false</bool>
+     <bool>true</bool>
     </property>
     <property name="geometry">
      <rect>
@@ -372,7 +372,7 @@
      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Coming soon!&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
     </property>
     <property name="statusTip">
-     <string>This feature is not yet available. Coming soon!</string>
+     <string>Remove duplicate tracks in a playlist.</string>
     </property>
     <property name="text">
      <string>Remove Duplicates</string>

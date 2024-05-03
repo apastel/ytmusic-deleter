@@ -55,7 +55,7 @@ fbs = "sh fbs.sh"
 # Seems redundant, but takes advantage of pdm's platform-agnostic venv activation
 ytmusic-deleter = "ytmusic-deleter"
 # Use this to generate the UI files (Windows only)
-generate = { shell = "cd %PDM_PROJECT_ROOT%/gui && scripts/generate_ui_files.sh" }
+generate = "bash gui/scripts/generate_ui_files.sh"
 # Use this to bump all the project versions
 version = "bash bump_versions.sh"
 freeze-prep = "bash gui/scripts/freeze_prep.sh"

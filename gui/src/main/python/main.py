@@ -30,6 +30,7 @@ from PySide6.QtWidgets import QCheckBox
 from PySide6.QtWidgets import QLabel
 from PySide6.QtWidgets import QMainWindow
 from PySide6.QtWidgets import QMessageBox
+from remove_duplicates_dialog import RemoveDuplicatesDialog
 from sort_playlists_dialog import SortPlaylistsDialog
 from ytmusic_deleter import constants as const
 from ytmusicapi import YTMusic
@@ -99,6 +100,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.deleteHistoryButton.clicked.connect(self.prepare_to_invoke)
         self.deleteAllButton.clicked.connect(self.prepare_to_invoke)
         self.sortPlaylistButton.clicked.connect(self.prepare_to_invoke)
+        self.removeDupesButton.clicked.connect(self.prepare_to_invoke)
 
         # Create donate button
         self.donateLabel = ClickableLabel(self.centralWidget, "https://www.buymeacoffee.com/jewbix.cube")
@@ -198,6 +200,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.deleteHistoryButton.setDisabled(False)
             self.deleteAllButton.setDisabled(False)
             self.sortPlaylistButton.setDisabled(False)
+            self.removeDupesButton.setDisabled(False)
         else:
             self.accountPhotoButton.hide()
             self.signInButton.show()
@@ -208,6 +211,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.deleteHistoryButton.setDisabled(True)
             self.deleteAllButton.setDisabled(True)
             self.sortPlaylistButton.setDisabled(True)
+            self.removeDupesButton.setDisabled(True)
 
     @Slot()
     def account_button_clicked(self):
@@ -269,6 +273,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             if args[0] == "sort-playlist":
                 self.sort_playlists_dialog = SortPlaylistsDialog(self)
                 self.sort_playlists_dialog.show()
+
+            elif args[0] == "remove-duplicates":
+                self.remove_duplicates_dialog = RemoveDuplicatesDialog(self)
+                self.remove_duplicates_dialog.show()
 
             else:
                 self.message("Showing confirmation dialog")

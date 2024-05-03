@@ -2,6 +2,8 @@ import logging
 import os
 import re
 import sys
+from itertools import groupby
+from operator import itemgetter
 from pathlib import Path
 from random import shuffle as unsort
 from time import strftime
@@ -420,6 +422,72 @@ def make_sort_key(track):
     except Exception:
         logging.exception(f"Track {track} could not be sorted.")
         raise
+
+
+@cli.command()
+@click.argument("playlist_title")
+@click.pass_context
+def remove_duplicates(ctx: click.Context, playlist_title):
+    """Delete all duplicates in a given playlist"""
+    yt_auth: YTMusic = ctx.obj["YT_AUTH"]
+    # Get all playlists
+    all_playlists = yt_auth.get_library_playlists(limit=None)
+    # Get the ID of the matching playlist
+    selected_playlist_id = next(
+        (
+            playlist["playlistId"]
+            for playlist in all_playlists
+            if playlist.get("title").lower() == playlist_title.lower()
+        ),
+        None,
+    )
+    if not selected_playlist_id:
+        raise click.BadParameter(
+            f"No playlist found named {playlist_title!r}. Double-check your playlist name "
+            '(or surround it "with quotes") and try again.'
+        )
+    # Get a list of all the sets of duplicates
+    duplicates = check_for_duplicates(selected_playlist_id)
+    if not duplicates:
+        logging.info("No duplicates found. If you think this is an error open an issue on GitHub or message on Discord")
+    # For each dupe group, remove all but the first song
+    for duplicate_group in duplicates:
+        master_track = duplicate_group[0]
+        logging.info(
+            f"The following track(s) are a duplicate of {master_track.get('artist')} - {master_track.get('title')!r} "
+            "and will be removed:"
+        )
+        items_to_remove = duplicate_group[1:]
+        for item in items_to_remove:
+            logging.info(f"\t{item.get('artist')} - {item.get('title')!r}")
+        yt_auth.remove_playlist_items(selected_playlist_id, items_to_remove)
+
+
+def check_for_duplicates(playlist_id: str, yt_auth: YTMusic = None):
+    # Allow passing in yt_auth from pytest
+    if not yt_auth:
+        yt_auth: YTMusic = get_current_context().obj["YT_AUTH"]
+    # Get the playlist object
+    playlist = yt_auth.get_playlist(playlist_id)
+    logging.info(f"Checking for duplicates in playlist {playlist.get('title')!r}")
+    tracks = playlist.get("tracks")
+    # Trim the fat of the tracks object
+    tracks = [
+        {
+            "artist": track.get("artists")[0].get("name"),
+            "title": track.get("title"),
+            "videoId": track.get("videoId"),
+            "setVideoId": track.get("setVideoId"),
+        }
+        for track in tracks
+    ]
+
+    # Create a list of groups of duplicate tracks, where dupes are determined by having the same videoId
+    tracks.sort(key=itemgetter("videoId"))
+    grouped_tracks = [(key, list(group)) for key, group in groupby(tracks, lambda item: item["videoId"])]
+    grouped_tracks = [group for key, group in grouped_tracks if len(group) > 1]
+
+    return grouped_tracks
 
 
 def update_progress():

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>SortPlaylistsDialog</class>
- <widget class="QDialog" name="SortPlaylistsDialog">
+ <class>PlaylistSelectionDialog</class>
+ <widget class="QDialog" name="PlaylistSelectionDialog">
   <property name="windowModality">
    <enum>Qt::ApplicationModal</enum>
   </property>
@@ -14,7 +14,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Sort Playlists</string>
+   <string>Select Playlist(s)</string>
   </property>
   <widget class="QDialogButtonBox" name="buttonBox">
    <property name="geometry">
@@ -40,9 +40,6 @@
      <width>256</width>
      <height>192</height>
     </rect>
-   </property>
-   <property name="selectionMode">
-    <enum>QAbstractItemView::MultiSelection</enum>
    </property>
    <property name="selectionRectVisible">
     <bool>false</bool>
@@ -73,7 +70,7 @@
   <connection>
    <sender>buttonBox</sender>
    <signal>accepted()</signal>
-   <receiver>SortPlaylistsDialog</receiver>
+   <receiver>PlaylistSelectionDialog</receiver>
    <slot>accept()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -89,7 +86,7 @@
   <connection>
    <sender>buttonBox</sender>
    <signal>rejected()</signal>
-   <receiver>SortPlaylistsDialog</receiver>
+   <receiver>PlaylistSelectionDialog</receiver>
    <slot>reject()</slot>
    <hints>
     <hint type="sourcelabel">
