@@ -32,5 +32,5 @@ def ensure_auth(credential_dir) -> YTMusic:
             try:
                 logging.info(f"Logged in as {yt_auth.get_account_info().get('accountName')!r}")
             except KeyError:
-                logging.exception("Unable to get account name of logged-in user")
+                logging.error("Unable to get account name of logged-in user")
     return yt_auth

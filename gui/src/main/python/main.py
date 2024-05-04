@@ -8,6 +8,7 @@ import sys
 import webbrowser
 from json import JSONDecodeError
 from pathlib import Path
+from time import strftime
 from typing import List
 
 import requests
@@ -69,7 +70,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             format="[%(asctime)s] %(message)s",
             datefmt="%Y-%m-%d %H:%M:%S",
             handlers=[
-                logging.FileHandler(Path(APP_DATA_DIR) / "ytmusic-deleter-packager.log"),
+                logging.FileHandler(Path(APP_DATA_DIR) / f"ytmusic-deleter-gui_{strftime('%Y-%m-%d')}.log"),
                 logging.StreamHandler(sys.stdout),
             ],
         )
@@ -130,7 +131,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.message(f"CLI path: {cli_path}")
             try:
                 p = subprocess.Popen(
-                    [CLI_EXECUTABLE, "--version"],
+                    [CLI_EXECUTABLE, "-n", "--version"],
                     stdin=subprocess.PIPE,
                     stdout=subprocess.PIPE,
                     stderr=subprocess.STDOUT,
@@ -323,7 +324,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.p.readyReadStandardError.connect(self.handle_stderr)
         self.p.stateChanged.connect(self.handle_state)
         self.p.finished.connect(self.process_finished)
-        cli_args: List[str] = ["-l", self.log_dir, "-c", self.credential_dir, "-p"] + args
+        cli_args: List[str] = ["-l", self.log_dir, "-c", self.credential_dir, "-p", "-n"] + args
         self.message(f"Executing process: {CLI_EXECUTABLE} {' '.join(cli_args)}")
         self.p.start(CLI_EXECUTABLE, cli_args)
         self.progress_dialog = ProgressDialog(self)

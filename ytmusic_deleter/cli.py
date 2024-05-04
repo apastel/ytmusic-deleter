@@ -1,4 +1,4 @@
-import logging
+import logging.handlers
 import os
 import re
 import sys
@@ -38,25 +38,29 @@ from ytmusicapi import YTMusic
     is_flag=True,
     help="Log the progress statically instead of an animated progress bar",
 )
+@click.option("--no-log", "-n", is_flag=True, help="Disable CLI logging (used by GUI)")
 @click.pass_context
-def cli(ctx, log_dir, credential_dir, static_progress):
+def cli(ctx, log_dir, credential_dir, static_progress, no_log):
     """Perform batch delete operations on your YouTube Music library."""
 
+    handlers = [logging.StreamHandler(sys.stdout)]
+    if not no_log:
+        handlers.append(logging.FileHandler(Path(log_dir) / f"ytmusic-deleter-cli_{strftime('%Y-%m-%d')}.log"))
     logging.basicConfig(
         force=True,
         level=logging.INFO,
         format="[%(asctime)s] %(message)s",
         datefmt="%Y-%m-%d %H:%M:%S",
-        handlers=[
-            logging.FileHandler(Path(log_dir) / f"ytmusic-deleter_{strftime('%Y-%m-%d')}.log"),
-            logging.StreamHandler(sys.stdout),
-        ],
+        handlers=handlers,
     )
 
     if ctx.obj is not None:
         # Allows yt_auth to be provided by pytest
         yt_auth: YTMusic = ctx.obj
-        logging.info(f"Logged in as {yt_auth.get_account_info().get('accountName')!r}")
+        try:
+            logging.info(f"Logged in as {yt_auth.get_account_info().get('accountName')!r}")
+        except KeyError:
+            logging.error("Unable to get account info")
     else:
         yt_auth: YTMusic = ensure_auth(credential_dir)
     ctx.ensure_object(dict)
