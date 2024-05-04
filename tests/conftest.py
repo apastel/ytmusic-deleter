@@ -107,7 +107,10 @@ def fixture_upload_song(config, yt_browser: YTMusic) -> Dict | None:
     retries_remaining = 10
     while retries_remaining:
         time.sleep(5)
-        songs = yt_browser.get_library_upload_songs(limit=None)
+        try:
+            songs = yt_browser.get_library_upload_songs(limit=None)
+        except KeyError:
+            pass
         for song in songs:
             if song.get("title") in config["uploads"]["file"]:
                 return song
