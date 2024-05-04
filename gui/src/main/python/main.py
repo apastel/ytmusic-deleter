@@ -165,28 +165,28 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 self.message("Click the 'Sign In' button to connect to your account.")
             return False
 
-        try:
-            # Display account name in popover
-            account_info: dict = self.ytmusic.get_account_info()
-            account_name = account_info["accountName"]
-            self.accountNameLabel.setText(account_name)
-            channel_handle = account_info["channelHandle"]
+        # Display account name in popover
+        account_info: dict = self.ytmusic.get_account_info()
+        account_name = account_info["accountName"]
+        self.accountNameLabel.setText(account_name)
+        channel_handle = account_info["channelHandle"]
+        if channel_handle:
             self.channelHandleLabel.setText(f"({channel_handle})")
+        else:
+            self.channelHandleLabel.setText("")
 
-            # Display account photo
-            response = requests.get(account_info["accountPhotoUrl"])
-            pixmap = QPixmap()
-            pixmap.loadFromData(response.content)
-            pixmap = pixmap.scaled(self.accountPhotoButton.size(), Qt.KeepAspectRatio, Qt.SmoothTransformation)
-            photo_path = str(Path(Path(APP_DATA_DIR) / "account_photo.jpg"))
-            pixmap.save(photo_path)
-            background_photo_style = f"\nQPushButton {{ background-image: url({Path(photo_path).as_posix()}); }}"
-            self.accountPhotoButton.setStyleSheet(self.photo_button_stylesheet + background_photo_style)
+        # Display account photo
+        response = requests.get(account_info["accountPhotoUrl"])
+        pixmap = QPixmap()
+        pixmap.loadFromData(response.content)
+        pixmap = pixmap.scaled(self.accountPhotoButton.size(), Qt.KeepAspectRatio, Qt.SmoothTransformation)
+        photo_path = str(Path(Path(APP_DATA_DIR) / "account_photo.jpg"))
+        pixmap.save(photo_path)
+        background_photo_style = f"\nQPushButton {{ background-image: url({Path(photo_path).as_posix()}); }}"
+        self.accountPhotoButton.setStyleSheet(self.photo_button_stylesheet + background_photo_style)
 
-            if display_message:
-                self.message(f"Signed in as {account_name!r}")
-        except KeyError:
-            self.message("Unable to get acccount info")
+        if display_message:
+            self.message(f"Signed in as {account_name!r}")
         return True
 
     def update_buttons(self):

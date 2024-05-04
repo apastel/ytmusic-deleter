@@ -57,10 +57,7 @@ def cli(ctx, log_dir, credential_dir, static_progress, no_log):
     if ctx.obj is not None:
         # Allows yt_auth to be provided by pytest
         yt_auth: YTMusic = ctx.obj
-        try:
-            logging.info(f"Logged in as {yt_auth.get_account_info().get('accountName')!r}")
-        except KeyError:
-            logging.error("Unable to get account info")
+        logging.info(f"Logged in as {yt_auth.get_account_info().get('accountName')!r}")
     else:
         yt_auth: YTMusic = ensure_auth(credential_dir)
     ctx.ensure_object(dict)
