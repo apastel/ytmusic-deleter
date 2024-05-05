@@ -11,19 +11,24 @@
 from PySide6.QtCore import (QCoreApplication, QDate, QDateTime, QLocale,
     QMetaObject, QObject, QPoint, QRect,
     QSize, QTime, QUrl, Qt)
-from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
-    QFont, QFontDatabase, QGradient, QIcon,
-    QImage, QKeySequence, QLinearGradient, QPainter,
-    QPalette, QPixmap, QRadialGradient, QTransform)
-from PySide6.QtWidgets import (QApplication, QLabel, QMainWindow, QMenuBar,
-    QPlainTextEdit, QPushButton, QSizePolicy, QStatusBar,
-    QWidget)
+from PySide6.QtGui import (QAction, QBrush, QColor, QConicalGradient,
+    QCursor, QFont, QFontDatabase, QGradient,
+    QIcon, QImage, QKeySequence, QLinearGradient,
+    QPainter, QPalette, QPixmap, QRadialGradient,
+    QTransform)
+from PySide6.QtWidgets import (QApplication, QLabel, QMainWindow, QMenu,
+    QMenuBar, QPlainTextEdit, QPushButton, QSizePolicy,
+    QStatusBar, QWidget)
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         if not MainWindow.objectName():
             MainWindow.setObjectName(u"MainWindow")
         MainWindow.resize(900, 685)
+        self.actionPreferences = QAction(MainWindow)
+        self.actionPreferences.setObjectName(u"actionPreferences")
+        self.actionExit = QAction(MainWindow)
+        self.actionExit.setObjectName(u"actionExit")
         self.centralWidget = QWidget(MainWindow)
         self.centralWidget.setObjectName(u"centralWidget")
         self.removeLibraryButton = QPushButton(self.centralWidget)
@@ -125,10 +130,16 @@ class Ui_MainWindow(object):
         self.menubar = QMenuBar(MainWindow)
         self.menubar.setObjectName(u"menubar")
         self.menubar.setGeometry(QRect(0, 0, 900, 21))
+        self.menuSettings = QMenu(self.menubar)
+        self.menuSettings.setObjectName(u"menuSettings")
         MainWindow.setMenuBar(self.menubar)
         self.statusbar = QStatusBar(MainWindow)
         self.statusbar.setObjectName(u"statusbar")
         MainWindow.setStatusBar(self.statusbar)
+
+        self.menubar.addAction(self.menuSettings.menuAction())
+        self.menuSettings.addAction(self.actionPreferences)
+        self.menuSettings.addAction(self.actionExit)
 
         self.retranslateUi(MainWindow)
 
@@ -147,6 +158,8 @@ class Ui_MainWindow(object):
 
     def retranslateUi(self, MainWindow):
         MainWindow.setWindowTitle(QCoreApplication.translate("MainWindow", u"YTMusic Deleter", None))
+        self.actionPreferences.setText(QCoreApplication.translate("MainWindow", u"Preferences...", None))
+        self.actionExit.setText(QCoreApplication.translate("MainWindow", u"Exit", None))
 #if QT_CONFIG(statustip)
         self.removeLibraryButton.setStatusTip(QCoreApplication.translate("MainWindow", u"Remove all songs and podcasts that you have added to your library from within YouTube Music.", None))
 #endif // QT_CONFIG(statustip)
@@ -191,5 +204,6 @@ class Ui_MainWindow(object):
         self.removeDupesButton.setStatusTip(QCoreApplication.translate("MainWindow", u"Remove duplicate tracks in a playlist.", None))
 #endif // QT_CONFIG(statustip)
         self.removeDupesButton.setText(QCoreApplication.translate("MainWindow", u"Remove Duplicates", None))
+        self.menuSettings.setTitle(QCoreApplication.translate("MainWindow", u"File", None))
     # retranslateUi
 

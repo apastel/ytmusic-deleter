@@ -396,13 +396,19 @@
      <string>File</string>
     </property>
     <addaction name="actionPreferences"/>
+    <addaction name="actionExit"/>
    </widget>
    <addaction name="menuSettings"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
   <action name="actionPreferences">
    <property name="text">
-    <string>Preferences</string>
+    <string>Preferences...</string>
+   </property>
+  </action>
+  <action name="actionExit">
+   <property name="text">
+    <string>Exit</string>
    </property>
   </action>
  </widget>

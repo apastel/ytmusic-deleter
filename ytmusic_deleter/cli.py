@@ -21,12 +21,6 @@ from ytmusicapi import YTMusic
 @click.group()
 @click.version_option(__version__)
 @click.option(
-    "--log-dir",
-    "-l",
-    default=os.getcwd(),
-    help="Custom directory in which to write log files, instead of current working directory.",
-)
-@click.option(
     "--credential-dir",
     "-c",
     default=os.getcwd(),
@@ -38,17 +32,24 @@ from ytmusicapi import YTMusic
     is_flag=True,
     help="Log the progress statically instead of an animated progress bar",
 )
-@click.option("--no-log", "-n", is_flag=True, help="Disable CLI logging (used by GUI)")
+@click.option(
+    "--log-dir",
+    "-l",
+    default=os.getcwd(),
+    help="Custom directory in which to write log files, instead of current working directory.",
+)
+@click.option("--no-logfile", "-n", is_flag=True, help="Only log to stdout, no file logging")
+@click.option("--verbose", "-v", is_flag=True, help="Enable verbose (debug) logging")
 @click.pass_context
-def cli(ctx, log_dir, credential_dir, static_progress, no_log):
+def cli(ctx, log_dir, credential_dir, static_progress, no_logfile, verbose):
     """Perform batch delete operations on your YouTube Music library."""
 
     handlers = [logging.StreamHandler(sys.stdout)]
-    if not no_log:
+    if not no_logfile:
         handlers.append(logging.FileHandler(Path(log_dir) / f"ytmusic-deleter-cli_{strftime('%Y-%m-%d')}.log"))
     logging.basicConfig(
         force=True,
-        level=logging.INFO,
+        level=logging.DEBUG if verbose else logging.INFO,
         format="[%(asctime)s] %(message)s",
         datefmt="%Y-%m-%d %H:%M:%S",
         handlers=handlers,
@@ -383,7 +384,7 @@ def sort_playlist(ctx: click.Context, shuffle, playlist_titles):
         for cur_track in desired_tracklist:
             cur_idx = desired_tracklist.index(cur_track)
             track_after = current_tracklist[cur_idx]
-            logging.debug(  # No way to actually enable debug logging yet
+            logging.debug(
                 f"Moving {cur_track['artists'][0]['name']} - {cur_track['title']} "
                 f"before {track_after['artists'][0]['name']} - {track_after['title']}"
             )

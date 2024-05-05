@@ -18,7 +18,9 @@ from fbs_runtime.application_context import is_frozen
 from fbs_runtime.application_context.PySide6 import ApplicationContext
 from fbs_runtime.excepthook.sentry import SentryExceptionHandler
 from generated.ui_main_window import Ui_MainWindow
+from preferences_dialog import PreferencesDialog
 from progress_dialog import ProgressDialog
+from PySide6.QtCore import QCoreApplication
 from PySide6.QtCore import QEvent
 from PySide6.QtCore import QProcess
 from PySide6.QtCore import QRect
@@ -59,6 +61,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             pass
         self.log_dir = self.settings.value("log_dir", APP_DATA_DIR)
         self.credential_dir = self.settings.value("credential_dir", APP_DATA_DIR)
+        self.verbose_logging = self.settings.value("verbose_logging", False, type=bool)
 
         # Ensure directory exists where we're storing logs and writing creds
         Path(self.log_dir).mkdir(parents=True, exist_ok=True)
@@ -66,7 +69,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         # Initialize a logger
         logging.basicConfig(
-            level=logging.INFO,
+            level=logging.DEBUG if self.verbose_logging else logging.INFO,
             format="[%(asctime)s] %(message)s",
             datefmt="%Y-%m-%d %H:%M:%S",
             handlers=[
@@ -94,6 +97,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.accountPhotoButton.clicked.connect(self.account_button_clicked)
         self.signOutButton.clicked.connect(self.sign_out)
         self.accountWidgetCloseButton.clicked.connect(self.accountWidget.close)
+        self.preferences_dialog = PreferencesDialog(self)
+        self.preferences_dialog.save_settings_signal.connect(self.save_settings)
+        self.actionPreferences.triggered.connect(self.preferences_dialog.exec)
+        self.actionExit.triggered.connect(QCoreApplication.quit)
         self.removeLibraryButton.clicked.connect(self.prepare_to_invoke)
         self.deleteUploadsButton.clicked.connect(self.prepare_to_invoke)
         self.deletePlaylistsButton.clicked.connect(self.prepare_to_invoke)
@@ -324,7 +331,19 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.p.readyReadStandardError.connect(self.handle_stderr)
         self.p.stateChanged.connect(self.handle_state)
         self.p.finished.connect(self.process_finished)
-        cli_args: List[str] = ["-l", self.log_dir, "-c", self.credential_dir, "-p", "-n"] + args
+        cli_args: List[str] = (
+            [
+                "-l",
+                self.log_dir,
+                "-c",
+                self.credential_dir,
+                "-p",
+                "-n",
+            ]
+            + (["-v"] if self.verbose_logging else [])
+            + args
+        )
+        print(cli_args)
         self.message(f"Executing process: {CLI_EXECUTABLE} {' '.join(cli_args)}")
         self.p.start(CLI_EXECUTABLE, cli_args)
         self.progress_dialog = ProgressDialog(self)
@@ -392,8 +411,18 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         if m:
             return m.group(1)
 
+    @Slot()
+    def save_settings(self):
+        self.settings.setValue("verbose_logging", self.preferences_dialog.verboseCheckBox.isChecked())
+        self.load_settings()
+
+    def load_settings(self):
+        self.log_dir = self.settings.value("log_dir", APP_DATA_DIR)
+        self.credential_dir = self.settings.value("credential_dir", APP_DATA_DIR)
+        self.verbose_logging = self.settings.value("verbose_logging", False, type=bool)
+        logging.getLogger().setLevel(logging.DEBUG if self.verbose_logging else logging.INFO)
+
     def log_unhandled_exception(self, exc_type, exc_value, exc_traceback):
-        print("we in here or what")
         logging.exception("Unhandled exception occurred", exc_info=(exc_type, exc_value, exc_traceback))
 
 
