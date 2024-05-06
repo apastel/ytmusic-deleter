@@ -6,10 +6,6 @@ on:
       - '**'
   workflow_dispatch:
 
-concurrency:
-  group: ${{ github.workflow }}
-  cancel-in-progress: true
-
 jobs:
   build-exe:
     uses: ./.github/workflows/build-exe.yml
