@@ -5,6 +5,10 @@ on:
   schedule:
     - cron: "0 9 * * 6"
 
+concurrency:
+  group: pdm-update
+  cancel-in-progress: true
+
 jobs:
   update-dependencies:
     runs-on: ubuntu-latest

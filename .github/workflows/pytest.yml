@@ -20,7 +20,7 @@ on:
     - cron: '0 10 * * *'
 
 concurrency:
-  group: ${{ github.workflow }}
+  group: pytest
   cancel-in-progress: true
 
 jobs:

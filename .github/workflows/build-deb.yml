@@ -21,7 +21,7 @@ on:
     - cron: '0 10 * * *'
 
 concurrency:
-  group: ${{ github.workflow }}
+  group: build-deb
   cancel-in-progress: true
 
 permissions:
