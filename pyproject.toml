@@ -7,7 +7,7 @@ dependencies = [
     "click>=8.1.7",
     "enlighten>=1.12.4",
     "thefuzz>=0.22.1",
-    "ytmusicapi>=1.6.0",
+    "ytmusicapi>=1.7.0",
 ]
 requires-python = "<3.13,>=3.8.1"
 readme = "ytmusic_deleter/README.md"
