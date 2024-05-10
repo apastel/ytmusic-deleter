@@ -116,13 +116,10 @@ def fixture_upload_song(config, yt_browser: YTMusic) -> Dict | None:
     assert upload_response == "STATUS_SUCCEEDED" or upload_response.status_code == 200
 
     # Wait for upload to finish processing
-    retries_remaining = 10
+    retries_remaining = 20
     while retries_remaining:
-        time.sleep(5)
-        try:
-            songs = yt_browser.get_library_upload_songs(limit=None)
-        except KeyError:
-            pass
+        time.sleep(2)
+        songs = yt_browser.get_library_upload_songs(limit=None)
         for song in songs:
             if song.get("title") in config["uploads"]["file"]:
                 return song
