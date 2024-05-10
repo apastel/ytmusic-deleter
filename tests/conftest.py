@@ -96,12 +96,24 @@ def fixture_upload_song(config, yt_browser: YTMusic) -> Dict | None:
     Upload a song and wait for it to finish processing.
     Return the song object or None if it did not upload successfully.
     """
-    response = yt_browser.upload_song(get_resource(config["uploads"]["file"]))
-    if not isinstance(response, str) and response.status_code == 409:
-        # Song already uploaded
-        return True
+    upload_response = yt_browser.upload_song(get_resource(config["uploads"]["file"]))
+    if not isinstance(upload_response, str) and upload_response.status_code == 409:
+        # Song is already in uploads. Delete it and re-upload.
+        # Although this app is not responsible for verifying that upload works properly,
+        # we still want to verify that no errors happen if we try to delete a song right
+        # after it was uploaded, since this was an issue previously https://github.com/sigma67/ytmusicapi/issues/578.
+        songs = yt_browser.get_library_upload_songs()
+        delete_response = None
+        for song in songs:
+            if song.get("title") in config["uploads"]["file"]:
+                delete_response = yt_browser.delete_upload_entity(song["entityId"])
+        assert delete_response == "STATUS_SUCCEEDED"
+        # Need to wait for song to be fully deleted
+        time.sleep(10)
+        # Now re-upload
+        upload_response = yt_browser.upload_song(get_resource(config["uploads"]["file"]))
 
-    assert response == "STATUS_SUCCEEDED" or response.status_code == 200
+    assert upload_response == "STATUS_SUCCEEDED" or upload_response.status_code == 200
 
     # Wait for upload to finish processing
     retries_remaining = 10
