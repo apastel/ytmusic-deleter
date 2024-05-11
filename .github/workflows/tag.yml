@@ -42,4 +42,5 @@ jobs:
               sha: context.sha
             })
   release-and-publish:
+    needs: create-tag
     uses: ./.github/workflows/release.yml
