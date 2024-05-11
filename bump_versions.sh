@@ -2,13 +2,12 @@
 
 # Validate argument
 if [[ $# -ne 1 ]]; then
-  echo "Usage: $0 <major|minor|patch>"
+  echo "Usage: $0 <major|minor|patch|custom_version>"
   exit 1
 fi
 
 if [[ "$1" != "major" && "$1" != "minor" && "$1" != "patch" ]]; then
-  echo "Invalid argument: Must be 'major', 'minor', or 'patch'."
-  exit 1
+  echo "Custom version supplied: '$1'"
 fi
 
 # Array of files with version numbers
@@ -28,6 +27,9 @@ bump_version_py() {
   minor=$(echo "$current_version" | cut -d. -f2)
   patch=$(echo "$current_version" | cut -d. -f3)
 
+if [[ "$version_part" != "major" && "$version_part" != "minor" && "$version_part" != "patch" ]]; then
+  new_version="$version_part"
+else
   # Bump the specified version part
   case "$version_part" in
     major) major=$((major + 1)); minor=0; patch=0;;
@@ -37,18 +39,17 @@ bump_version_py() {
 
   # Create new version string
   new_version="${major}.${minor}.${patch}"
+fi
 
   # Replace old version with new version in the file
   sed -i "s/__version__ = \"$current_version\"/__version__ = \"$new_version\"/" "$file"
+  echo "Bumped \"$file\" from \"$current_version\" to \"$new_version\""
 }
 
 # Function to bump version in JSON
 bump_version_json() {
   local file=$1
   local version_part=$2
-
-  # Backup original file
-  cp "$file" "$file.bak"
 
   # Read the file content
   content=$(cat "$file")
@@ -59,25 +60,26 @@ bump_version_json() {
   minor=$(echo "$current_version" | cut -d. -f2)
   patch=$(echo "$current_version" | cut -d. -f3)
 
-  # Bump the specified version part
-  case "$version_part" in
-    major) major=$((major + 1)); minor=0; patch=0;;
-    minor) minor=$((minor + 1)); patch=0;;
-    patch) patch=$((patch + 1));;
-  esac
+  if [[ "$version_part" != "major" && "$version_part" != "minor" && "$version_part" != "patch" ]]; then
+    new_version="$version_part"
+  else
+    # Bump the specified version part
+    case "$version_part" in
+      major) major=$((major + 1)); minor=0; patch=0;;
+      minor) minor=$((minor + 1)); patch=0;;
+      patch) patch=$((patch + 1));;
+    esac
 
-
-  # Create new version string
-  new_version="${major}.${minor}.${patch}"
+    # Create new version string
+    new_version="${major}.${minor}.${patch}"
+  fi
 
   # Replace old version with new version in a temporary string
   updated_content=$(echo "$content" | sed "s/\"version\": \"$current_version\"/\"version\": \"$new_version\"/")
 
   # Write the updated content to the file
   echo "$updated_content" > "$file"
-
-  # Remove the backup if successful
-  rm -f "$file.bak"
+  echo "Bumped \"$file\" from \"$current_version\" to \"$new_version\""
 }
 
 # Iterate over files and bump version
