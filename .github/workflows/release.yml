@@ -5,6 +5,15 @@ on:
     tags:
       - '**'
   workflow_dispatch:
+    inputs:
+      publish-pypi:
+        description: 'Skip publishing this release to PyPI?'
+        type: choice
+        required: false
+        default: 'Do not skip'
+        options:
+          - 'Do not skip'
+          - 'Skip'
 
 concurrency:
   group: release
@@ -45,6 +54,7 @@ jobs:
       Publish to PyPI
     needs:
     - build-wheel
+    if: ${{ inputs.publish-pypi != 'Skip' }}
     runs-on: ubuntu-latest
     permissions:
       id-token: write  # IMPORTANT: mandatory for trusted publishing
@@ -61,7 +71,7 @@ jobs:
   github-release:
     name: Draft GitHub Release
     needs:
-      - publish-to-pypi
+      - build-wheel
     runs-on: ubuntu-latest
 
     permissions:
