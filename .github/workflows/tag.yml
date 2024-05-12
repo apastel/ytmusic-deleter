@@ -49,9 +49,9 @@ jobs:
         with:
           github-token: ${{ github.token }}
           script: |
-            await github.actions.createWorkflowDispatch({
+            github.rest.actions.createWorkflowDispatch({
               owner: 'apastel',
               repo: 'ytmusic-deleter',
-              workflow_id: 'release.yaml',
+              workflow_id: 'release.yml',
               ref: '${{ inputs.revision }}'
             })
