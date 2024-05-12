@@ -28,6 +28,7 @@ Features
 * Reset all of your "Liked" ratings
 * Delete your play history
 * Sort your playlists
+* Remove duplicates from your playlists
 
 ![YTMusic Deleter screenshot](https://i.imgur.com/ZmGl58E.gif)  
 
