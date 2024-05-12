@@ -2,6 +2,7 @@ import configparser
 import time
 from pathlib import Path
 from typing import Dict
+from typing import List
 
 import pytest
 from ytmusic_deleter import constants
@@ -40,6 +41,11 @@ def fixture_sample_album_as_playlist() -> str:
 def fixture_sample_video() -> str:
     """Oasis - Wonderwall"""
     return "hpSrLjc5SMs"
+
+
+@pytest.fixture(name="sample_song_list")
+def fixture_sample_song_list() -> List[str]:
+    return ["hpSrLjc5SMs", "PIuAFrLeXfY", "9gi4WwQcPW8", "beX-9wW5rL0", "8ay_BkRuv-o", "HGorCGszxZU", "t2rsf8SiMJY"]
 
 
 @pytest.fixture(name="sample_public_playlist")
@@ -117,7 +123,7 @@ def fixture_upload_song(config, yt_browser: YTMusic) -> Dict | None:
     # Wait for upload to finish processing
     retries_remaining = 20
     while retries_remaining:
-        time.sleep(2)
+        time.sleep(3)
         songs = yt_browser.get_library_upload_songs(limit=None)
         for song in songs:
             if song.get("title") in config["uploads"]["file"]:
@@ -204,3 +210,12 @@ def fixture_playlist_with_dupes(yt_oauth: YTMusic, create_playlist):
     yield playlist_id
 
     yt_oauth.delete_playlist(playlist_id)
+
+
+@pytest.fixture(name="add_history_items")
+def fixture_add_history_items(yt_oauth: YTMusic, sample_song_list):
+    timestamp = yt_oauth.get_signatureTimestamp()
+    for song in sample_song_list:
+        song = yt_oauth.get_song(song, timestamp)
+        response = yt_oauth.add_history_item(song)
+        assert response.status_code == 204

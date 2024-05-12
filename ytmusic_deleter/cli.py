@@ -2,6 +2,7 @@ import logging.handlers
 import os
 import re
 import sys
+import time
 from itertools import groupby
 from operator import itemgetter
 from pathlib import Path
@@ -304,7 +305,7 @@ def delete_playlists(ctx: click.Context):
 
 @cli.command()
 @click.pass_context
-def delete_history(ctx: click.Context):
+def delete_history(ctx: click.Context, items_deleted: int = 0):
     """
     Delete your play history. This does not currently work with brand accounts.
     The API can only retrieve 200 history items at a time, so the process will appear to
@@ -316,10 +317,11 @@ def delete_history(ctx: click.Context):
         history_items = yt_auth.get_history()
     except Exception as e:
         if str(e) == "None":
-            logging.info("History is empty, nothing to delete.")
+            logging.info("History is empty, nothing left to delete.")
         else:
             logging.exception(e)
-        return False
+        logging.info(f"Deleted {items_deleted} history items.")
+        return items_deleted
     global progress_bar
     progress_bar = manager.counter(
         total=len(history_items),
@@ -334,10 +336,17 @@ def delete_history(ctx: click.Context):
             if item.get("artists")  # Using `get` ensures key exists and isn't []
             else const.UNKNOWN_ARTIST
         )
-        logging.info(f"Processing {artist} - {item['title']}")
-        yt_auth.remove_history_items(item["feedbackToken"])
+        logging.info(f"\tProcessing history item: {artist} - {item['title']!r}")
+        response = yt_auth.remove_history_items(item["feedbackToken"])
+        if response.get("feedbackResponses")[0].get("isProcessed"):
+            logging.info(f"\tDeleted history item: {artist} - {item['title']!r}")
+            items_deleted += 1
+        else:
+            logging.info(f"\tFailed to delete history item: {response}")
         update_progress()
-    ctx.invoke(delete_history)  # repeat until history is empty
+    logging.info("Restarting history deletion to ensure all songs are deleted.")
+    time.sleep(5)  # Wait before checking for new items as they take time to disappear
+    return ctx.invoke(delete_history, items_deleted)  # repeat until history is empty
 
 
 @cli.command()
