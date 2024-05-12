@@ -2,11 +2,11 @@
 
 # Validate argument
 if [[ $# -ne 1 ]]; then
-  echo "Usage: $0 <major|minor|patch|snapshot|custom_version>"
+  echo "Usage: $0 <major|minor|patch|custom_version>"
   exit 1
 fi
 
-if [[ "$1" != "major" && "$1" != "minor" && "$1" != "patch" && "$1" != "snapshot" ]]; then
+if [[ "$1" != "major" && "$1" != "minor" && "$1" != "patch" ]]; then
   echo "Custom version supplied: '$1'"
 fi
 
@@ -27,21 +27,18 @@ bump_version_py() {
   minor=$(echo "$current_version" | cut -d. -f2)
   patch=$(echo "$current_version" | cut -d. -f3)
 
-if [[ "$version_part" != "major" && "$version_part" != "minor" && "$version_part" != "patch" && "$version_part" != "snapshot" ]]; then
+if [[ "$version_part" != "major" && "$version_part" != "minor" && "$version_part" != "patch" ]]; then
   new_version="$version_part"
 else
   # Bump the specified version part
   case "$version_part" in
     major) major=$((major + 1)); minor=0; patch=0;;
     minor) minor=$((minor + 1)); patch=0;;
-    patch|snapshot) patch=$((patch + 1));;
+    patch) patch=$((patch + 1));;
   esac
 
   # Create new version string
   new_version="${major}.${minor}.${patch}"
-  if [[ $version_part == "snapshot" ]]; then
-    new_version+="-SNAPSHOT"
-  fi
 fi
 
   # Replace old version with new version in the file
@@ -63,21 +60,18 @@ bump_version_json() {
   minor=$(echo "$current_version" | cut -d. -f2)
   patch=$(echo "$current_version" | cut -d. -f3)
 
-  if [[ "$version_part" != "major" && "$version_part" != "minor" && "$version_part" != "patch" && "$version_part" != "snapshot" ]]; then
+  if [[ "$version_part" != "major" && "$version_part" != "minor" && "$version_part" != "patch" ]]; then
     new_version="$version_part"
   else
     # Bump the specified version part
     case "$version_part" in
       major) major=$((major + 1)); minor=0; patch=0;;
       minor) minor=$((minor + 1)); patch=0;;
-      patch|snapshot) patch=$((patch + 1));;
+      patch) patch=$((patch + 1));;
     esac
 
     # Create new version string
     new_version="${major}.${minor}.${patch}"
-    if [[ $version_part == "snapshot" ]]; then
-      new_version+="-SNAPSHOT"
-    fi
   fi
 
   # Replace old version with new version in a temporary string
