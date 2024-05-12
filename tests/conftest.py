@@ -94,7 +94,6 @@ def fixture_yt_empty(config) -> YTMusic:
 def fixture_upload_song(config, yt_browser: YTMusic) -> Dict | None:
     """
     Upload a song and wait for it to finish processing.
-    Return the song object or None if it did not upload successfully.
     """
     upload_response = yt_browser.upload_song(get_resource(config["uploads"]["file"]))
     if not isinstance(upload_response, str) and upload_response.status_code == 409:
@@ -125,6 +124,8 @@ def fixture_upload_song(config, yt_browser: YTMusic) -> Dict | None:
                 return song
         retries_remaining -= 1
 
+    raise AssertionError("Failed to verify uploaded song exists in library.")
+
 
 @pytest.fixture(name="add_library_album")
 def fixture_add_library_album(yt_oauth: YTMusic, sample_album_as_playlist):
@@ -141,6 +142,8 @@ def fixture_add_library_album(yt_oauth: YTMusic, sample_album_as_playlist):
         retries_remaining -= 1
         time.sleep(2)
 
+    raise AssertionError("Failed to confirm that album was added to library")
+
 
 @pytest.fixture(name="add_podcast")
 def fixtrue_add_podcast(yt_oauth: YTMusic, sample_podcast):
@@ -156,6 +159,8 @@ def fixtrue_add_podcast(yt_oauth: YTMusic, sample_podcast):
                 return podcast
         retries_remaining -= 1
         time.sleep(2)
+
+    raise AssertionError("Failed to confirm that podcast was added to library")
 
 
 @pytest.fixture(name="like_song")
@@ -183,6 +188,7 @@ def fixture_like_song(yt_oauth: YTMusic, sample_video):
 @pytest.fixture(name="create_playlist")
 def fixture_playlist(yt_oauth: YTMusic, sample_public_playlist) -> str:
     playlist_id = yt_oauth.create_playlist("Test Playlist", "a test playlist", source_playlist=sample_public_playlist)
+    assert isinstance(playlist_id, str)
 
     return playlist_id
 

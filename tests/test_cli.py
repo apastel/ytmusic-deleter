@@ -8,21 +8,16 @@ from ytmusicapi import YTMusic
 
 class TestCli:
     def test_delete_uploads(self, yt_browser: YTMusic, upload_song):
-        assert upload_song
         result = CliRunner().invoke(cli, ["delete-uploads"], standalone_mode=False, obj=yt_browser)
         print(result.stdout)
         assert result.exit_code == 0
+
         albums_deleted, albums_total = result.return_value
         assert albums_deleted >= 1, f"No uploads were deleted. {albums_total} uploads were found."
         uploads_remaining = yt_browser.get_library_upload_songs(limit=None)
         assert len(uploads_remaining) == 0
 
     def test_remove_library(self, yt_oauth: YTMusic, add_library_album, add_podcast):
-        # Verify that items were added to the library
-        assert add_library_album
-        assert add_podcast
-
-        # Run the remove-library command
         runner = CliRunner()
         result = runner.invoke(cli, ["remove-library"], standalone_mode=False, obj=yt_oauth)
         print(result.stdout)
@@ -61,7 +56,6 @@ class TestCli:
         assert len(likes_remaining) == 0, f"There were still {len(likes_remaining)} liked songs remaining"
 
     def test_delete_playlists(self, yt_oauth: YTMusic, create_playlist):
-        assert create_playlist
         runner = CliRunner()
         result = runner.invoke(cli, ["delete-playlists"], standalone_mode=False, obj=yt_oauth)
         print(result.stdout)
@@ -71,7 +65,6 @@ class TestCli:
         assert playlists_deleted >= 1, f"No playlists were deleted. {playlists_total} were found in total."
 
     def test_delete_playlist_duplicates(self, yt_oauth: YTMusic, playlist_with_dupes):
-        assert playlist_with_dupes
         assert (
             len(check_for_duplicates(playlist_with_dupes, yt_oauth)) > 0
         ), "Playlist to work on did not contain any duplicates"
@@ -82,3 +75,11 @@ class TestCli:
 
         playlist_without_dupes = yt_oauth.get_playlist(playlist_with_dupes, limit=None)["id"]
         assert len(check_for_duplicates(playlist_without_dupes, yt_oauth)) == 0, "Playlist still contained duplicates"
+
+    def test_delete_all(
+        self, yt_browser: YTMusic, upload_song, add_library_album, add_podcast, create_playlist, like_song
+    ):
+        runner = CliRunner()
+        result = runner.invoke(cli, ["delete-all"], standalone_mode=False, obj=yt_browser)
+        print(result.stdout)
+        assert result.exit_code == 0
