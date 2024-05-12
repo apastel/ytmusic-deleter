@@ -43,7 +43,14 @@ jobs:
               ref: 'refs/tags/${{ inputs.revision }}',
               sha: context.sha
             })
-  release-and-publish:
-    needs: create-tag
-    uses: apastel/ytmusic-deleter/.github/workflows/release.yml@${{ inputs.revision }}
-    secrets: inherit
+      - name: Dispatch release workflow
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ github.token }}
+          script: |
+            await github.rest.actions.createWorkflowDispatch({
+              owner: 'apastel',
+              repo: 'ytmusic-deleter',
+              workflow_id: 'release.yaml',
+              ref: '${{ inputs.revision }}'
+            })
