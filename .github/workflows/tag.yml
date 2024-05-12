@@ -45,5 +45,5 @@ jobs:
             })
   release-and-publish:
     needs: create-tag
-    uses: ./.github/workflows/release.yml
+    uses: apastel/ytmusic-deleter/.github/workflows/release.yml@${{ inputs.revision }}
     secrets: inherit
