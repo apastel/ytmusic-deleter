@@ -152,7 +152,7 @@ def fixture_add_library_album(yt_oauth: YTMusic, sample_album_as_playlist):
 
 
 @pytest.fixture(name="add_podcast")
-def fixtrue_add_podcast(yt_oauth: YTMusic, sample_podcast):
+def fixture_add_podcast(yt_oauth: YTMusic, sample_podcast):
     response = yt_oauth.rate_playlist(sample_podcast, constants.LIKE)
     assert "actions" in response
 
@@ -192,11 +192,19 @@ def fixture_like_song(yt_oauth: YTMusic, sample_video):
 
 
 @pytest.fixture(name="create_playlist")
-def fixture_playlist(yt_oauth: YTMusic, sample_public_playlist) -> str:
+def fixture_create_playlist(yt_oauth: YTMusic, sample_public_playlist) -> str:
     playlist_id = yt_oauth.create_playlist("Test Playlist", "a test playlist", source_playlist=sample_public_playlist)
     assert isinstance(playlist_id, str)
 
     return playlist_id
+
+
+@pytest.fixture(name="create_playlist_and_delete_after")
+def fixture_create_playlist_and_delete_after(yt_oauth: YTMusic, create_playlist):
+    playlist_id = create_playlist
+    yield playlist_id
+
+    yt_oauth.delete_playlist(playlist_id)
 
 
 @pytest.fixture(name="playlist_with_dupes")

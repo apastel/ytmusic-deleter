@@ -297,7 +297,9 @@ def delete_playlists(ctx: click.Context):
             else:
                 logging.error(f"\tFailed to remove playlist {playlist['title']!r} from your library.")
         except Exception:
-            logging.error(f"\tCould not delete playlist {playlist['title']}. It might be a YT Music curated playlist.")
+            logging.error(
+                f"\tCould not delete playlist {playlist['title']!r}. It might be a YT Music curated playlist."
+            )
         update_progress()
     logging.info(f"Deleted {playlists_deleted} out of {len(library_playlists)} from your library.")
     return (playlists_deleted, len(library_playlists))

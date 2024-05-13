@@ -74,6 +74,20 @@ class TestCli:
         playlists_deleted, playlists_total = result.return_value
         assert playlists_deleted >= 1, f"No playlists were deleted. {playlists_total} were found in total."
 
+    def test_sort_playlist(self, yt_oauth: YTMusic, create_playlist_and_delete_after):
+        pass
+        runner = CliRunner()
+        result = runner.invoke(cli, ["sort-playlist", "Test Playlist"], standalone_mode=False, obj=yt_oauth)
+        print(result.stdout)
+        assert result.exit_code == 0
+
+    @pytest.mark.skip(reason="Not super necessary to test, takes a while, might exceed rate limit")
+    def test_shuffle_playlist(self, yt_oauth: YTMusic, create_playlist):
+        runner = CliRunner()
+        result = runner.invoke(cli, ["sort-playlist", "-s", "Test Playlist"], standalone_mode=False, obj=yt_oauth)
+        print(result.stdout)
+        assert result.exit_code == 0
+
     def test_delete_playlist_duplicates(self, yt_oauth: YTMusic, playlist_with_dupes):
         assert (
             len(check_for_duplicates(playlist_with_dupes, yt_oauth)) > 0
