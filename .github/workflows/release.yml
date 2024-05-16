@@ -1,3 +1,5 @@
+# This workflow is automatically run when a new tag is pushed (either manually or with "Create Tag" workflow)
+
 name: Release and Publish
 
 on:

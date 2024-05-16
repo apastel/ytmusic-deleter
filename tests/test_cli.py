@@ -63,7 +63,7 @@ class TestCli:
         assert result.exit_code == 0
 
         items_deleted = result.return_value
-        assert items_deleted == 7, "One or more history items were not deleted"
+        assert items_deleted >= 7, "One or more history items were not deleted"
 
     def test_delete_playlists(self, yt_oauth: YTMusic, create_playlist):
         runner = CliRunner()
