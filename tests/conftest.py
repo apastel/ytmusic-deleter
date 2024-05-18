@@ -108,11 +108,12 @@ def fixture_upload_song(config, yt_browser: YTMusic) -> Dict | None:
         # we still want to verify that no errors happen if we try to delete a song right
         # after it was uploaded, since this was an issue previously https://github.com/sigma67/ytmusicapi/issues/578.
         songs = yt_browser.get_library_upload_songs()
-        delete_response = None
-        for song in songs:
-            if song.get("title") in config["uploads"]["file"]:
-                delete_response = yt_browser.delete_upload_entity(song["entityId"])
-        assert delete_response == "STATUS_SUCCEEDED"
+        if songs:
+            delete_response = None
+            for song in songs:
+                if song.get("title") in config["uploads"]["file"]:
+                    delete_response = yt_browser.delete_upload_entity(song["entityId"])
+            assert delete_response == "STATUS_SUCCEEDED"
         # Need to wait for song to be fully deleted
         time.sleep(10)
         # Now re-upload
