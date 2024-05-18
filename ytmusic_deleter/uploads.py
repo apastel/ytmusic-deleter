@@ -59,7 +59,7 @@ def maybe_delete_uploaded_albums() -> tuple[int, int]:
                 logging.warn("\tSkipping match search and will not delete.")
                 update_progress(progress_bar)
                 continue
-            elif not add_album_to_library(yt_auth, artist, album_title):
+            elif not add_album_to_library(artist, album_title):
                 logging.warn(
                     f"\tNo album was added to library for '{artist} - {album_title}'. Will not delete from uploads."
                 )
