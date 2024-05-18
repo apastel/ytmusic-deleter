@@ -18,6 +18,11 @@ class TestCli:
         uploads_remaining = yt_browser.get_library_upload_songs(limit=None)
         assert len(uploads_remaining) == 0
 
+    def test_add_to_library(self, yt_browser: YTMusic, upload_song):
+        result = CliRunner().invoke(cli, ["delete-uploads", "-a"], standalone_mode=False, obj=yt_browser)
+        print(result.stdout)
+        assert result.exit_code == 0
+
     def test_remove_library(self, yt_oauth: YTMusic, add_library_album, add_podcast):
         runner = CliRunner()
         result = runner.invoke(cli, ["remove-library"], standalone_mode=False, obj=yt_oauth)

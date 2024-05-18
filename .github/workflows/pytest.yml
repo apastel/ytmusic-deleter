@@ -42,7 +42,7 @@ jobs:
         OAUTH_JSON: ${{ secrets.OAUTH_JSON }}
         TEST_CFG: ${{ secrets.TEST_CFG }}
       run: |
-        curl -o tests/resources/test.mp3 https://www.kozco.com/tech/piano2-CoolEdit.mp3
+        curl -o 'tests/resources/Jennifer Lost the War.mp3' https://drive.google.com/uc?id=18AP7mQqQxqj2_delNyhoCNa6UCUCN9-P&export=download
         cat <<< "$HEADERS_AUTH" > tests/resources/browser.json
         cat <<< "$OAUTH_JSON" > tests/resources/oauth.json
         cat <<< "$TEST_CFG" > tests/resources/test.cfg
