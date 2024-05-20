@@ -810,7 +810,7 @@ files = [
 
 [[package]]
 name = "pytest"
-version = "8.2.0"
+version = "8.2.1"
 requires_python = ">=3.8"
 summary = "pytest: simple powerful testing with Python"
 groups = ["test"]
@@ -823,8 +823,8 @@ dependencies = [
     "tomli>=1; python_version < \"3.11\"",
 ]
 files = [
-    {file = "pytest-8.2.0-py3-none-any.whl", hash = "sha256:1733f0620f6cda4095bbf0d9ff8022486e91892245bb9e7d5542c018f612f233"},
-    {file = "pytest-8.2.0.tar.gz", hash = "sha256:d507d4482197eac0ba2bae2e9babf0672eb333017bcedaa5fb1a3d42c1174b3f"},
+    {file = "pytest-8.2.1-py3-none-any.whl", hash = "sha256:faccc5d332b8c3719f40283d0d44aa5cf101cec36f88cde9ed8f2bc0538612b1"},
+    {file = "pytest-8.2.1.tar.gz", hash = "sha256:5046e5b46d8e4cac199c373041f26be56fdb81eb4e67dc11d4e10811fc3408fd"},
 ]
 
 [[package]]
@@ -1186,7 +1186,7 @@ files = [
 
 [[package]]
 name = "ytmusicapi"
-version = "1.7.1"
+version = "1.7.2"
 requires_python = ">=3.8"
 summary = "Unofficial API for YouTube Music"
 groups = ["default"]
@@ -1194,8 +1194,8 @@ dependencies = [
     "requests>=2.22",
 ]
 files = [
-    {file = "ytmusicapi-1.7.1-py3-none-any.whl", hash = "sha256:1c49d19f080bb73b359efecbcd2e11af6a3101ebd7774a61f9e9c100e666a302"},
-    {file = "ytmusicapi-1.7.1.tar.gz", hash = "sha256:d69c97f08cf8ce1de2cd63f360d5de5a547f5e6bc095ced48f789669dd9d962f"},
+    {file = "ytmusicapi-1.7.2-py3-none-any.whl", hash = "sha256:5103cc2cc74ad277cf7eef9524c5b8b944b38bb003d16ae6a7d4ff4bcb20f211"},
+    {file = "ytmusicapi-1.7.2.tar.gz", hash = "sha256:0ba02ea66fa7379377d2dc3f067905b56b61150321b733d58ea4565085cb12f9"},
 ]
 
 [[package]]
