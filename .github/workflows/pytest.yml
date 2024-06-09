@@ -21,7 +21,6 @@ on:
 
 concurrency:
   group: pytest
-  cancel-in-progress: true
 
 jobs:
   pytest:
