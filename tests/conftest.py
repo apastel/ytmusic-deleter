@@ -124,7 +124,7 @@ def fixture_upload_song(config, yt_browser: YTMusic) -> Dict | None:
     # Wait for upload to finish processing
     retries_remaining = 20
     while retries_remaining:
-        time.sleep(3)
+        time.sleep(5)
         songs = yt_browser.get_library_upload_songs(limit=None)
         for song in songs:
             if song.get("title") in config["uploads"]["file"]:
