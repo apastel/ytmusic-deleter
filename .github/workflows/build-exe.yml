@@ -165,5 +165,5 @@ jobs:
               verify
             fi
           }
-          retries_remaining = 2
+          retries_remaining=2
           verify
