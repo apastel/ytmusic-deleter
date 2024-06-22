@@ -34,18 +34,7 @@ jobs:
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: ${{ inputs.revision }}
-      - name: Wait to ensure tag is created off commit that was just pushed
-        run: sleep 5s
-      - name: Create tag
-        uses: actions/github-script@v7
-        with:
-          script: |
-            github.rest.git.createRef({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              ref: 'refs/tags/${{ inputs.revision }}',
-              sha: context.sha
-            })
+          tagging_message: ${{ inputs.revision }}
       - name: Dispatch release workflow
         uses: actions/github-script@v7
         with:
