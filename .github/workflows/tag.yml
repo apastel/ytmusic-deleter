@@ -30,7 +30,7 @@ jobs:
       - name: Update versions in files
         run: |
           pdm version ${{ inputs.revision  }}
-      - name: Commit version files to main
+      - name: Commit version files to main, and tag
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: ${{ inputs.revision }}

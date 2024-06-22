@@ -379,10 +379,13 @@ def sort_playlist(ctx: click.Context, shuffle, playlist_titles):
         playlist = yt_auth.get_playlist(selected_playlist["playlistId"], sys.maxsize)
         result, author = can_edit_playlist(playlist)
         if not result:
-            logging.error(
-                f"""Cannot sort playlist {playlist.get('title')!r} as it is owned by {author!r}.
+            if author:
+                message = f"""Cannot modify playlist {playlist.get('title')!r} as it is owned by {author!r}.
                       Try saving it as a new playlist in your library if you want control over your copy of it."""
-            )
+            else:
+                message = f"""Cannot modify playlist {playlist.get('title')!r}.
+                      Try saving it as a new playlist in your library if you want control over your copy of it."""
+            logging.error(message)
             continue
         current_tracklist = [t for t in playlist["tracks"]]
         if shuffle:
@@ -462,9 +465,13 @@ def can_edit_playlist(playlist: dict, yt_auth: YTMusic = None) -> tuple[bool, st
     try:
         yt_auth.edit_playlist(playlist_id, title=playlist_title)
     except Exception:
-        author = yt_auth.get_playlist(playlist_id).get("author")
-        if isinstance(author, dict):
-            author = author.get("name")
+        author = None
+        try:
+            author = yt_auth.get_playlist(playlist_id).get("author")
+            if isinstance(author, dict):
+                author = author.get("name")
+        except Exception:
+            pass
         return False, author
     return True, None
 
@@ -495,10 +502,13 @@ def remove_duplicates(ctx: click.Context, playlist_title, exact):
     playlist: dict = yt_auth.get_playlist(selected_playlist_id)
     result, author = can_edit_playlist(playlist)
     if not result:
-        raise click.BadParameter(
-            f"""Cannot modify playlist {playlist_title!r} as it is owned by {author!r}.
+        if author:
+            message = f"""Cannot modify playlist {playlist_title!r} as it is owned by {author!r}.
                       Try saving it as a new playlist in your library if you want control over your copy of it."""
-        )
+        else:
+            message = f"""Cannot modify playlist {playlist_title!r}.
+                      Try saving it as a new playlist in your library if you want control over your copy of it."""
+        raise click.BadParameter(message)
 
     # Get a list of all the sets of duplicates
     duplicates = check_for_duplicates(playlist)
