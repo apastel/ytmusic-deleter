@@ -7,7 +7,7 @@ from typing import TypedDict
 from click import get_current_context
 from thefuzz import fuzz
 from thefuzz import process
-from ytmusic_deleter import constants as const
+from ytmusic_deleter import common as const
 from ytmusic_deleter.progress import manager
 from ytmusic_deleter.progress import update_progress
 from ytmusicapi import YTMusic

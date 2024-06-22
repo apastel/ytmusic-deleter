@@ -3,17 +3,17 @@ import os
 import re
 import sys
 import time
-from itertools import groupby
-from operator import itemgetter
 from pathlib import Path
 from random import shuffle as unsort
 from time import strftime
 
 import click
 from click import get_current_context
-from ytmusic_deleter import constants as const
+from ytmusic_deleter import common as const
 from ytmusic_deleter._version import __version__
 from ytmusic_deleter.auth import ensure_auth
+from ytmusic_deleter.duplicates import check_for_duplicates
+from ytmusic_deleter.duplicates import determine_tracks_to_remove
 from ytmusic_deleter.progress import manager
 from ytmusic_deleter.uploads import maybe_delete_uploaded_albums
 from ytmusicapi import YTMusic
@@ -377,6 +377,13 @@ def sort_playlist(ctx: click.Context, shuffle, playlist_titles):
     for selected_playlist in selected_playlist_list:
         logging.info(f'Processing playlist: {selected_playlist["title"]}')
         playlist = yt_auth.get_playlist(selected_playlist["playlistId"], sys.maxsize)
+        result, author = can_edit_playlist(playlist)
+        if not result:
+            logging.error(
+                f"""Cannot sort playlist {playlist.get('title')!r} as it is owned by {author!r}.
+                      Try saving it as a new playlist in your library if you want control over your copy of it."""
+            )
+            continue
         current_tracklist = [t for t in playlist["tracks"]]
         if shuffle:
             logging.info(f"\tPlaylist: {selected_playlist['title']} will be shuffled")
@@ -446,10 +453,27 @@ def make_sort_key(track):
         raise
 
 
+def can_edit_playlist(playlist: dict, yt_auth: YTMusic = None) -> tuple[bool, str | None]:
+    # Allow passing in yt_auth from pytest
+    if not yt_auth:
+        yt_auth: YTMusic = get_current_context().obj["YT_AUTH"]
+    playlist_id = playlist.get("id")
+    playlist_title = playlist.get("title")
+    try:
+        yt_auth.edit_playlist(playlist_id, title=playlist_title)
+    except Exception:
+        author = yt_auth.get_playlist(playlist_id).get("author")
+        if isinstance(author, dict):
+            author = author.get("name")
+        return False, author
+    return True, None
+
+
 @cli.command()
 @click.argument("playlist_title")
+@click.option("--exact", "-e", is_flag=True, help="Only remove exact duplicates")
 @click.pass_context
-def remove_duplicates(ctx: click.Context, playlist_title):
+def remove_duplicates(ctx: click.Context, playlist_title, exact):
     """Delete all duplicates in a given playlist"""
     yt_auth: YTMusic = ctx.obj["YT_AUTH"]
     # Get all playlists
@@ -468,48 +492,27 @@ def remove_duplicates(ctx: click.Context, playlist_title):
             f"No playlist found named {playlist_title!r}. Double-check your playlist name "
             '(or surround it "with quotes") and try again.'
         )
+    playlist: dict = yt_auth.get_playlist(selected_playlist_id)
+    result, author = can_edit_playlist(playlist)
+    if not result:
+        raise click.BadParameter(
+            f"""Cannot modify playlist {playlist_title!r} as it is owned by {author!r}.
+                      Try saving it as a new playlist in your library if you want control over your copy of it."""
+        )
+
     # Get a list of all the sets of duplicates
-    duplicates = check_for_duplicates(selected_playlist_id)
+    duplicates = check_for_duplicates(playlist)
     if not duplicates:
         logging.info("No duplicates found. If you think this is an error open an issue on GitHub or message on Discord")
+        return
     # For each dupe group, remove all but the first song
-    for duplicate_group in duplicates:
-        master_track = duplicate_group[0]
-        logging.info(
-            f"The following track(s) are a duplicate of {master_track.get('artist')} - {master_track.get('title')!r} "
-            "and will be removed:"
-        )
-        items_to_remove = duplicate_group[1:]
-        for item in items_to_remove:
-            logging.info(f"\t{item.get('artist')} - {item.get('title')!r}")
-        yt_auth.remove_playlist_items(selected_playlist_id, items_to_remove)
-
-
-def check_for_duplicates(playlist_id: str, yt_auth: YTMusic = None):
-    # Allow passing in yt_auth from pytest
-    if not yt_auth:
-        yt_auth: YTMusic = get_current_context().obj["YT_AUTH"]
-    # Get the playlist object
-    playlist = yt_auth.get_playlist(playlist_id)
-    logging.info(f"Checking for duplicates in playlist {playlist.get('title')!r}")
-    tracks = playlist.get("tracks")
-    # Trim the fat of the tracks object
-    tracks = [
-        {
-            "artist": track.get("artists")[0].get("name"),
-            "title": track.get("title"),
-            "videoId": track.get("videoId"),
-            "setVideoId": track.get("setVideoId"),
-        }
-        for track in tracks
-    ]
-
-    # Create a list of groups of duplicate tracks, where dupes are determined by having the same videoId
-    tracks.sort(key=itemgetter("videoId"))
-    grouped_tracks = [(key, list(group)) for key, group in groupby(tracks, lambda item: item["videoId"])]
-    grouped_tracks = [group for key, group in grouped_tracks if len(group) > 1]
-
-    return grouped_tracks
+    items_to_remove, _ = determine_tracks_to_remove(duplicates)
+    if not items_to_remove:
+        logging.info("Finished: No duplicate tracks were marked for deletion.")
+        return
+    logging.info(f"Removing {len(items_to_remove)} tracks total.")
+    yt_auth.remove_playlist_items(selected_playlist_id, items_to_remove)
+    logging.info("Finished removing duplicate tracks.")
 
 
 def update_progress():

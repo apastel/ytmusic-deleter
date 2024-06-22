@@ -35,7 +35,7 @@ from PySide6.QtWidgets import QMainWindow
 from PySide6.QtWidgets import QMessageBox
 from remove_duplicates_dialog import RemoveDuplicatesDialog
 from sort_playlists_dialog import SortPlaylistsDialog
-from ytmusic_deleter import constants as const
+from ytmusic_deleter import common as const
 from ytmusicapi import YTMusic
 from ytmusicapi.auth.oauth import OAuthCredentials
 from ytmusicapi.auth.oauth import RefreshingToken
@@ -343,7 +343,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             + (["-v"] if self.verbose_logging else [])
             + args
         )
-        print(cli_args)
         self.message(f"Executing process: {CLI_EXECUTABLE} {' '.join(cli_args)}")
         self.p.start(CLI_EXECUTABLE, cli_args)
         self.progress_dialog = ProgressDialog(self)

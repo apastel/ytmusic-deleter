@@ -2,8 +2,8 @@ import time
 
 import pytest
 from click.testing import CliRunner
-from ytmusic_deleter.cli import check_for_duplicates
 from ytmusic_deleter.cli import cli
+from ytmusic_deleter.duplicates import check_for_duplicates
 from ytmusicapi import YTMusic
 
 
@@ -91,7 +91,7 @@ class TestCli:
         items_deleted = result.return_value
         assert items_deleted >= 7, "One or more history items were not deleted"
 
-    def test_delete_playlists(self, yt_oauth: YTMusic, create_playlist):
+    def test_delete_playlists(self, yt_oauth: YTMusic, create_playlist_and_delete_after):
         runner = CliRunner()
         result = runner.invoke(cli, ["delete-playlists"], standalone_mode=False, obj=yt_oauth)
         print(result.stdout)
@@ -108,23 +108,28 @@ class TestCli:
         assert result.exit_code == 0
 
     @pytest.mark.skip(reason="Not super necessary to test, takes a while, might exceed rate limit")
-    def test_shuffle_playlist(self, yt_oauth: YTMusic, create_playlist):
+    def test_shuffle_playlist(self, yt_oauth: YTMusic, create_playlist_and_delete_after):
         runner = CliRunner()
         result = runner.invoke(cli, ["sort-playlist", "-s", "Test Playlist"], standalone_mode=False, obj=yt_oauth)
         print(result.stdout)
         assert result.exit_code == 0
 
-    def test_delete_playlist_duplicates(self, yt_oauth: YTMusic, playlist_with_dupes):
-        assert (
-            len(check_for_duplicates(playlist_with_dupes, yt_oauth)) > 0
-        ), "Playlist to work on did not contain any duplicates"
+    def test_delete_playlist_duplicates(self, yt_oauth: YTMusic, create_playlist_with_dupes):
+        playlist = yt_oauth.get_playlist(create_playlist_with_dupes)
+        assert 3 == len(
+            check_for_duplicates(playlist, yt_oauth)
+        ), "Playlist to work on did not contain the right number of duplicates"
         runner = CliRunner()
-        result = runner.invoke(cli, ["remove-duplicates", "Test Playlist"], standalone_mode=False, obj=yt_oauth)
+        result = runner.invoke(
+            cli, ["remove-duplicates", "--exact", "Test Dupes (to be deleted)"], standalone_mode=False, obj=yt_oauth
+        )
         print(result.stdout)
         assert result.exit_code == 0
 
-        playlist_without_dupes = yt_oauth.get_playlist(playlist_with_dupes, limit=None)["id"]
-        assert len(check_for_duplicates(playlist_without_dupes, yt_oauth)) == 0, "Playlist still contained duplicates"
+        processed_playlist = yt_oauth.get_playlist(create_playlist_with_dupes, limit=None)
+        assert 2 == len(
+            check_for_duplicates(processed_playlist, yt_oauth)
+        ), "Playlist contained wrong number of remaining duplicates"
 
     def test_delete_all(
         self,
@@ -132,7 +137,7 @@ class TestCli:
         upload_song,
         add_library_album,
         add_podcast,
-        create_playlist,
+        create_playlist_and_delete_after,
         like_song,
         add_history_items,
     ):

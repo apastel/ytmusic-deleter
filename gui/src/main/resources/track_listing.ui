@@ -1,27 +1,24 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>PlaylistSelectionDialog</class>
- <widget class="QDialog" name="PlaylistSelectionDialog">
-  <property name="windowModality">
-   <enum>Qt::ApplicationModal</enum>
-  </property>
+ <class>TrackListingDialog</class>
+ <widget class="QDialog" name="TrackListingDialog">
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>400</width>
-    <height>300</height>
+    <width>924</width>
+    <height>622</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Select Playlist(s)</string>
+   <string>Remove Exact Duplicates</string>
   </property>
   <widget class="QDialogButtonBox" name="buttonBox">
    <property name="geometry">
     <rect>
-     <x>30</x>
-     <y>260</y>
-     <width>341</width>
+     <x>370</x>
+     <y>560</y>
+     <width>161</width>
      <height>32</height>
     </rect>
    </property>
@@ -32,36 +29,58 @@
     <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
    </property>
   </widget>
-  <widget class="QListWidget" name="playlistList">
+  <widget class="QTableWidget" name="trackListTable">
    <property name="geometry">
     <rect>
-     <x>25</x>
-     <y>21</y>
-     <width>351</width>
-     <height>221</height>
+     <x>30</x>
+     <y>70</y>
+     <width>861</width>
+     <height>441</height>
     </rect>
    </property>
-   <property name="selectionRectVisible">
-    <bool>false</bool>
+   <property name="editTriggers">
+    <set>QAbstractItemView::NoEditTriggers</set>
    </property>
-   <property name="sortingEnabled">
-    <bool>true</bool>
+   <property name="columnCount">
+    <number>5</number>
    </property>
+   <column>
+    <property name="text">
+     <string>Artist</string>
+    </property>
+   </column>
+   <column>
+    <property name="text">
+     <string>Title</string>
+    </property>
+   </column>
+   <column>
+    <property name="text">
+     <string>Album</string>
+    </property>
+   </column>
+   <column>
+    <property name="text">
+     <string>Duration</string>
+    </property>
+   </column>
+   <column>
+    <property name="text">
+     <string>Artwork</string>
+    </property>
+   </column>
   </widget>
-  <widget class="QCheckBox" name="shuffleCheckBox">
+  <widget class="QLabel" name="descriptionLabel">
    <property name="geometry">
     <rect>
-     <x>90</x>
-     <y>260</y>
-     <width>70</width>
-     <height>17</height>
+     <x>30</x>
+     <y>0</y>
+     <width>851</width>
+     <height>61</height>
     </rect>
-   </property>
-   <property name="toolTip">
-    <string>Shuffle the playlist(s) instead of sorting.</string>
    </property>
    <property name="text">
-    <string>Shuffle</string>
+    <string>The following tracks will be removed because they are exact duplicates of another track in the playlist:</string>
    </property>
   </widget>
  </widget>
@@ -70,7 +89,7 @@
   <connection>
    <sender>buttonBox</sender>
    <signal>accepted()</signal>
-   <receiver>PlaylistSelectionDialog</receiver>
+   <receiver>TrackListingDialog</receiver>
    <slot>accept()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -86,7 +105,7 @@
   <connection>
    <sender>buttonBox</sender>
    <signal>rejected()</signal>
-   <receiver>PlaylistSelectionDialog</receiver>
+   <receiver>TrackListingDialog</receiver>
    <slot>reject()</slot>
    <hints>
     <hint type="sourcelabel">

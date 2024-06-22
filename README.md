@@ -21,16 +21,18 @@ If this project helped you and you want to thank me, you can <a href="https://ww
 
 Features
 --------
+### Deleting
 * Remove all songs and podcasts from your Library
 * Delete all of your Uploads
   * Option to automatically add the corresponding album to your library from within YT Music
 * Delete all of your playlists
 * Reset all of your "Liked" ratings
 * Delete your play history
+### Playlist Utilities
 * Sort your playlists
 * Remove duplicates from your playlists
 
-![YTMusic Deleter screenshot](https://i.imgur.com/ZmGl58E.gif)  
+![YTMusic Deleter screenshot](https://i.imgur.com/TVpB6xY.gif)  
 
 ## Installation
 ### Easy Install (Windows or Debian Linux Only)

@@ -84,7 +84,7 @@ class Ui_MainWindow(object):
 "}")
         self.playlistFunctionsLabel = QLabel(self.centralWidget)
         self.playlistFunctionsLabel.setObjectName(u"playlistFunctionsLabel")
-        self.playlistFunctionsLabel.setGeometry(QRect(40, 210, 101, 20))
+        self.playlistFunctionsLabel.setGeometry(QRect(40, 210, 131, 20))
         self.accountWidget = QWidget(self.centralWidget)
         self.accountWidget.setObjectName(u"accountWidget")
         self.accountWidget.setGeometry(QRect(680, 80, 171, 121))
