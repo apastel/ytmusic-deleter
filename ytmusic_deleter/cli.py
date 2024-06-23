@@ -464,7 +464,8 @@ def can_edit_playlist(playlist: dict, yt_auth: YTMusic = None) -> tuple[bool, st
     playlist_title = playlist.get("title")
     try:
         yt_auth.edit_playlist(playlist_id, title=playlist_title)
-    except Exception:
+    except Exception as e:
+        logging.exception(e)
         author = None
         try:
             author = yt_auth.get_playlist(playlist_id).get("author")
