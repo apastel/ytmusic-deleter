@@ -82,7 +82,7 @@ class Ui_CheckboxTrackListingDialog(object):
         CheckboxTrackListingDialog.setWindowTitle(QCoreApplication.translate("CheckboxTrackListingDialog", u"Select Tracks to Remove", None))
         self.leftButton.setText(QCoreApplication.translate("CheckboxTrackListingDialog", u"\u2190", None))
         self.rightButton.setText(QCoreApplication.translate("CheckboxTrackListingDialog", u"\u2192", None))
-        self.instructionsLabel.setText(QCoreApplication.translate("CheckboxTrackListingDialog", u"The following tracks are SIMLIAR to each other by artist and title. Select the track(s) you want to remove:", None))
+        self.instructionsLabel.setText(QCoreApplication.translate("CheckboxTrackListingDialog", u"The following tracks are SIMILAR to each other by artist and title. Select the track(s) you want to remove:", None))
         self.pageNumberLabel.setText(QCoreApplication.translate("CheckboxTrackListingDialog", u"Page", None))
     # retranslateUi
 

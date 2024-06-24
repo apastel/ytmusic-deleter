@@ -88,7 +88,7 @@
     </rect>
    </property>
    <property name="text">
-    <string>The following tracks are SIMLIAR to each other by artist and title. Select the track(s) you want to remove:</string>
+    <string>The following tracks are SIMILAR to each other by artist and title. Select the track(s) you want to remove:</string>
    </property>
   </widget>
   <widget class="QLabel" name="pageNumberLabel">
