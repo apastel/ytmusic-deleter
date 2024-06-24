@@ -2,7 +2,7 @@ import time
 from typing import Dict
 from typing import List
 
-from ytmusic_deleter.cli import can_edit_playlist
+from ytmusic_deleter.common import can_edit_playlist
 from ytmusic_deleter.common import INDIFFERENT
 from ytmusic_deleter.common import LIKE
 from ytmusic_deleter.duplicates import check_for_duplicates

@@ -9,9 +9,11 @@ from time import strftime
 
 import click
 from click import get_current_context
-from ytmusic_deleter import common as const
 from ytmusic_deleter._version import __version__
 from ytmusic_deleter.auth import ensure_auth
+from ytmusic_deleter.common import can_edit_playlist
+from ytmusic_deleter.common import INDIFFERENT
+from ytmusic_deleter.common import UNKNOWN_ARTIST
 from ytmusic_deleter.duplicates import check_for_duplicates
 from ytmusic_deleter.duplicates import determine_tracks_to_remove
 from ytmusic_deleter.progress import manager
@@ -178,7 +180,7 @@ def remove_library_podcasts():
         if not id:
             logging.debug(f"\tCan't delete podcast {podcast.get('title')!r} because it doesn't have an ID.")
             continue
-        response = yt_auth.rate_playlist(id, const.INDIFFERENT)
+        response = yt_auth.rate_playlist(id, INDIFFERENT)
         if "actions" in response:
             logging.info(f"\tRemoved {podcast.get('title')!r} from your library.")
             podcasts_removed += 1
@@ -216,10 +218,10 @@ def remove_album(browseId):
             f"\tFailed to remove album with ID {browseId} from your library, as it could not be retrieved."
         )
         return False
-    artist = album["artists"][0]["name"] if "artists" in album else const.UNKNOWN_ARTIST
+    artist = album["artists"][0]["name"] if "artists" in album else UNKNOWN_ARTIST
     title = album["title"]
     logging.info(f"Processing album: {artist} - {title}")
-    response = yt_auth.rate_playlist(album["audioPlaylistId"], const.INDIFFERENT)
+    response = yt_auth.rate_playlist(album["audioPlaylistId"], INDIFFERENT)
     if response:
         logging.info(f"\tRemoved {artist} - {title} from your library.")
         return True
@@ -253,7 +255,7 @@ def unlike_all(ctx: click.Context):
         artist = (
             track["artists"][0]["name"]
             if track.get("artists")  # Using `get` ensures key exists and isn't []
-            else const.UNKNOWN_ARTIST
+            else UNKNOWN_ARTIST
         )
         title = track["title"]
         logging.info(f"Processing track: {artist} - {title}")
@@ -261,7 +263,7 @@ def unlike_all(ctx: click.Context):
             logging.info("\tSkipping unliking as this might be a YouTube video and not a YouTube Music song.")
         else:
             logging.info("\tRemoved track from Likes.")
-            yt_auth.rate_song(track["videoId"], const.INDIFFERENT)
+            yt_auth.rate_song(track["videoId"], INDIFFERENT)
             songs_unliked += 1
         update_progress()
     logging.info("Finished unliking all songs.")
@@ -336,7 +338,7 @@ def delete_history(ctx: click.Context, items_deleted: int = 0):
         artist = (
             item["artists"][0]["name"]
             if item.get("artists")  # Using `get` ensures key exists and isn't []
-            else const.UNKNOWN_ARTIST
+            else UNKNOWN_ARTIST
         )
         logging.info(f"\tProcessing history item: {artist} - {item['title']!r}")
         response = yt_auth.remove_history_items(item["feedbackToken"])
@@ -449,17 +451,6 @@ def make_sort_key(track):
         raise
 
 
-def can_edit_playlist(playlist: dict) -> bool:
-    """
-    Returns True if the user owns the playlist and therefore has permission to edit it.
-
-    In case Google changes this, we don't want this to break and prevent users from
-    at least attempting to remove duplicates, so this shall return True by default if
-    the ownership can't be determined
-    """
-    return playlist.get("owned", True) or playlist.get("id") == "LM"
-
-
 @cli.command()
 @click.argument("playlist_title")
 @click.option("--exact", "-e", is_flag=True, help="Only remove exact duplicates")
@@ -500,7 +491,7 @@ def remove_duplicates(ctx: click.Context, playlist_title, exact):
     logging.info(f"Removing {len(items_to_remove)} tracks total.")
     if playlist.get("id") == "LM":
         for song in items_to_remove:
-            yt_auth.rate_song(song["videoId"], const.INDIFFERENT)
+            yt_auth.rate_song(song["videoId"], INDIFFERENT)
     else:
         yt_auth.remove_playlist_items(selected_playlist_id, items_to_remove)
     logging.info("Finished removing duplicate tracks.")

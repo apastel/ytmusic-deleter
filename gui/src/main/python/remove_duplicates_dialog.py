@@ -5,7 +5,7 @@ from PySide6.QtWidgets import QDialog
 from PySide6.QtWidgets import QDialogButtonBox
 from PySide6.QtWidgets import QMessageBox
 from track_listing_dialog import TrackListingDialog
-from ytmusic_deleter.cli import can_edit_playlist
+from ytmusic_deleter.common import can_edit_playlist
 from ytmusic_deleter.common import INDIFFERENT
 from ytmusic_deleter.duplicates import check_for_duplicates
 from ytmusic_deleter.duplicates import determine_tracks_to_remove
