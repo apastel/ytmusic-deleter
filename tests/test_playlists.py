@@ -1,7 +1,10 @@
+import time
 from typing import Dict
 from typing import List
 
 from ytmusic_deleter.cli import can_edit_playlist
+from ytmusic_deleter.common import INDIFFERENT
+from ytmusic_deleter.common import LIKE
 from ytmusic_deleter.duplicates import check_for_duplicates
 from ytmusic_deleter.duplicates import remove_exact_dupes
 from ytmusicapi import YTMusic
@@ -62,7 +65,7 @@ class TestPlaylists:
         assert lists_of_dicts_equal(expected_tracks_to_delete, tracks_to_delete)
 
     def test_can_edit_playlist(
-        self, yt_oauth: YTMusic, create_playlist_and_delete_after: str, sample_public_playlist: str
+        self, yt_oauth: YTMusic, create_playlist_and_delete_after: str, sample_public_playlist: str, sample_video: str
     ):
         owned_playlist = yt_oauth.get_playlist(create_playlist_and_delete_after)
         assert can_edit_playlist(owned_playlist)
@@ -70,8 +73,11 @@ class TestPlaylists:
         someone_elses_playlist = yt_oauth.get_playlist(sample_public_playlist)
         assert not can_edit_playlist(someone_elses_playlist)
 
+        yt_oauth.rate_song(sample_video, LIKE)
+        time.sleep(3)
         liked_music = yt_oauth.get_playlist("LM")  # 'Liked Music'
         assert can_edit_playlist(liked_music)
+        yt_oauth.rate_song(sample_video, INDIFFERENT)
 
 
 def lists_of_dictlists_equal(list1, list2):
