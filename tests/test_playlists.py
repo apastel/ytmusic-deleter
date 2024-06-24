@@ -65,12 +65,13 @@ class TestPlaylists:
         self, yt_oauth: YTMusic, create_playlist_and_delete_after: str, sample_public_playlist: str
     ):
         owned_playlist = yt_oauth.get_playlist(create_playlist_and_delete_after)
-        can_edit, _ = can_edit_playlist(owned_playlist, yt_oauth)
-        assert can_edit
+        assert can_edit_playlist(owned_playlist)
 
         someone_elses_playlist = yt_oauth.get_playlist(sample_public_playlist)
-        can_edit, _ = can_edit_playlist(someone_elses_playlist, yt_oauth)
-        assert not can_edit
+        assert not can_edit_playlist(someone_elses_playlist)
+
+        liked_music = yt_oauth.get_playlist("LM")  # 'Liked Music'
+        assert can_edit_playlist(liked_music)
 
 
 def lists_of_dictlists_equal(list1, list2):
