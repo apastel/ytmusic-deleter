@@ -400,9 +400,11 @@ def sort_playlist(ctx: click.Context, shuffle, playlist_titles):
         for cur_track in desired_tracklist:
             cur_idx = desired_tracklist.index(cur_track)
             track_after = current_tracklist[cur_idx]
+
+            cur_artist = cur_track["artists"][0]["name"] if cur_track["artists"] else UNKNOWN_ARTIST
+            track_after_artist = track_after["artists"][0]["name"] if track_after["artists"] else UNKNOWN_ARTIST
             logging.debug(
-                f"Moving {cur_track['artists'][0]['name']} - {cur_track['title']} "
-                f"before {track_after['artists'][0]['name']} - {track_after['title']}"
+                f"Moving {cur_artist} - {cur_track['title']!r} before {track_after_artist} - {track_after['title']!r}"
             )
             if cur_track != track_after:
                 try:
@@ -415,13 +417,13 @@ def sort_playlist(ctx: click.Context, shuffle, playlist_titles):
                     )
                     if not response:
                         logging.error(
-                            f"Failed to move {cur_track['artists'][0]['name']} - {cur_track['title']} "
-                            f"before {track_after['artists'][0]['name']} - {track_after['title']}"
+                            f"Failed to move {cur_artist} - {cur_track['title']!r} "
+                            f"before {track_after_artist} - {track_after['title']!r}"
                         )
                 except Exception:
                     logging.error(
-                        f"Failed to move {cur_track['artists'][0]['name']} - {cur_track['title']} "
-                        f"before {track_after['artists'][0]['name']} - {track_after['title']}"
+                        f"Failed to move {cur_artist} - {cur_track['title']!r} "
+                        f"before {track_after_artist} - {track_after['title']!r}"
                     )
 
                 current_tracklist.remove(cur_track)
