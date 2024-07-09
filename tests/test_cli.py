@@ -101,9 +101,10 @@ class TestCli:
         assert playlists_deleted >= 1, f"No playlists were deleted. {playlists_total} were found in total."
 
     def test_sort_playlist(self, yt_oauth: YTMusic, create_playlist_and_delete_after):
-        pass
         runner = CliRunner()
-        result = runner.invoke(cli, ["sort-playlist", "Test Playlist"], standalone_mode=False, obj=yt_oauth)
+        result = runner.invoke(
+            cli, ["sort-playlist", "Test Playlist (to be deleted)"], standalone_mode=False, obj=yt_oauth
+        )
         print(result.stdout)
         assert result.exit_code == 0
 

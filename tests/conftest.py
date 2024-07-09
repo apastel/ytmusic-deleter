@@ -265,7 +265,7 @@ def fixture_like_song(yt_oauth: YTMusic, sample_video):
     yt_oauth.rate_playlist("OLAK5uy_lZ90LvUqQdKrByCbk99v54d8XpUOmFavo", const.INDIFFERENT)
 
 
-@pytest.fixture(name="create_playlist_and_delete_after")
+@pytest.fixture(name="create_playlist")
 def fixture_create_playlist(yt_oauth: YTMusic, sample_public_playlist) -> str:
     playlist_id = yt_oauth.create_playlist("Test Playlist", "a test playlist", source_playlist=sample_public_playlist)
     assert isinstance(playlist_id, str)
@@ -274,8 +274,12 @@ def fixture_create_playlist(yt_oauth: YTMusic, sample_public_playlist) -> str:
 
 
 @pytest.fixture(name="create_playlist_and_delete_after")
-def fixture_create_playlist_and_delete_after(yt_oauth: YTMusic, create_playlist_and_delete_after):
-    playlist_id = create_playlist_and_delete_after
+def fixture_create_playlist_and_delete_after(yt_oauth: YTMusic, sample_public_playlist):
+    playlist_id = yt_oauth.create_playlist(
+        "Test Playlist (to be deleted)", "a test playlist", source_playlist=sample_public_playlist
+    )
+    assert isinstance(playlist_id, str)
+
     yield playlist_id
 
     yt_oauth.delete_playlist(playlist_id)
