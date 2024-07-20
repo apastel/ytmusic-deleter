@@ -52,8 +52,7 @@ This login process uses the [Google API flow for TV devices](https://developers.
 and is handled by the [ytmusicapi](https://ytmusicapi.readthedocs.io/en/stable/setup/oauth.html), which handles all of the
 API interaction in this app.
 
-[Video Tutorial](https://youtu.be/f4RTUZ6kLUI?si=Rh_qzc21LS3xuw-e&t=60) on using YT Music Deleter
-> This video shows an older version of the UI. The authentication process has been simplified. New video coming soon!
+[Video Tutorial](https://youtu.be/oV-yLi1AW1c) on using YT Music Deleter
 
 
 ## Troubleshooting
