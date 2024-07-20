@@ -368,9 +368,6 @@
       <pointsize>8</pointsize>
      </font>
     </property>
-    <property name="toolTip">
-     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Coming soon!&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-    </property>
     <property name="statusTip">
      <string>Remove duplicate tracks in a playlist.</string>
     </property>
