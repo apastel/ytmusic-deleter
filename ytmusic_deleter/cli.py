@@ -266,7 +266,7 @@ def unlike_all(ctx: click.Context):
             yt_auth.rate_song(track["videoId"], INDIFFERENT)
             songs_unliked += 1
         update_progress()
-    logging.info("Finished unliking all songs.")
+    logging.info(f"Finished unliking {songs_unliked} out of {len(your_likes['tracks'])} songs.")
     return (songs_unliked, len(your_likes["tracks"]))
 
 
@@ -303,7 +303,7 @@ def delete_playlists(ctx: click.Context):
                 f"\tCould not delete playlist {playlist['title']!r}. You might not have permission to delete it."
             )
         update_progress()
-    logging.info(f"Deleted {playlists_deleted} out of {len(library_playlists)} from your library.")
+    logging.info(f"Deleted {playlists_deleted} out of {len(library_playlists)} playlists from your library.")
     return (playlists_deleted, len(library_playlists))
 
 
