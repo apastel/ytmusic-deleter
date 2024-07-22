@@ -258,13 +258,14 @@ def unlike_all(ctx: click.Context):
             else UNKNOWN_ARTIST
         )
         title = track["title"]
-        logging.info(f"Processing track: {artist} - {title}")
-        if track["album"] is None:
-            logging.info("\tSkipping unliking as this might be a YouTube video and not a YouTube Music song.")
-        else:
-            logging.info("\tRemoved track from Likes.")
+        logging.info(f"Processing track: {artist} - {title!r}")
+        try:
             yt_auth.rate_song(track["videoId"], INDIFFERENT)
+            logging.info("\tRemoved track from Likes.")
             songs_unliked += 1
+        except Exception as e:
+            logging.exception(e)
+            logging.error(f"\tFailed to unlike {artist} - {title!r}")
         update_progress()
     logging.info(f"Finished unliking {songs_unliked} out of {len(your_likes['tracks'])} songs.")
     return (songs_unliked, len(your_likes["tracks"]))
