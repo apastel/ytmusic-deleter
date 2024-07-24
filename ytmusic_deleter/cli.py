@@ -210,9 +210,11 @@ def remove_library_albums_by_song(songs):
 
 
 def remove_album(browseId):
+    logging.debug(f"Looking up album using id: {browseId}")
     yt_auth: YTMusic = get_current_context().obj["YT_AUTH"]
     try:
         album = yt_auth.get_album(browseId)
+        logging.debug(f"Album info: {album}")
     except Exception:
         logging.exception(
             f"\tFailed to remove album with ID {browseId} from your library, as it could not be retrieved."
@@ -221,6 +223,7 @@ def remove_album(browseId):
     artist = album["artists"][0]["name"] if "artists" in album else UNKNOWN_ARTIST
     title = album["title"]
     logging.info(f"Processing album: {artist} - {title}")
+    logging.debug(f"Removing album using id: {album['audioPlaylistId']}")
     response = yt_auth.rate_playlist(album["audioPlaylistId"], INDIFFERENT)
     if response:
         logging.debug(response)
