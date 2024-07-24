@@ -2,7 +2,7 @@
     "app_name": "YTMusic_Deleter",
     "author": "Alex Pastel",
     "main_module": "src/main/python/main.py",
-    "version": "2.4.5",
+    "version": "2.4.6",
     "sentry_dsn": "https://8cecdde1e7344deda25e39924c01a73c@o1393803.ingest.sentry.io/6715501",
     "public_settings": [
         "app_name",
