@@ -223,6 +223,7 @@ def remove_album(browseId):
     logging.info(f"Processing album: {artist} - {title}")
     response = yt_auth.rate_playlist(album["audioPlaylistId"], INDIFFERENT)
     if response:
+        logging.debug(response)
         logging.info(f"\tRemoved {artist} - {title} from your library.")
         return True
     else:
