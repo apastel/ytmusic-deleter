@@ -123,6 +123,15 @@ jobs:
       uses: actions/download-artifact@v4
       with:
         name: installer-deb
+
+      # Necessary for getting executable name, since it won't match the git ref
+      # if we're releasing a branch build
+    - name: Get base.json file
+      id: json-properties
+      uses: zoexx/github-action-json-file-properties@1.0.6
+      with:
+        file_path: gui/src/build/settings/base.json
+
     - name: Upload executable installers to Github Release
       env:
         GITHUB_TOKEN: ${{ github.token }}
@@ -130,5 +139,5 @@ jobs:
         gh release upload \
         '${{ github.ref_name }}' \
         --repo '${{ github.repository }}' \
-        YTMusic_Deleter-${{ github.ref_name }}-Windows-Installer.exe \
-        YTMusic_Deleter-${{ github.ref_name }}-Linux-Installer.deb
+        YTMusic_Deleter-${{ steps.json-properties.outputs.version }}-Windows-Installer.exe \
+        YTMusic_Deleter-${{ steps.json-properties.outputs.version }}-Linux-Installer.deb
