@@ -115,16 +115,8 @@ jobs:
         '${{ github.ref_name }}' \
         --repo '${{ github.repository }}' \
         dist/**
-    - name: Download Windows installer
-      uses: actions/download-artifact@v4
-      with:
-        name: installer-exe
-    - name: Download Linux installer
-      uses: actions/download-artifact@v4
-      with:
-        name: installer-deb
 
-      # Necessary for getting executable name, since it won't match the git ref
+        # Necessary for getting executable name, since it won't match the git ref
       # if we're releasing a branch build
     - uses: actions/checkout@v4
       with:
@@ -135,6 +127,14 @@ jobs:
       with:
         file_path: gui/src/build/settings/base.json
 
+    - name: Download Windows installer
+      uses: actions/download-artifact@v4
+      with:
+        name: installer-exe
+    - name: Download Linux installer
+      uses: actions/download-artifact@v4
+      with:
+        name: installer-deb
     - name: Upload executable installers to Github Release
       env:
         GITHUB_TOKEN: ${{ github.token }}
