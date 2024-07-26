@@ -129,29 +129,27 @@ def remove_library(ctx: click.Context):
     )
     albums_removed = remove_library_items(library_albums)
 
-    logging.info("Retrieving all singles...")
-    # Aside from actual singles, these might also be individual songs from an album that were added to your library
+    logging.info("Retrieving all songs...")
     try:
         library_songs = yt_auth.get_library_songs(limit=None)
-        logging.info(f"Retrieved {len(library_songs)} singles from your library.")
+        logging.info(f"Retrieved {len(library_songs)} songs from your library.")
     except Exception:
-        logging.exception("Failed to get library singles.")
+        logging.exception("Failed to get library songs.")
         library_songs = []
-    # Filter out songs where album is None (rare but seen here: https://github.com/apastel/ytmusic-deleter/issues/12)
     progress_bar = manager.counter(
         total=len(library_songs),
-        desc="Singles Processed",
-        unit="singles",
+        desc="Songs Processed",
+        unit="songs",
         enabled=not ctx.obj["STATIC_PROGRESS"],
     )
-    singles_removed = remove_library_items(library_songs)
+    songs_removed = remove_library_items(library_songs)
 
     podcasts_removed, library_podcasts = remove_library_podcasts()
 
-    items_removed = albums_removed + singles_removed + podcasts_removed
+    items_removed = albums_removed + songs_removed + podcasts_removed
 
     items_total = len(library_albums) + len(library_songs) + len(library_podcasts)
-    logging.info(f"Removed {items_removed} out of {items_total} albums, singles, and podcasts from your library.")
+    logging.info(f"Removed {items_removed} out of {items_total} albums, songs, and podcasts from your library.")
     return (items_removed, items_total)
 
 
@@ -190,12 +188,30 @@ def remove_library_items(album_or_single):
     yt_auth: YTMusic = get_current_context().obj["YT_AUTH"]
     items_removed = 0
     for item in album_or_single:
+        logging.debug(f"Full album or song item: {item}")
         artist = item["artists"][0]["name"] if "artists" in item else UNKNOWN_ARTIST
         title = item["title"]
         logging.info(f"Processing item: {artist} - {title}")
-        logging.debug(f"Removing item using id: {item.get('playlistId') or item.get('id')}")
-        response = yt_auth.rate_playlist(item.get("playlistId") or item.get("id"), INDIFFERENT)
-        if response:
+
+        id = item.get("playlistId")
+        if id:
+            logging.debug("This is an album")
+            logging.debug(f"Removing album using id: {id}")
+            response = yt_auth.rate_playlist(id, INDIFFERENT)
+        elif item.get("feedbackTokens") and isinstance(item.get("feedbackTokens"), dict):
+            logging.debug("This is a song, removing item using feedbackTokens")
+            response = yt_auth.edit_song_library_status([item.get("feedbackTokens").get("remove")])
+        else:
+            logging.error(
+                f"""
+                Library item {artist} - {title!r} was in an unexpected format, unable to remove.
+                Provide this to the developer:
+                {item}
+            """
+            )
+            response = None
+
+        if response and "Removed from library" in str(response):
             logging.debug(response)
             logging.info(f"\tRemoved {artist} - {title} from your library.")
             items_removed += 1
