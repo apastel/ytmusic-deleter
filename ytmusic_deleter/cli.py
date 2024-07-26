@@ -127,7 +127,7 @@ def remove_library(ctx: click.Context):
         unit="albums",
         enabled=not ctx.obj["STATIC_PROGRESS"],
     )
-    albums_removed = remove_library_albums(library_albums)
+    albums_removed = remove_library_items(library_albums)
 
     logging.info("Retrieving all singles...")
     # Aside from actual singles, these might also be individual songs from an album that were added to your library
@@ -138,26 +138,21 @@ def remove_library(ctx: click.Context):
         logging.exception("Failed to get library singles.")
         library_songs = []
     # Filter out songs where album is None (rare but seen here: https://github.com/apastel/ytmusic-deleter/issues/12)
-    filtered_songs = list(filter(lambda song: song["album"], library_songs))
-    if len(library_songs) - len(filtered_songs) > 0:
-        logging.info(f"{len(library_songs) - len(filtered_songs)} songs are not part of an album and won't be deleted.")
-    # Filter for unique album IDs so that for each song, we can just remove the album it's a part of
-    album_unique_songs = list({v["album"]["id"]: v for v in filtered_songs}.values())
     progress_bar = manager.counter(
-        total=len(album_unique_songs),
+        total=len(library_songs),
         desc="Singles Processed",
         unit="singles",
         enabled=not ctx.obj["STATIC_PROGRESS"],
     )
-    albums_removed += remove_library_albums_by_song(album_unique_songs)
+    singles_removed = remove_library_items(library_songs)
 
     podcasts_removed, library_podcasts = remove_library_podcasts()
 
-    albums_removed += podcasts_removed
+    items_removed = albums_removed + singles_removed + podcasts_removed
 
-    albums_total = len(library_albums) + len(album_unique_songs) + len(library_podcasts)
-    logging.info(f"Removed {albums_removed} out of {albums_total} albums and podcasts from your library.")
-    return (albums_removed, albums_total)
+    items_total = len(library_albums) + len(library_songs) + len(library_podcasts)
+    logging.info(f"Removed {items_removed} out of {items_total} albums, singles, and podcasts from your library.")
+    return (items_removed, items_total)
 
 
 def remove_library_podcasts():
@@ -191,47 +186,23 @@ def remove_library_podcasts():
     return podcasts_removed, library_podcasts
 
 
-def remove_library_albums(albums):
-    albums_removed = 0
-    for album in albums:
-        if remove_album(album["browseId"]):
-            albums_removed += 1
-        update_progress()
-    return albums_removed
-
-
-def remove_library_albums_by_song(songs):
-    albums_removed = 0
-    for song in songs:
-        if remove_album(song["album"]["id"]):
-            albums_removed += 1
-        update_progress()
-    return albums_removed
-
-
-def remove_album(browseId):
-    logging.debug(f"Looking up album using id: {browseId}")
+def remove_library_items(album_or_single):
     yt_auth: YTMusic = get_current_context().obj["YT_AUTH"]
-    try:
-        album = yt_auth.get_album(browseId)
-        logging.debug(f"Album info: {album}")
-    except Exception:
-        logging.exception(
-            f"\tFailed to remove album with ID {browseId} from your library, as it could not be retrieved."
-        )
-        return False
-    artist = album["artists"][0]["name"] if "artists" in album else UNKNOWN_ARTIST
-    title = album["title"]
-    logging.info(f"Processing album: {artist} - {title}")
-    logging.debug(f"Removing album using id: {album['audioPlaylistId']}")
-    response = yt_auth.rate_playlist(album["audioPlaylistId"], INDIFFERENT)
-    if response:
-        logging.debug(response)
-        logging.info(f"\tRemoved {artist} - {title} from your library.")
-        return True
-    else:
-        logging.error(f"\tFailed to remove {artist} - {title} from your library.")
-        return False
+    items_removed = 0
+    for item in album_or_single:
+        artist = item["artists"][0]["name"] if "artists" in item else UNKNOWN_ARTIST
+        title = item["title"]
+        logging.info(f"Processing item: {artist} - {title}")
+        logging.debug(f"Removing item using id: {item.get('playlistId') or item.get('id')}")
+        response = yt_auth.rate_playlist(item.get("playlistId") or item.get("id"), INDIFFERENT)
+        if response:
+            logging.debug(response)
+            logging.info(f"\tRemoved {artist} - {title} from your library.")
+            items_removed += 1
+        else:
+            logging.error(f"\tFailed to remove {artist} - {title} from your library.")
+        update_progress()
+    return items_removed
 
 
 @cli.command()
