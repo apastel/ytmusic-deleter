@@ -170,32 +170,32 @@ def remove_library_podcasts():
     podcasts_removed = 0
     for podcast in library_podcasts:
         id = podcast.get("podcastId")
+        title = podcast.get("title")
         if not id:
-            logging.debug(f"\tCan't delete podcast {podcast.get('title')!r} because it doesn't have an ID.")
+            logging.debug(f"\tCan't delete podcast {title!r} because it doesn't have an ID.")
             continue
         response = yt_auth.rate_playlist(id, INDIFFERENT)
         if "actions" in response:
-            logging.info(f"\tRemoved {podcast.get('title')!r} from your library.")
+            logging.info(f"\tRemoved {title!r} from your library.")
             podcasts_removed += 1
         else:
-            logging.error(f"\tFailed to remove {podcast.get('title')!r} from your library.")
+            logging.error(f"\tFailed to remove {title!r} from your library.")
         update_progress()
     logging.info(f"Removed {podcasts_removed} out of {len(library_podcasts)} podcasts from your library.")
     return podcasts_removed, library_podcasts
 
 
-def remove_library_items(album_or_single):
+def remove_library_items(library_items):
     yt_auth: YTMusic = get_current_context().obj["YT_AUTH"]
     items_removed = 0
-    for item in album_or_single:
+    for item in library_items:
         logging.debug(f"Full album or song item: {item}")
         artist = item["artists"][0]["name"] if "artists" in item else UNKNOWN_ARTIST
-        title = item["title"]
-        logging.info(f"Processing item: {artist} - {title}")
+        title = item.get("title")
+        logging.info(f"Processing item: {artist} - {title!r}")
 
         id = item.get("playlistId")
         if id:
-            logging.debug("This is an album")
             logging.debug(f"Removing album using id: {id}")
             response = yt_auth.rate_playlist(id, INDIFFERENT)
         elif item.get("feedbackTokens") and isinstance(item.get("feedbackTokens"), dict):
@@ -213,10 +213,10 @@ def remove_library_items(album_or_single):
 
         if response and "Removed from library" in str(response):
             logging.debug(response)
-            logging.info(f"\tRemoved {artist} - {title} from your library.")
+            logging.info(f"\tRemoved {artist} - {title!r} from your library.")
             items_removed += 1
         else:
-            logging.error(f"\tFailed to remove {artist} - {title} from your library.")
+            logging.error(f"\tFailed to remove {artist} - {title!r} from your library.")
         update_progress()
     return items_removed
 
