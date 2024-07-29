@@ -23,7 +23,7 @@ class RemoveDuplicatesDialog(QDialog, Ui_PlaylistSelectionDialog):
         self.playlistList.itemSelectionChanged.connect(self.enable_ok_button)
         self.shuffleCheckBox.hide()
 
-        self.all_playlists = parent.ytmusic.get_library_playlists()
+        self.all_playlists = parent.ytmusic.get_library_playlists(limit=None)
         self.playlistList.insertItems(0, [playlist["title"] for playlist in self.all_playlists])
 
     def accept(self):

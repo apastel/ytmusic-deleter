@@ -268,7 +268,7 @@ def delete_playlists(ctx: click.Context):
     """Delete all playlists"""
     yt_auth: YTMusic = ctx.obj["YT_AUTH"]
     logging.info("Retrieving all your playlists...")
-    library_playlists = yt_auth.get_library_playlists(sys.maxsize)
+    library_playlists = yt_auth.get_library_playlists(limit=None)
     # Can't delete "Your Likes" playlist
     library_playlists = list(filter(lambda playlist: playlist["playlistId"] != "LM", library_playlists))
     logging.info(f"\tRetrieved {len(library_playlists)} playlists.")
@@ -363,7 +363,7 @@ def delete_all(ctx: click.Context):
 def sort_playlist(ctx: click.Context, shuffle, playlist_titles):
     """Sort or shuffle one or more playlists alphabetically by artist and by album"""
     yt_auth: YTMusic = ctx.obj["YT_AUTH"]
-    all_playlists = yt_auth.get_library_playlists(sys.maxsize)
+    all_playlists = yt_auth.get_library_playlists(limit=None)
     lowercase_playlist_titles = [title.lower() for title in playlist_titles]
     selected_playlist_list = [
         playlist for playlist in all_playlists if playlist["title"].lower() in lowercase_playlist_titles

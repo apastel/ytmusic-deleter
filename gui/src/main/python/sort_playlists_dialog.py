@@ -17,7 +17,7 @@ class SortPlaylistsDialog(QDialog, Ui_PlaylistSelectionDialog):
         self.playlistList.itemSelectionChanged.connect(self.enable_ok_button)
         self.playlistList.setSelectionMode(QAbstractItemView.MultiSelection)
 
-        playlists = parent.ytmusic.get_library_playlists()
+        playlists = parent.ytmusic.get_library_playlists(limit=None)
         self.playlistList.insertItems(0, [playlist["title"] for playlist in playlists])
 
     def accept(self):
