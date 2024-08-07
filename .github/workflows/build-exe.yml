@@ -147,23 +147,12 @@ jobs:
           # Makes app run headless
           export QT_QPA_PLATFORM=offscreen
           logfile="$APPDATA\YTMusic_Deleter\ytmusic-deleter-gui_$(date +%Y-%m-%d).log"
+          timeout 10s /c/Program\ Files\ \(x86\)/YTMusic_Deleter/YTMusic_Deleter.exe || true
           version_str="${{ needs.build.outputs.cli-version }}"
-          verify()
-          {
-            timeout 10s /c/Program\ Files\ \(x86\)/YTMusic_Deleter/YTMusic_Deleter.exe || true
-            if grep -q "$version_str" $logfile; then
-              echo "GUI is running the right CLI version: $version_str"
-            else
-              echo "The string "$version_str" was not found in $logfile, contents below:"
-              cat $logfile
-              if (( retries_remaining == 0 )); then
-                echo "Out of retries"
-                exit 1
-              fi
-              echo "Let's try again"
-              let retries_remaining--
-              verify
-            fi
-          }
-          retries_remaining=2
-          verify
+          if grep -q "$version_str" $logfile; then
+            echo "GUI is running the right CLI version: $version_str"
+          else
+            echo "The string "$version_str" was not found in $logfile, contents below:"
+            cat $logfile
+            exit 1
+          fi
