@@ -46,8 +46,11 @@ jobs:
         cat <<< "$OAUTH_JSON" > tests/resources/oauth.json
         cat <<< "$TEST_CFG" > tests/resources/test.cfg
     - name: Run pytest
-      run: |
-        pdm run pytest
+      uses: nick-fields/retry@v3
+      with:
+        command: pdm run pytest
+        max_attempts: 2
+        timeout_minutes: 20
     - name: Generate coverage report
       run: |
         pdm run coverage xml
