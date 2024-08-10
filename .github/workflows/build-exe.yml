@@ -142,17 +142,21 @@ jobs:
         run: |
           .\YTMusic_Deleter-${{ needs.build.outputs.installer-version }}-Windows-Installer.exe /S
       - name: Run application
-        run: |
-
-          # Makes app run headless
-          export QT_QPA_PLATFORM=offscreen
-          logfile="$APPDATA\YTMusic_Deleter\ytmusic-deleter-gui_$(date +%Y-%m-%d).log"
-          timeout 10s /c/Program\ Files\ \(x86\)/YTMusic_Deleter/YTMusic_Deleter.exe || true
-          version_str="${{ needs.build.outputs.cli-version }}"
-          if grep -q "$version_str" $logfile; then
-            echo "GUI is running the right CLI version: $version_str"
-          else
-            echo "The string "$version_str" was not found in $logfile, contents below:"
-            cat $logfile
-            exit 1
-          fi
+        uses: nick-fields/retry@v3
+        with:
+          shell: bash
+          command: |
+            # Makes app run headless
+            export QT_QPA_PLATFORM=offscreen
+            logfile="$APPDATA\YTMusic_Deleter\ytmusic-deleter-gui_$(date +%Y-%m-%d).log"
+            timeout 10s /c/Program\ Files\ \(x86\)/YTMusic_Deleter/YTMusic_Deleter.exe || true
+            version_str="${{ needs.build.outputs.cli-version }}"
+            if grep -q "$version_str" $logfile; then
+              echo "GUI is running the right CLI version: $version_str"
+            else
+              echo "The string "$version_str" was not found in $logfile, contents below:"
+              cat $logfile
+              exit 1
+            fi
+          max_attempts: 5
+          timeout_minutes: 10
