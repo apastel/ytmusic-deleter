@@ -370,7 +370,7 @@ def sort_playlist(ctx: click.Context, shuffle, playlist_titles):
     ]
     for selected_playlist in selected_playlist_list:
         logging.info(f'Processing playlist: {selected_playlist["title"]}')
-        playlist = yt_auth.get_playlist(selected_playlist["playlistId"], sys.maxsize)
+        playlist = yt_auth.get_playlist(selected_playlist["playlistId"], limit=None)
         if not can_edit_playlist(playlist):
             logging.error(f"Cannot modify playlist {playlist.get('title')!r}. You are not the owner of this playlist.")
             continue
@@ -395,11 +395,21 @@ def sort_playlist(ctx: click.Context, shuffle, playlist_titles):
 
             cur_artist = cur_track["artists"][0]["name"] if cur_track["artists"] else UNKNOWN_ARTIST
             track_after_artist = track_after["artists"][0]["name"] if track_after["artists"] else UNKNOWN_ARTIST
-            logging.debug(
-                f"Moving {cur_artist} - {cur_track['title']!r} before {track_after_artist} - {track_after['title']!r}"
-            )
             if cur_track != track_after:
+                logging.debug(
+                    f"Moving {cur_artist} - {cur_track['title']!r} before {track_after_artist} - {track_after['title']!r}"
+                )
                 try:
+                    if "setVideoId" not in cur_track or "setVideoId" not in track_after:
+                        logging.error(
+                            "Encountered track(s) with missing 'setVideoId'. Cannot sort the following track(s):"
+                        )
+                        if "setVideoId" not in cur_track:
+                            logging.error(f"setVideoId attribute not in cur_track: {cur_track}")
+                        if "setVideoId" not in track_after:
+                            logging.error(f"setVideoId attribute not in track_after: {track_after}")
+                        continue
+
                     response = yt_auth.edit_playlist(
                         playlist["id"],
                         moveItem=(
