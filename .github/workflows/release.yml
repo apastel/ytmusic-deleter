@@ -116,7 +116,7 @@ jobs:
         --repo '${{ github.repository }}' \
         dist/**
 
-        # Necessary for getting executable name, since it won't match the git ref
+      # Necessary for getting executable name, since it won't match the git ref
       # if we're releasing a branch build
     - uses: actions/checkout@v4
       with:
