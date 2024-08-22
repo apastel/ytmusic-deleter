@@ -6,6 +6,7 @@ import shutil
 import subprocess
 import sys
 import webbrowser
+from importlib.metadata import version
 from json import JSONDecodeError
 from pathlib import Path
 from time import strftime
@@ -151,6 +152,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.message(
                 f"{CLI_EXECUTABLE!r} executable not found. It's possible that it's not installed and none of the functions will work."  # noqa
             )
+        self.message(f"ytmusicapi version: {version('ytmusicapi')}")
 
     def eventFilter(self, obj, event):
         """Closes accountWidget when clicking outside of it."""
