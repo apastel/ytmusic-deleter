@@ -7,7 +7,7 @@ dependencies = [
     "click>=8.1.7",
     "enlighten>=1.12.4",
     "thefuzz>=0.22.1",
-    "ytmusicapi==1.7.5",
+    "ytmusicapi>=1.8.0",
     "inquirerpy>=0.3.4",
 ]
 requires-python = "<3.13,>=3.9"
