@@ -1173,7 +1173,7 @@ files = [
 
 [[package]]
 name = "ytmusicapi"
-version = "1.8.0"
+version = "1.8.1"
 requires_python = ">=3.9"
 summary = "Unofficial API for YouTube Music"
 groups = ["default"]
@@ -1181,8 +1181,8 @@ dependencies = [
     "requests>=2.22",
 ]
 files = [
-    {file = "ytmusicapi-1.8.0-py3-none-any.whl", hash = "sha256:b4a73991e8bcaf9537b6245712734303725ddd435768000ec5dd45fa993f26ee"},
-    {file = "ytmusicapi-1.8.0.tar.gz", hash = "sha256:8b2bec6a4615f5144fc5f2daaeaab3cd059b602d916f323ef72b7d71b1e21f95"},
+    {file = "ytmusicapi-1.8.1-py3-none-any.whl", hash = "sha256:472f51844541b12818da85217409033ecda93be6d40c1660fd32d064948a8f10"},
+    {file = "ytmusicapi-1.8.1.tar.gz", hash = "sha256:1bd4a85f81efe824a4eaec26502b9d27887792f590d80bbdf3c9c5943ec5fd6e"},
 ]
 
 [[package]]
