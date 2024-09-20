@@ -6,7 +6,7 @@
 [![Release test](https://github.com/apastel/ytmusic-deleter/actions/workflows/build-deb.yml/badge.svg)](https://github.com/apastel/ytmusic-deleter/actions/workflows/build-deb.yml)
 [![Pytest](https://github.com/apastel/ytmusic-deleter/actions/workflows/pytest.yml/badge.svg)](https://github.com/apastel/ytmusic-deleter/actions/workflows/pytest.yml)
 ![Codecov](https://img.shields.io/codecov/c/github/apastel/ytmusic-deleter?color=green)
-![Discord](https://img.shields.io/discord/1156973782741827686?logo=discord)
+[![Discord](https://img.shields.io/discord/1156973782741827686?logo=discord)](https://discord.gg/M9t5H8njrM)
 
 YTMusic Deleter is an installable program for performing batch delete operations on your YouTube Music library, since
 currently there is no built-in option to do this. This tool is faster than browser-based / Javscript-based tools because
@@ -16,7 +16,7 @@ If this project helped you and you want to thank me, you can <a href="https://ww
 
 <a href="https://www.buymeacoffee.com/jewbix.cube"><img src="https://img.buymeacoffee.com/button-api/?text=Buy me a beer&emoji=🍻&slug=jewbix.cube&button_colour=FFDD00&font_colour=000000&font_family=Arial&outline_colour=000000&coffee_colour=ffffff"></a>
 
-![Get help on Discord!](https://invidget.switchblade.xyz/M9t5H8njrM)
+[![Get help on Discord!](https://invidget.switchblade.xyz/M9t5H8njrM)](https://discord.gg/M9t5H8njrM)
 
 
 Features
