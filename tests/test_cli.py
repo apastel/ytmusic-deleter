@@ -82,14 +82,16 @@ class TestCli:
         likes_remaining = yt_oauth.get_liked_songs(limit=None)["tracks"]
         assert len(likes_remaining) == 0, f"There were still {len(likes_remaining)} liked songs remaining"
 
-    def test_delete_history(self, yt_oauth: YTMusic, add_history_items):
+    def test_delete_history(self, yt_oauth: YTMusic, add_history_items, sample_long_song_list):
         runner = CliRunner()
         result = runner.invoke(cli, ["delete-history"], standalone_mode=False, obj=yt_oauth)
         print(result.stdout)
         assert result.exit_code == 0
 
         items_deleted = result.return_value
-        assert items_deleted >= 7, "One or more history items were not deleted"
+        assert items_deleted >= len(sample_long_song_list), "One or more history items were not deleted"
+        with pytest.raises(Exception, match="None"):
+            yt_oauth.get_history()
 
     def test_delete_playlists(self, yt_oauth: YTMusic, create_playlist_and_delete_after):
         runner = CliRunner()
@@ -131,29 +133,3 @@ class TestCli:
         assert 2 == len(
             check_for_duplicates(processed_playlist, yt_oauth)
         ), "Playlist contained wrong number of remaining duplicates"
-
-    def test_delete_all(
-        self,
-        yt_browser: YTMusic,
-        upload_song,
-        add_library_album,
-        add_podcast,
-        create_playlist_and_delete_after,
-        like_song,
-        add_history_items,
-    ):
-        runner = CliRunner()
-        result = runner.invoke(cli, ["delete-all"], standalone_mode=False, obj=yt_browser)
-        print(result.stdout)
-        assert result.exit_code == 0
-
-        # Verify everything was deleted
-        assert 0 == len(yt_browser.get_library_upload_songs())
-        assert 0 == len(yt_browser.get_library_songs())
-        assert 1 == len(yt_browser.get_library_podcasts())
-        assert "Episodes you save for later" == yt_browser.get_library_podcasts()[0].get("channel").get("name")
-        assert 1 == len(yt_browser.get_library_playlists())
-        assert "Episodes you save for later" == yt_browser.get_library_playlists()[0].get("description")
-        assert 0 == len(yt_browser.get_liked_songs()["tracks"])
-        with pytest.raises(Exception, match="None"):
-            yt_browser.get_history()

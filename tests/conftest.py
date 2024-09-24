@@ -49,6 +49,18 @@ def fixture_sample_song_list() -> List[str]:
     return ["hpSrLjc5SMs", "PIuAFrLeXfY", "9gi4WwQcPW8", "beX-9wW5rL0", "8ay_BkRuv-o", "HGorCGszxZU", "t2rsf8SiMJY"]
 
 
+@pytest.fixture(name="sample_long_playlist")
+def fixture_sample_long_playlist() -> str:
+    """The Millennial Mixtape"""
+    return "RDCLAK5uy_mplKe9BIYCO3ZuNWSHZr48bm9DUDzbWnE"
+
+
+@pytest.fixture(name="sample_long_song_list")
+def fixture_sample_long_song_list(yt_oauth: YTMusic, sample_long_playlist: str) -> List[str]:
+    playlist_items = yt_oauth.get_playlist(sample_long_playlist, limit=None)
+    return [track["videoId"] for track in playlist_items["tracks"]]
+
+
 @pytest.fixture(name="sample_song_list_dupes")
 def fixture_sample_song_list_dupes() -> List[str]:
     return [
@@ -320,9 +332,9 @@ def fixture_get_playlist_with_dupes(yt_oauth: YTMusic, sample_song_list_dupes):
 
 
 @pytest.fixture(name="add_history_items")
-def fixture_add_history_items(yt_oauth: YTMusic, sample_song_list):
+def fixture_add_history_items(yt_oauth: YTMusic, sample_long_song_list):
     timestamp = yt_oauth.get_signatureTimestamp()
-    for song in sample_song_list:
+    for song in sample_long_song_list:
         song = yt_oauth.get_song(song, timestamp)
         response = yt_oauth.add_history_item(song)
         assert response.status_code == 204
