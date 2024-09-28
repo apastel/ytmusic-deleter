@@ -115,13 +115,26 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.donateLabel = ClickableLabel(self.centralWidget, "https://www.buymeacoffee.com/jewbix.cube")
         self.donateLabel.setObjectName("donateLabel")
         self.donateLabel.setGeometry(QRect(40, 30, 260, 50))
-        r = requests.get(
-            "https://img.buymeacoffee.com/button-api/?text=Buy me a beer!&emoji=🍺&slug=jewbix.cube&button_colour=FFDD00&"
-            "font_colour=000000&font_family=Cookie&outline_colour=000000&coffee_colour=ffffff"
-        )
-        img = QImage()
-        img.loadFromData(r.content)
-        self.donateLabel.setPixmap(QPixmap.fromImage(img))
+        base_url = "https://img.buymeacoffee.com/button-api/"
+        params = {
+            "text": "Buy me a beer!",
+            "emoji": "🍺",
+            "slug": "jewbix.cube",
+            "button_colour": "FFDD00",
+            "font_colour": "000000",
+            "font_family": "Cookie",
+            "outline_colour": "000000",
+            "coffee_colour": "ffffff",
+        }
+        try:
+            r = requests.get(base_url, params=params)
+            r.raise_for_status()
+            img = QImage()
+            img.loadFromData(r.content)
+            self.donateLabel.setPixmap(QPixmap.fromImage(img))
+        except requests.exceptions.RequestException as e:
+            self.message(f"Error getting image for donate button: {e}")
+            self.donateLabel.setText("Click me to donate 5 bucks!")
         self.donateLabel.setToolTip(
             "It's a donate button! If this tool saved you a lot of time, consider buying me a beer!"
         )
