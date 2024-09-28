@@ -213,28 +213,17 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def update_buttons(self):
         """Update the display status of the buttons when initializing or signing in/out"""
-        if self.is_signed_in(display_message=True):
-            self.accountPhotoButton.show()
-            self.signInButton.hide()
-            self.removeLibraryButton.setDisabled(False)
-            self.deleteUploadsButton.setDisabled(False)
-            self.deletePlaylistsButton.setDisabled(False)
-            self.unlikeAllButton.setDisabled(False)
-            self.deleteHistoryButton.setDisabled(False)
-            self.deleteAllButton.setDisabled(False)
-            self.sortPlaylistButton.setDisabled(False)
-            self.removeDupesButton.setDisabled(False)
-        else:
-            self.accountPhotoButton.hide()
-            self.signInButton.show()
-            self.removeLibraryButton.setDisabled(True)
-            self.deleteUploadsButton.setDisabled(True)
-            self.deletePlaylistsButton.setDisabled(True)
-            self.unlikeAllButton.setDisabled(True)
-            self.deleteHistoryButton.setDisabled(True)
-            self.deleteAllButton.setDisabled(True)
-            self.sortPlaylistButton.setDisabled(True)
-            self.removeDupesButton.setDisabled(True)
+        is_signed_in = self.is_signed_in(display_message=True)
+        self.accountPhotoButton.setVisible(is_signed_in)
+        self.signInButton.setVisible(not is_signed_in)
+        self.removeLibraryButton.setEnabled(is_signed_in)
+        self.deleteUploadsButton.setEnabled(is_signed_in)
+        self.deletePlaylistsButton.setEnabled(is_signed_in)
+        self.unlikeAllButton.setEnabled(is_signed_in)
+        self.deleteHistoryButton.setEnabled(is_signed_in)
+        self.deleteAllButton.setEnabled(is_signed_in)
+        self.sortPlaylistButton.setEnabled(is_signed_in)
+        self.removeDupesButton.setEnabled(is_signed_in)
 
     @Slot()
     def account_button_clicked(self):
