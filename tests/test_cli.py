@@ -82,14 +82,14 @@ class TestCli:
         likes_remaining = yt_oauth.get_liked_songs(limit=None)["tracks"]
         assert len(likes_remaining) == 0, f"There were still {len(likes_remaining)} liked songs remaining"
 
-    def test_delete_history(self, yt_oauth: YTMusic, add_history_items, sample_long_song_list):
+    def test_delete_history(self, yt_oauth: YTMusic, add_history_items):
         runner = CliRunner()
         result = runner.invoke(cli, ["delete-history"], standalone_mode=False, obj=yt_oauth)
         print(result.stdout)
         assert result.exit_code == 0
 
         items_deleted = result.return_value
-        assert items_deleted >= len(sample_long_song_list), "One or more history items were not deleted"
+        assert items_deleted >= add_history_items, "One or more history items were not deleted"
         with pytest.raises(Exception, match="None"):
             yt_oauth.get_history()
 
