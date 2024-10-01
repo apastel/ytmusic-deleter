@@ -68,15 +68,17 @@ class TestPlaylists:
         self, yt_oauth: YTMusic, create_playlist_and_delete_after: str, sample_public_playlist: str, sample_video: str
     ):
         owned_playlist = yt_oauth.get_playlist(create_playlist_and_delete_after)
-        assert can_edit_playlist(owned_playlist)
+        assert can_edit_playlist(owned_playlist), f"Playlist should be editable: {owned_playlist}"
 
         someone_elses_playlist = yt_oauth.get_playlist(sample_public_playlist)
-        assert not can_edit_playlist(someone_elses_playlist)
+        assert not can_edit_playlist(
+            someone_elses_playlist
+        ), f"Playlist should not be editable: {someone_elses_playlist}"
 
         yt_oauth.rate_song(sample_video, LIKE)
         time.sleep(3)
         liked_music = yt_oauth.get_playlist("LM")  # 'Liked Music'
-        assert can_edit_playlist(liked_music)
+        assert can_edit_playlist(liked_music), f"Playlist should be editable: {liked_music}"
         yt_oauth.rate_song(sample_video, INDIFFERENT)
 
 
