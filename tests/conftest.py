@@ -333,10 +333,10 @@ def fixture_get_playlist_with_dupes(yt_oauth: YTMusic, sample_song_list_dupes):
 
 @pytest.fixture(name="add_history_items")
 def fixture_add_history_items(yt_oauth: YTMusic, sample_long_song_list):
-    timestamp = yt_oauth.get_signatureTimestamp()
     num_songs_added = 0
+    print(f"total songs to be added to history: {len(sample_long_song_list)}")
     for song in sample_long_song_list:
-        song = yt_oauth.get_song(song, timestamp)
+        song = yt_oauth.get_song(song, yt_oauth.get_signatureTimestamp())
         try:
             response = yt_oauth.add_history_item(song)
             response.raise_for_status()
@@ -345,4 +345,6 @@ def fixture_add_history_items(yt_oauth: YTMusic, sample_long_song_list):
             continue
         assert response.status_code == 204
         num_songs_added += 1
+        print(f"total songs added to history so far: {num_songs_added}")
+    print(f"{num_songs_added} were added to history successfully")
     return num_songs_added
