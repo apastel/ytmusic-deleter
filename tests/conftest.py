@@ -56,9 +56,9 @@ def fixture_sample_long_playlist() -> str:
 
 
 @pytest.fixture(name="sample_long_song_list")
-def fixture_sample_long_song_list(yt_oauth: YTMusic, sample_long_playlist: str) -> List[str]:
+def fixture_sample_long_song_list(yt_oauth: YTMusic, sample_long_playlist: str) -> set[str]:
     playlist_items = yt_oauth.get_playlist(sample_long_playlist, limit=None)
-    return [track["videoId"] for track in playlist_items["tracks"]]
+    return {track["videoId"] for track in playlist_items["tracks"]}
 
 
 @pytest.fixture(name="sample_song_list_dupes")
