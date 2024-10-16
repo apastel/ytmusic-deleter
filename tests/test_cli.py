@@ -118,6 +118,7 @@ class TestCli:
         assert result.exit_code == 0
 
     def test_delete_playlist_duplicates(self, yt_oauth: YTMusic, create_playlist_with_dupes):
+        time.sleep(3)  # wait for playlist to be created
         playlist = yt_oauth.get_playlist(create_playlist_with_dupes)
         assert 3 == len(
             check_for_duplicates(playlist, yt_oauth)
@@ -129,6 +130,7 @@ class TestCli:
         print(result.stdout)
         assert result.exit_code == 0
 
+        time.sleep(3)  # wait for tracks to have been deleted
         processed_playlist = yt_oauth.get_playlist(create_playlist_with_dupes, limit=None)
         assert 2 == len(
             check_for_duplicates(processed_playlist, yt_oauth)
