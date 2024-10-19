@@ -462,6 +462,47 @@ def make_sort_key(track):
 def remove_duplicates(ctx: click.Context, playlist_title, exact):
     """Delete all duplicates in a given playlist"""
     yt_auth: YTMusic = ctx.obj["YT_AUTH"]
+    playlist = get_playlist_from_title(yt_auth, playlist_title)
+
+    # Get a list of all the sets of duplicates
+    duplicates = check_for_duplicates(playlist)
+    if not duplicates:
+        logging.info("No duplicates found. If you think this is an error open an issue on GitHub or message on Discord")
+        return
+    # For each dupe group, remove all but the first song
+    items_to_remove, _ = determine_tracks_to_remove(duplicates)
+    if not items_to_remove:
+        logging.info("Finished: No duplicate tracks were marked for deletion.")
+        return
+    logging.info(f"Removing {len(items_to_remove)} tracks total.")
+    playlist_id = playlist.get("id")
+    if playlist_id == "LM":
+        for song in items_to_remove:
+            yt_auth.rate_song(song["videoId"], INDIFFERENT)
+    else:
+        yt_auth.remove_playlist_items(playlist_id, items_to_remove)
+    logging.info("Finished removing duplicate tracks.")
+
+
+@cli.command
+@click.argument("playlist_title")
+@click.option("--library", "-l", is_flag=True, help="Add all library songs to a playlist")
+@click.option("--uploads", "-u", is_flag=True, help="Add all uploaded songs to a playlist")
+@click.pass_context
+def add_all_to_playlist(ctx: click.Context, playlist_title, library, uploads):
+    if not (library or uploads):
+        raise click.BadParameter("You must specify either --library or --uploads.")
+
+    yt_auth: YTMusic = ctx.obj["YT_AUTH"]
+    playlist = get_playlist_from_title(yt_auth, playlist_title)
+    video_ids = [
+        song.get("videoId")
+        for song in (yt_auth.get_library_songs(limit=None) if library else yt_auth.get_library_upload_songs(limit=None))
+    ]
+    yt_auth.add_playlist_items(playlist.get("id"), video_ids)
+
+
+def get_playlist_from_title(yt_auth: YTMusic, playlist_title: str) -> dict:
     # Get all playlists
     all_playlists = yt_auth.get_library_playlists(limit=None)
     # Get the ID of the matching playlist
@@ -481,24 +522,7 @@ def remove_duplicates(ctx: click.Context, playlist_title, exact):
     playlist: dict = yt_auth.get_playlist(selected_playlist_id)
     if not can_edit_playlist(playlist):
         raise click.BadParameter(f"Cannot modify playlist {playlist_title!r}. You are not the owner of this playlist.")
-
-    # Get a list of all the sets of duplicates
-    duplicates = check_for_duplicates(playlist)
-    if not duplicates:
-        logging.info("No duplicates found. If you think this is an error open an issue on GitHub or message on Discord")
-        return
-    # For each dupe group, remove all but the first song
-    items_to_remove, _ = determine_tracks_to_remove(duplicates)
-    if not items_to_remove:
-        logging.info("Finished: No duplicate tracks were marked for deletion.")
-        return
-    logging.info(f"Removing {len(items_to_remove)} tracks total.")
-    if playlist.get("id") == "LM":
-        for song in items_to_remove:
-            yt_auth.rate_song(song["videoId"], INDIFFERENT)
-    else:
-        yt_auth.remove_playlist_items(selected_playlist_id, items_to_remove)
-    logging.info("Finished removing duplicate tracks.")
+    return playlist
 
 
 def update_progress():
