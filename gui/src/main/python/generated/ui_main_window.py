@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'main_window.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.6.3
+## Created by: Qt User Interface Compiler version 6.8.0
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -126,6 +126,11 @@ class Ui_MainWindow(object):
         font3 = QFont()
         font3.setPointSize(8)
         self.removeDupesButton.setFont(font3)
+        self.addAllToPlaylistButton = QPushButton(self.centralWidget)
+        self.addAllToPlaylistButton.setObjectName(u"addAllToPlaylistButton")
+        self.addAllToPlaylistButton.setEnabled(True)
+        self.addAllToPlaylistButton.setGeometry(QRect(280, 240, 101, 41))
+        self.addAllToPlaylistButton.setFont(font3)
         MainWindow.setCentralWidget(self.centralWidget)
         self.menubar = QMenuBar(MainWindow)
         self.menubar.setObjectName(u"menubar")
@@ -151,6 +156,7 @@ class Ui_MainWindow(object):
         self.sortPlaylistButton.setDefault(False)
         self.deleteHistoryButton.setDefault(False)
         self.removeDupesButton.setDefault(False)
+        self.addAllToPlaylistButton.setDefault(False)
 
 
         QMetaObject.connectSlotsByName(MainWindow)
@@ -201,6 +207,10 @@ class Ui_MainWindow(object):
         self.removeDupesButton.setStatusTip(QCoreApplication.translate("MainWindow", u"Remove duplicate tracks in a playlist.", None))
 #endif // QT_CONFIG(statustip)
         self.removeDupesButton.setText(QCoreApplication.translate("MainWindow", u"Remove Duplicates", None))
+#if QT_CONFIG(statustip)
+        self.addAllToPlaylistButton.setStatusTip(QCoreApplication.translate("MainWindow", u"Add all library songs or uploads to a playlist.", None))
+#endif // QT_CONFIG(statustip)
+        self.addAllToPlaylistButton.setText(QCoreApplication.translate("MainWindow", u"Add All to Playlist", None))
         self.menuSettings.setTitle(QCoreApplication.translate("MainWindow", u"File", None))
     # retranslateUi
 
