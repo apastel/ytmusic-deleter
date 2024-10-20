@@ -495,14 +495,27 @@ def add_all_to_playlist(ctx: click.Context, playlist_title, library, uploads):
 
     yt_auth: YTMusic = ctx.obj["YT_AUTH"]
     playlist = get_playlist_from_title(yt_auth, playlist_title)
-    video_ids = [
-        song.get("videoId")
-        for song in (yt_auth.get_library_songs(limit=None) if library else yt_auth.get_library_upload_songs(limit=None))
-    ]
+    if library:
+        logging.info("User has selected 'Library' option. Retrieving all library songs...")
+        library_songs = yt_auth.get_library_songs(limit=None)
+        logging.info(f"Retrieved {len(library_songs)} library songs.")
+        video_ids = [song.get("videoId") for song in library_songs]
+    elif uploads:
+        logging.info("User has selected 'Uploads' option. Retriving all uploaded songs...")
+        uploaded_songs = yt_auth.get_library_upload_songs(limit=None)
+        logging.info(f"Retrieved {len(uploaded_songs)} uploaded songs.")
+        video_ids = [song.get("videoId") for song in uploaded_songs]
+
+    logging.info(f"Preparing to add all {len(video_ids)} songs to playlist {playlist.get('title')!r}.")
     yt_auth.add_playlist_items(playlist.get("id"), video_ids)
+    logging.info(f"Finished adding {len(video_ids)} songs to playlist {playlist.get('title')!r}.")
 
 
 def get_playlist_from_title(yt_auth: YTMusic, playlist_title: str) -> dict:
+    """
+    Takes the given playlist title string and returns the full dict object for that playlist.
+    Raises an error if the playlist is not modifiable.
+    """
     # Get all playlists
     all_playlists = yt_auth.get_library_playlists(limit=None)
     # Get the ID of the matching playlist
@@ -520,8 +533,12 @@ def get_playlist_from_title(yt_auth: YTMusic, playlist_title: str) -> dict:
             '(or surround it "with quotes") and try again.'
         )
     playlist: dict = yt_auth.get_playlist(selected_playlist_id)
+    playlist_title_formatted = playlist.get("title")
+    logging.info(f"Retrieved playlist named {playlist_title_formatted!r} with {len(playlist.get('tracks'))} tracks.")
     if not can_edit_playlist(playlist):
-        raise click.BadParameter(f"Cannot modify playlist {playlist_title!r}. You are not the owner of this playlist.")
+        raise click.BadParameter(
+            f"Cannot modify playlist {playlist_title_formatted!r}. You are not the owner of this playlist."
+        )
     return playlist
 
 
