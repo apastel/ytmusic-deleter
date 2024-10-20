@@ -135,3 +135,16 @@ class TestCli:
         assert 2 == len(
             check_for_duplicates(processed_playlist, yt_oauth)
         ), "Playlist contained wrong number of remaining duplicates"
+
+    def test_add_all_library_songs_to_playlist(
+        self, yt_oauth: YTMusic, get_playlist_with_dupes: str, add_library_album
+    ):
+        assert 13 == len(yt_oauth.get_playlist(get_playlist_with_dupes).get("tracks"))
+        runner = CliRunner()
+        result = runner.invoke(
+            cli, ["add-all-to-playlist", "--library", "Test Dupes"], standalone_mode=False, obj=yt_oauth
+        )
+        print(result.stdout)
+        time.sleep(3)
+        assert 30 <= len(yt_oauth.get_playlist(get_playlist_with_dupes).get("tracks"))
+        assert result.exit_code == 0

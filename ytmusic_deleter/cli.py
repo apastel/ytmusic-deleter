@@ -490,6 +490,7 @@ def remove_duplicates(ctx: click.Context, playlist_title, exact):
 @click.option("--uploads", "-u", is_flag=True, help="Add all uploaded songs to a playlist")
 @click.pass_context
 def add_all_to_playlist(ctx: click.Context, playlist_title, library, uploads):
+    """Add all library songs or uploaded songs to a playlist."""
     if not (library or uploads):
         raise click.BadParameter("You must specify either --library or --uploads.")
 
@@ -499,12 +500,18 @@ def add_all_to_playlist(ctx: click.Context, playlist_title, library, uploads):
         logging.info("User has selected 'Library' option. Retrieving all library songs...")
         library_songs = yt_auth.get_library_songs(limit=None)
         logging.info(f"Retrieved {len(library_songs)} library songs.")
-        video_ids = [song.get("videoId") for song in library_songs]
+        songs_to_add = library_songs
     elif uploads:
         logging.info("User has selected 'Uploads' option. Retriving all uploaded songs...")
         uploaded_songs = yt_auth.get_library_upload_songs(limit=None)
         logging.info(f"Retrieved {len(uploaded_songs)} uploaded songs.")
-        video_ids = [song.get("videoId") for song in uploaded_songs]
+        songs_to_add = uploaded_songs
+    video_ids = []
+    for song in songs_to_add:
+        if "videoId" in song:
+            video_ids.append(song["videoId"])
+        else:
+            logging.warning(f"Warning: 'videoId' not found for {song.get('title')!r}, cannot add to playlist:", song)
 
     logging.info(f"Preparing to add all {len(video_ids)} songs to playlist {playlist.get('title')!r}.")
     yt_auth.add_playlist_items(playlist.get("id"), video_ids)
