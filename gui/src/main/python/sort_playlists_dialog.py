@@ -12,7 +12,6 @@ class SortPlaylistsDialog(QDialog, Ui_PlaylistSelectionDialog):
         self.setupUi(self)
 
         self.setWindowTitle("Select Playlist(s) to Sort")
-        self.buttonBox.button(QDialogButtonBox.Ok).setText("Next")
         self.radioButtonLabel.setVisible(False)
         self.radioButtonLibrary.setVisible(False)
         self.radioButtonUploads.setVisible(False)

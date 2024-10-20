@@ -11,7 +11,6 @@ class AddAllToPlaylistDialog(QDialog, Ui_PlaylistSelectionDialog):
         self.setupUi(self)
 
         self.setWindowTitle("Select Playlist to Add All Songs To")
-        # self.buttonBox.button(QDialogButtonBox.Ok).setText("Next")
         self.enable_ok_button()
         self.playlistList.itemSelectionChanged.connect(self.enable_ok_button)
         self.shuffleCheckBox.hide()
