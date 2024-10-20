@@ -64,6 +64,63 @@
     <string>Shuffle</string>
    </property>
   </widget>
+  <widget class="QRadioButton" name="radioButtonLibrary">
+   <property name="enabled">
+    <bool>true</bool>
+   </property>
+   <property name="geometry">
+    <rect>
+     <x>50</x>
+     <y>270</y>
+     <width>82</width>
+     <height>17</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Library</string>
+   </property>
+   <attribute name="buttonGroup">
+    <string notr="true">radioButtonGroup</string>
+   </attribute>
+  </widget>
+  <widget class="QRadioButton" name="radioButtonUploads">
+   <property name="enabled">
+    <bool>true</bool>
+   </property>
+   <property name="geometry">
+    <rect>
+     <x>110</x>
+     <y>270</y>
+     <width>82</width>
+     <height>17</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Uploads</string>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <attribute name="buttonGroup">
+    <string notr="true">radioButtonGroup</string>
+   </attribute>
+  </widget>
+  <widget class="QLabel" name="radioButtonLabel">
+   <property name="enabled">
+    <bool>true</bool>
+   </property>
+   <property name="geometry">
+    <rect>
+     <x>60</x>
+     <y>250</y>
+     <width>111</width>
+     <height>20</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Add all songs from...</string>
+   </property>
+  </widget>
  </widget>
  <resources/>
  <connections>
@@ -100,4 +157,7 @@
    </hints>
   </connection>
  </connections>
+ <buttongroups>
+  <buttongroup name="radioButtonGroup"/>
+ </buttongroups>
 </ui>

@@ -13,6 +13,7 @@ from time import strftime
 from typing import List
 
 import requests
+from add_all_to_playlist_dialog import AddAllToPlaylistDialog
 from fbs_runtime import PUBLIC_SETTINGS
 from fbs_runtime.application_context import cached_property
 from fbs_runtime.application_context import is_frozen
@@ -110,6 +111,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.deleteAllButton.clicked.connect(self.prepare_to_invoke)
         self.sortPlaylistButton.clicked.connect(self.prepare_to_invoke)
         self.removeDupesButton.clicked.connect(self.prepare_to_invoke)
+        self.addAllToPlaylistButton.clicked.connect(self.prepare_to_invoke)
 
         # Create donate button
         self.donateLabel = ClickableLabel(self.centralWidget, "https://www.buymeacoffee.com/jewbix.cube")
@@ -224,6 +226,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.deleteAllButton.setEnabled(is_signed_in)
         self.sortPlaylistButton.setEnabled(is_signed_in)
         self.removeDupesButton.setEnabled(is_signed_in)
+        self.addAllToPlaylistButton.setEnabled(is_signed_in)
 
     @Slot()
     def account_button_clicked(self):
@@ -289,6 +292,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             elif args[0] == "remove-duplicates":
                 self.remove_duplicates_dialog = RemoveDuplicatesDialog(self)
                 self.remove_duplicates_dialog.show()
+
+            elif args[0] == "add-all-to-playlist":
+                self.add_all_to_playlist_dialog = AddAllToPlaylistDialog(self)
+                self.add_all_to_playlist_dialog.show()
 
             else:
                 self.message("Showing confirmation dialog")

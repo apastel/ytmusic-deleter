@@ -506,6 +506,10 @@ def add_all_to_playlist(ctx: click.Context, playlist_title, library, uploads):
         uploaded_songs = yt_auth.get_library_upload_songs(limit=None)
         logging.info(f"Retrieved {len(uploaded_songs)} uploaded songs.")
         songs_to_add = uploaded_songs
+
+    if not songs_to_add:
+        raise ValueError("No songs were found to add to the playlist.")
+
     video_ids = []
     for song in songs_to_add:
         if "videoId" in song:
@@ -514,7 +518,10 @@ def add_all_to_playlist(ctx: click.Context, playlist_title, library, uploads):
             logging.warning(f"Warning: 'videoId' not found for {song.get('title')!r}, cannot add to playlist:", song)
 
     logging.info(f"Preparing to add all {len(video_ids)} songs to playlist {playlist.get('title')!r}.")
-    yt_auth.add_playlist_items(playlist.get("id"), video_ids)
+    response = yt_auth.add_playlist_items(playlist.get("id"), video_ids, duplicates=True)
+    if "status" not in response or "STATUS_SUCCEEDED" not in response.get("status"):
+        logging.error(response)
+        raise RuntimeError("API did not return a success message. See response object above.")
     logging.info(f"Finished adding {len(video_ids)} songs to playlist {playlist.get('title')!r}.")
 
 
