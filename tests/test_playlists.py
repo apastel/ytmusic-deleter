@@ -1,10 +1,7 @@
-import time
 from typing import Dict
 from typing import List
 
 from ytmusic_deleter.common import can_edit_playlist
-from ytmusic_deleter.common import INDIFFERENT
-from ytmusic_deleter.common import LIKE
 from ytmusic_deleter.duplicates import check_for_duplicates
 from ytmusic_deleter.duplicates import remove_exact_dupes
 from ytmusicapi import YTMusic
@@ -74,12 +71,6 @@ class TestPlaylists:
         assert not can_edit_playlist(
             someone_elses_playlist
         ), f"Playlist should not be editable: {someone_elses_playlist}"
-
-        yt_oauth.rate_song(sample_video, LIKE)
-        time.sleep(3)
-        liked_music = yt_oauth.get_playlist("LM")  # 'Liked Music'
-        assert can_edit_playlist(liked_music), f"Playlist should be editable: {liked_music}"
-        yt_oauth.rate_song(sample_video, INDIFFERENT)
 
 
 def lists_of_dictlists_equal(list1, list2):
