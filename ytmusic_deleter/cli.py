@@ -360,7 +360,7 @@ def delete_all(ctx: click.Context):
 @cli.command()
 @click.argument("playlist_titles", nargs=-1, required=True)
 @click.option("--shuffle", "-s", is_flag=True, help="Shuffle the playlist(s) instead of sorting.")
-@click.option("--custom-sort", "-c", multiple=True, help="Enable custom sorting")
+@click.option("--custom-sort", "-c", multiple=True, metavar="ATTRIBUTE", help="Enable custom sorting")
 @click.option("--reverse", "-r", is_flag=True, help="Reverse the entire playlist after sorting")
 @click.pass_context
 def sort_playlist(ctx: click.Context, shuffle, playlist_titles, custom_sort, reverse):

@@ -38,7 +38,16 @@ but may find inaccurrate matches in its current experimental state. Use the `--s
 #### Non-deletion commands:
 `sort-playlist`:&nbsp;&nbsp;&nbsp;&nbsp;Sort a playlist alphabetically by artist and then by song title.
 
->Use the `--shuffle` or `-s` option to shuffle the playlist instead of sorting it.
+>Use the `--shuffle` or `-s` option to shuffle the playlist instead of sorting it.  
+Use `--custom-sort` or `-c` to define custom sort parameters Available parameters are: `artist`, `album_title`, `track_title`, and `duration`. See below for examples.  
+Use `--reverse` to reverse the sort order.
+
+`remove-duplicates`:&nbsp;&nbsp;&nbsp;&nbsp;Remove duplicate tracks from a particular playlist.
+
+>Use the `--exact` or `-e` option to only remove exact duplicates. This will skip the portion
+that checks for duplicates that are similar matches but not the same exact track.
+
+`add-all-to-playlist`:&nbsp;&nbsp;&nbsp;&nbsp;Add all library songs or uploads to a particular playlist.
 #### Examples
 
 Getting help:
@@ -75,9 +84,24 @@ Remove everything (uploads, library tracks, playlists, and unlike all songs):
 ```
 ytmusic-deleter delete-all
 ```
-Sort a playlist called **Workout Jams**:
+Sort a playlist called **Workout Jams** using the default settings (sorts by artist then album title):
 ```
 ytmusic-deleter sort-playlist "workout jams"
+```
+
+Sort a playlist using custom sorting attributes (attributes are applied in order):
+```
+ytmusic-deleter sort-playlist "workout jams" --custom-sort artist --custom-sort album_title --custom-sort track_title
+```
+
+Remove duplicate tracks from a playlist called "Focus"
+```
+ytmusic-deleter remove-duplicates focus
+```
+
+Add all uploads to a playlist called "All my uploads"
+```
+ytmusic-deleter add-all-to-playlist "All my uploads" --uploads
 ```
 
 #### Extra options
