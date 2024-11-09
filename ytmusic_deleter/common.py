@@ -8,6 +8,7 @@ UNKNOWN_ALBUM = "Unknown Album"
 ARTIST_NAME_SCORE_CUTOFF = 90
 PARENTHETICALS_REGEX = r"\s*\([^)]*\)$|\s*\[[^)]*\]$|[^\w\s]"
 EXTRA_WHITESPACE_REGEX = r"\s+"
+SORTABLE_ATTRIBUTES = ["artist", "album_title", "track_title", "duration"]
 
 
 def strip_parentheticals(input_str: str) -> str:

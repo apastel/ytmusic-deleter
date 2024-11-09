@@ -13,6 +13,7 @@ from ytmusic_deleter._version import __version__
 from ytmusic_deleter.auth import ensure_auth
 from ytmusic_deleter.common import can_edit_playlist
 from ytmusic_deleter.common import INDIFFERENT
+from ytmusic_deleter.common import SORTABLE_ATTRIBUTES
 from ytmusic_deleter.common import UNKNOWN_ARTIST
 from ytmusic_deleter.duplicates import check_for_duplicates
 from ytmusic_deleter.duplicates import determine_tracks_to_remove
@@ -359,9 +360,15 @@ def delete_all(ctx: click.Context):
 @cli.command()
 @click.argument("playlist_titles", nargs=-1, required=True)
 @click.option("--shuffle", "-s", is_flag=True, help="Shuffle the playlist(s) instead of sorting.")
+@click.option("--custom-sort", "-c", multiple=True, help="Enable custom sorting")
+@click.option("--reverse", "-r", is_flag=True, help="Reverse the entire playlist after sorting")
 @click.pass_context
-def sort_playlist(ctx: click.Context, shuffle, playlist_titles):
+def sort_playlist(ctx: click.Context, shuffle, playlist_titles, custom_sort, reverse):
     """Sort or shuffle one or more playlists alphabetically by artist and by album"""
+    invalid_keys = [attr for attr in custom_sort if attr not in SORTABLE_ATTRIBUTES]
+    if invalid_keys:
+        raise ValueError(f"Invalid sort option(s): {', '.join(invalid_keys)}")
+
     yt_auth: YTMusic = ctx.obj["YT_AUTH"]
     all_playlists = yt_auth.get_library_playlists(limit=None)
     lowercase_playlist_titles = [title.lower() for title in playlist_titles]
@@ -380,7 +387,9 @@ def sort_playlist(ctx: click.Context, shuffle, playlist_titles):
             desired_tracklist = [t for t in playlist["tracks"]]
             unsort(desired_tracklist)
         else:
-            desired_tracklist = [t for t in sorted(playlist["tracks"], key=lambda t: make_sort_key(t))]
+            desired_tracklist = [
+                t for t in sorted(playlist["tracks"], key=lambda t: make_sort_key(t, custom_sort), reverse=reverse)
+            ]
 
         global progress_bar
         progress_bar = manager.counter(
@@ -443,16 +452,20 @@ def sort_playlist(ctx: click.Context, shuffle, playlist_titles):
         )
 
 
-def make_sort_key(track):
-    try:
-        artists = track["artists"]
-        artist = artists[0]["name"].lower() if artists else "z"
-        album = track["album"]
-        album_title = album["name"] if album else "z"
-        return (re.sub(r"^(the |a )", "", artist), album_title, track["title"])
-    except Exception:
-        logging.exception(f"Track {track} could not be sorted.")
-        raise
+def make_sort_key(track, sort_attributes):
+    artists = track["artists"]
+    artist = artists[0]["name"].lower() if artists else "z"
+    artist = re.sub(r"^(the |a )", "", artist)
+    album = track["album"]
+    album_title = album["name"].lower() if album else "z"
+    album_title = re.sub(r"^(the |a )", "", album_title)
+    track_title = track["title"]
+    duration = track.get("duration_seconds", 0)  # noqa: F841
+
+    if sort_attributes:
+        return tuple([locals()[attr] for attr in sort_attributes])
+    else:
+        return (artist, album_title, track_title)
 
 
 @cli.command()

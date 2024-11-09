@@ -465,6 +465,7 @@ class AppContext(ApplicationContext):
 
     def run(self):
         self.window.show()
+        self.app.setStyle("Fusion")
         return self.app.exec()
 
 
