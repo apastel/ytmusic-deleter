@@ -72,6 +72,8 @@ class SortPlaylistsDialog(QDialog, Ui_SortPlaylistDialog):
 
     @Slot()
     def shuffle_checked(self):
+        self.availableAttributesListWidget.clearSelection()
+        self.selectedAttributesListWidget.clearSelection()
         self.availableAttributesListWidget.setDisabled(self.shuffleCheckBox.isChecked())
         self.selectedAttributesListWidget.setDisabled(self.shuffleCheckBox.isChecked())
         self.addButton.setDisabled(self.shuffleCheckBox.isChecked())
