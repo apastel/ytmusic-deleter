@@ -190,7 +190,14 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             return False
 
         # Display account name in popover
-        account_info: dict = self.ytmusic.get_account_info()
+        try:
+            account_info: dict = self.ytmusic.get_account_info()
+        except Exception as e:
+            message = "Failed to get user's account info. Clearing login state then log back in."
+            self.message(message + "\n" + str(e))
+            logging.exception(message, e)
+            self.sign_out()
+            return False
         account_name = account_info["accountName"]
         self.accountNameLabel.setText(account_name)
         channel_handle = account_info["channelHandle"]
@@ -213,9 +220,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.message(f"Signed in as {account_name!r}")
         return True
 
-    def update_buttons(self):
+    def update_buttons(self, display_message=True):
         """Update the display status of the buttons when initializing or signing in/out"""
-        is_signed_in = self.is_signed_in(display_message=True)
+        is_signed_in = self.is_signed_in(display_message)
         self.accountPhotoButton.setVisible(is_signed_in)
         self.signInButton.setVisible(not is_signed_in)
         self.removeLibraryButton.setEnabled(is_signed_in)
@@ -243,7 +250,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.accountWidget.hide()
         self.accountPhotoButton.hide()
         self.signInButton.show()
-        self.update_buttons()
+        self.update_buttons(False)
 
     @Slot()
     def prompt_for_auth(self):
@@ -271,8 +278,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 self.message("Successfully signed in.")
             else:
                 self.message("Failed to sign in. Try again.")
-        except Exception:
-            self.message("Failed to sign in. Try again.")
+        except Exception as e:
+            logging.exception(e)
+            self.message("Failed to sign in. Try again.\n" + str(e))
 
         self.update_buttons()
 
