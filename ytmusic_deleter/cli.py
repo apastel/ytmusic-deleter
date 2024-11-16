@@ -60,7 +60,11 @@ def cli(ctx, log_dir, credential_dir, static_progress, no_logfile, verbose, oaut
         handlers=handlers,
     )
 
-    yt_auth: YTMusic = ensure_auth(credential_dir, oauth)
+    if ctx.obj is not None:
+        # Allows yt_auth to be provided by pytest
+        yt_auth: YTMusic = ctx.obj
+    else:
+        yt_auth: YTMusic = ensure_auth(credential_dir, oauth)
     ctx.ensure_object(dict)
     ctx.obj["STATIC_PROGRESS"] = static_progress
     ctx.obj["YT_AUTH"] = yt_auth
