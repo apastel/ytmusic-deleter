@@ -47,14 +47,15 @@ Find the .exe (or .deb) file in the [Releases](https://github.com/apastel/ytmusi
 See [CLI README](ytmusic_deleter/README.md) 
 
 ## Setup
-Once installed and running, simply click the "Log In" button to authenticate to your YouTube Music account.
-You will see your Google account name and profile photo to ensure you are logged into the correct account.
+Once installed and running, click the "Sign In" button to authenticate to your YouTube Music account.
 
-This login process uses the [Google API flow for TV devices](https://developers.google.com/youtube/v3/guides/auth/devices)
-and is handled by the [ytmusicapi](https://ytmusicapi.readthedocs.io/en/stable/setup/oauth.html), which handles all of the
-API interaction in this app.
+Since Google has removed the ability to sign in using OAuth, you must now sign in using a cookie from your browser.
 
-[Video Tutorial](https://youtu.be/oV-yLi1AW1c) on using YT Music Deleter
+Follow the instructions in the [ytmusicapi](https://ytmusicapi.readthedocs.io/en/stable/setup/browser.html#copy-authentication-headers)
+project to copy your request headers to your clipboard. Then paste them into the window in YTMusic Deleter.
+> Note: It's recommended to use Firefox for copying the headers since Firefox conveniently has a "Copy Request Headers" button.
+
+[Video Tutorial](https://youtu.be/oV-yLi1AW1c) on using YTMusic Deleter
 
 
 ## Troubleshooting

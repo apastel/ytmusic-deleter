@@ -14,10 +14,26 @@ This is the command-line interface for ytmusic-deleter. For the graphical Window
 The CLI version of ytmusic-deleter is for advanced users who would rather use a command-line or are running macOS.
 > For the graphical Windows .exe edition (or Linux), visit the [main page](https://github.com/apastel/ytmusic-deleter)
 
-Installtion instructions of this command-line interface:
+Installation instructions of this command-line interface:
 1. Install [Python](https://www.python.org/downloads/). Make sure it is available on your PATH.
 1. Open a command prompt and type `pip install ytmusic-deleter`. Use a [virtual environment](https://virtualenv.pypa.io/en/latest/) if you're familiar with the process.
 1. Run ytmusic-deleter by simply entering `ytmusic-deleter` at the command line.
+
+## Authentication (Browser)
+
+The first time you run ytmusic-deleter, you will be asked to paste your request headers from your browser.
+This allows ytmusic-deleter to make requests against your music library. To copy your request headers follow the
+instructions from the [ytmusicapi docs](https://ytmusicapi.readthedocs.io/en/stable/setup/browser.html) under "Copy authentication headers".
+
+```sh
+$ ytmusic-deleter whoami
+[2024-11-16 12:51:05] Attempting authentication with: C:\Users\<username>\AppData\Roaming\YTMusic_Deleter\browser.json
+[2024-11-16 12:51:05] Creating file: browser.json
+Please paste the request headers from Firefox and press 'Enter, Ctrl-Z, Enter' to continue:
+```
+> If you are running macOS, please see the [special pasting instructions](https://ytmusicapi.readthedocs.io/en/stable/setup/browser.html#using-the-headers-in-your-project)
+in the "MacOS special pasting instructions" section of the ytmusicapi docs.
+
 
 ### Usage
 When you run `ytmusic-deleter` with no parameters, you will see see the usage information. There are several commands available.
