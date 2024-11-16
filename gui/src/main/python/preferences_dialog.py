@@ -11,6 +11,7 @@ class PreferencesDialog(QDialog, Ui_PreferencesDialog):
         self.setupUi(self)
 
         self.verboseCheckBox.setChecked(parent.settings.value("verbose_logging", False, type=bool))
+        self.oauthCheckbox.setChecked(parent.settings.value("oauth_enabled", False, type=bool))
 
     def accept(self) -> None:
         self.save_settings_signal.emit(True)

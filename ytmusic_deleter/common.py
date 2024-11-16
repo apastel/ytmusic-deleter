@@ -2,6 +2,7 @@ import re
 
 LIKE = "LIKE"
 INDIFFERENT = "INDIFFERENT"
+BROWSER_FILENAME = "browser.json"
 OAUTH_FILENAME = "oauth.json"
 UNKNOWN_ARTIST = "Unknown Artist"
 UNKNOWN_ALBUM = "Unknown Album"

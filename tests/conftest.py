@@ -56,8 +56,8 @@ def fixture_sample_long_playlist() -> str:
 
 
 @pytest.fixture(name="sample_long_song_list")
-def fixture_sample_long_song_list(yt_oauth: YTMusic, sample_long_playlist: str) -> set[str]:
-    playlist_items = yt_oauth.get_playlist(sample_long_playlist, limit=None)
+def fixture_sample_long_song_list(yt_browser: YTMusic, sample_long_playlist: str) -> set[str]:
+    playlist_items = yt_browser.get_playlist(sample_long_playlist, limit=None)
     return {track["videoId"] for track in playlist_items["tracks"]}
 
 
@@ -220,14 +220,14 @@ def fixture_upload_song(config, yt_browser: YTMusic) -> Dict | None:
 
 
 @pytest.fixture(name="add_library_album")
-def fixture_add_library_album(yt_oauth: YTMusic, sample_album_as_playlist):
-    response = yt_oauth.rate_playlist(sample_album_as_playlist, const.LIKE)
+def fixture_add_library_album(yt_browser: YTMusic, sample_album_as_playlist):
+    response = yt_browser.rate_playlist(sample_album_as_playlist, const.LIKE)
     assert "actions" in response
 
     # Wait for album to finish processing
     retries_remaining = 5
     while retries_remaining:
-        albums = yt_oauth.get_library_albums(limit=None)
+        albums = yt_browser.get_library_albums(limit=None)
         for album in albums:
             if album.get("title") == "Revival":
                 return album
@@ -238,14 +238,14 @@ def fixture_add_library_album(yt_oauth: YTMusic, sample_album_as_playlist):
 
 
 @pytest.fixture(name="add_podcast")
-def fixture_add_podcast(yt_oauth: YTMusic, sample_podcast):
-    response = yt_oauth.rate_playlist(sample_podcast, const.LIKE)
+def fixture_add_podcast(yt_browser: YTMusic, sample_podcast):
+    response = yt_browser.rate_playlist(sample_podcast, const.LIKE)
     assert "actions" in response
 
     # Wait for podcast to be in library
     retries_remaining = 5
     while retries_remaining:
-        podcasts = yt_oauth.get_library_podcasts(limit=None)
+        podcasts = yt_browser.get_library_podcasts(limit=None)
         for podcast in podcasts:
             if podcast.get("title") == "JRE Archive - Episodes #701 - 1000":
                 return podcast
@@ -256,15 +256,15 @@ def fixture_add_podcast(yt_oauth: YTMusic, sample_podcast):
 
 
 @pytest.fixture(name="like_song")
-def fixture_like_song(yt_oauth: YTMusic, sample_video):
-    response = yt_oauth.rate_song(sample_video, const.LIKE)
+def fixture_like_song(yt_browser: YTMusic, sample_video):
+    response = yt_browser.rate_song(sample_video, const.LIKE)
     assert "actions" in response
 
     # Wait for song to finish processing
     retries_remaining = 5
     song_processed = False
     while retries_remaining and not song_processed:
-        liked_songs = yt_oauth.get_liked_songs(limit=None)
+        liked_songs = yt_browser.get_liked_songs(limit=None)
         for song in liked_songs["tracks"]:
             if song.get("title") == "Wonderwall":
                 yield song
@@ -274,70 +274,70 @@ def fixture_like_song(yt_oauth: YTMusic, sample_video):
         time.sleep(2)
 
     # Remove song from library to clean up
-    yt_oauth.rate_playlist("OLAK5uy_lZ90LvUqQdKrByCbk99v54d8XpUOmFavo", const.INDIFFERENT)
+    yt_browser.rate_playlist("OLAK5uy_lZ90LvUqQdKrByCbk99v54d8XpUOmFavo", const.INDIFFERENT)
 
 
 @pytest.fixture(name="create_playlist")
-def fixture_create_playlist(yt_oauth: YTMusic, sample_public_playlist) -> str:
-    playlist_id = yt_oauth.create_playlist("Test Playlist", "a test playlist", source_playlist=sample_public_playlist)
+def fixture_create_playlist(yt_browser: YTMusic, sample_public_playlist) -> str:
+    playlist_id = yt_browser.create_playlist("Test Playlist", "a test playlist", source_playlist=sample_public_playlist)
     assert isinstance(playlist_id, str)
 
     return playlist_id
 
 
 @pytest.fixture(name="create_playlist_and_delete_after")
-def fixture_create_playlist_and_delete_after(yt_oauth: YTMusic, sample_public_playlist):
-    playlist_id = yt_oauth.create_playlist(
+def fixture_create_playlist_and_delete_after(yt_browser: YTMusic, sample_public_playlist):
+    playlist_id = yt_browser.create_playlist(
         "Test Playlist (to be deleted)", "a test playlist", source_playlist=sample_public_playlist
     )
     assert isinstance(playlist_id, str)
 
     yield playlist_id
 
-    yt_oauth.delete_playlist(playlist_id)
+    yt_browser.delete_playlist(playlist_id)
 
 
 @pytest.fixture(name="create_playlist_with_dupes")
-def fixture_create_playlist_with_dupes(yt_oauth: YTMusic, sample_song_list_dupes):
-    playlist_id = yt_oauth.create_playlist("Test Dupes (to be deleted)", "a test playlist with duplicates")
+def fixture_create_playlist_with_dupes(yt_browser: YTMusic, sample_song_list_dupes):
+    playlist_id = yt_browser.create_playlist("Test Dupes (to be deleted)", "a test playlist with duplicates")
     shuffle(sample_song_list_dupes)
-    yt_oauth.add_playlist_items(playlist_id, sample_song_list_dupes, duplicates=True)
+    yt_browser.add_playlist_items(playlist_id, sample_song_list_dupes, duplicates=True)
 
     yield playlist_id
 
-    yt_oauth.delete_playlist(playlist_id)
+    yt_browser.delete_playlist(playlist_id)
 
 
 @pytest.fixture(name="get_playlist_with_dupes")
-def fixture_get_playlist_with_dupes(yt_oauth: YTMusic, sample_song_list_dupes):
+def fixture_get_playlist_with_dupes(yt_browser: YTMusic, sample_song_list_dupes):
     """
     Useful during development when we don't want to keep creating/deleting
     playlists which causes Google to put us in time-out.
     """
-    playlists = yt_oauth.get_library_playlists()
+    playlists = yt_browser.get_library_playlists()
     dupe_playlist = next((playlist for playlist in playlists if playlist.get("title") == "Test Dupes"), None)
     if dupe_playlist:
         # Delete all songs from playlist
         playlist_id = dupe_playlist.get("playlistId")
-        playlist_items = yt_oauth.get_playlist(playlist_id).get("tracks")
-        response = yt_oauth.remove_playlist_items(playlist_id, playlist_items)
+        playlist_items = yt_browser.get_playlist(playlist_id).get("tracks")
+        response = yt_browser.remove_playlist_items(playlist_id, playlist_items)
         assert "STATUS_SUCCEEDED" == response
     else:
-        playlist_id = yt_oauth.create_playlist("Test Dupes", "a test playlist with duplicates")
+        playlist_id = yt_browser.create_playlist("Test Dupes", "a test playlist with duplicates")
 
     # Add songs to playlist
     shuffle(sample_song_list_dupes)
-    yt_oauth.add_playlist_items(playlist_id, sample_song_list_dupes, duplicates=True)
+    yt_browser.add_playlist_items(playlist_id, sample_song_list_dupes, duplicates=True)
     return playlist_id
 
 
 @pytest.fixture(name="add_history_items")
-def fixture_add_history_items(yt_oauth: YTMusic, sample_long_song_list):
+def fixture_add_history_items(yt_browser: YTMusic, sample_long_song_list):
     num_songs_added = 0
     for song in sample_long_song_list:
-        song = yt_oauth.get_song(song, yt_oauth.get_signatureTimestamp())
+        song = yt_browser.get_song(song, yt_browser.get_signatureTimestamp())
         try:
-            response = yt_oauth.add_history_item(song)
+            response = yt_browser.add_history_item(song)
             response.raise_for_status()
         except Exception as e:
             print(e)
