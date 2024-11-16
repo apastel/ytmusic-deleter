@@ -32,10 +32,6 @@ def ensure_auth(credential_dir, oauth) -> YTMusic:
         yt_auth = YTMusic(auth_file_path)
         logging.info(f'Created: {auth_file_path}"')
     finally:
-        if yt_auth:
-            logging.info(
-                f"Authenticated as {yt_auth.get_account_info().get('accountName')!r}"
-                if oauth
-                else "Successfully authenticated."
-            )
+        if yt_auth and oauth:
+            logging.info(f"Signed in as {yt_auth.get_account_info().get('accountName')!r}")
     return yt_auth
