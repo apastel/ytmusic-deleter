@@ -14,6 +14,7 @@ from typing import List
 
 import requests
 from add_all_to_playlist_dialog import AddAllToPlaylistDialog
+from browser_auth_dialog import BrowserAuthDialog
 from fbs_runtime import PUBLIC_SETTINGS
 from fbs_runtime.application_context import cached_property
 from fbs_runtime.application_context import is_frozen
@@ -41,6 +42,7 @@ from ytmusic_deleter import common as const
 from ytmusicapi import YTMusic
 from ytmusicapi.auth.oauth import OAuthCredentials
 from ytmusicapi.auth.oauth import RefreshingToken
+from ytmusicapi.auth.types import AuthType
 
 
 internal_directory = os.path.dirname(os.path.abspath(__file__))
@@ -61,9 +63,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.move(self.settings.value("mainwindow/pos"))
         except Exception:
             pass
-        self.log_dir = self.settings.value("log_dir", APP_DATA_DIR)
-        self.credential_dir = self.settings.value("credential_dir", APP_DATA_DIR)
-        self.verbose_logging = self.settings.value("verbose_logging", False, type=bool)
+        self.load_settings()
 
         # Ensure directory exists where we're storing logs and writing creds
         Path(self.log_dir).mkdir(parents=True, exist_ok=True)
@@ -181,8 +181,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def is_signed_in(self, display_message=False) -> bool:
         """Check if user is signed in. If true, display their account info."""
         try:
-            # Check for oauth.json
-            self.ytmusic = YTMusic(str(Path(self.credential_dir) / const.OAUTH_FILENAME))
+            # Check for browser.json / oauth.json
+            self.ytmusic = YTMusic(str(Path(self.credential_dir) / self.auth_file_name))
         except JSONDecodeError:
             # User is not signed in
             if display_message:
@@ -190,34 +190,41 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             return False
 
         # Display account name in popover
-        try:
-            account_info: dict = self.ytmusic.get_account_info()
-        except Exception as e:
-            message = "Failed to get user's account info. Clearing login state then log back in."
-            self.message(message + "\n" + str(e))
-            logging.exception(message, e)
-            self.sign_out()
-            return False
-        account_name = account_info["accountName"]
-        self.accountNameLabel.setText(account_name)
-        channel_handle = account_info["channelHandle"]
-        if channel_handle:
-            self.channelHandleLabel.setText(f"({channel_handle})")
+        if self.ytmusic.auth_type in AuthType.oauth_types():
+            try:
+                account_info: dict = self.ytmusic.get_account_info()
+            except Exception as e:
+                message = "Failed to get user's account info. Clearing login state then log back in."
+                self.message(message + "\n" + str(e))
+                logging.exception(message, e)
+                self.sign_out()
+                return False
+            account_name = account_info["accountName"]
+            self.accountNameLabel.setText(account_name)
+            channel_handle = account_info["channelHandle"]
+            if channel_handle:
+                self.channelHandleLabel.setText(f"({channel_handle})")
+            else:
+                self.channelHandleLabel.setText("")
+
+            # Display account photo
+            response = requests.get(account_info["accountPhotoUrl"])
+            pixmap = QPixmap()
+            pixmap.loadFromData(response.content)
+            pixmap = pixmap.scaled(self.accountPhotoButton.size(), Qt.KeepAspectRatio, Qt.SmoothTransformation)
+            photo_path = str(Path(Path(APP_DATA_DIR) / "account_photo.jpg"))
+            pixmap.save(photo_path)
+            background_photo_style = f"\nQPushButton {{ background-image: url({Path(photo_path).as_posix()}); }}"
+            self.accountPhotoButton.setStyleSheet(self.photo_button_stylesheet + background_photo_style)
+
+            if display_message:
+                self.message(f"Signed in as {account_name!r}")
         else:
             self.channelHandleLabel.setText("")
+            self.accountNameLabel.setText("")
+            if display_message:
+                self.message("Signed in.")
 
-        # Display account photo
-        response = requests.get(account_info["accountPhotoUrl"])
-        pixmap = QPixmap()
-        pixmap.loadFromData(response.content)
-        pixmap = pixmap.scaled(self.accountPhotoButton.size(), Qt.KeepAspectRatio, Qt.SmoothTransformation)
-        photo_path = str(Path(Path(APP_DATA_DIR) / "account_photo.jpg"))
-        pixmap.save(photo_path)
-        background_photo_style = f"\nQPushButton {{ background-image: url({Path(photo_path).as_posix()}); }}"
-        self.accountPhotoButton.setStyleSheet(self.photo_button_stylesheet + background_photo_style)
-
-        if display_message:
-            self.message(f"Signed in as {account_name!r}")
         return True
 
     def update_buttons(self, display_message=True):
@@ -245,7 +252,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     @Slot()
     def sign_out(self):
-        Path.unlink(Path(Path(self.credential_dir) / const.OAUTH_FILENAME))
+        Path.unlink(Path(Path(self.credential_dir) / self.auth_file_name))
         self.message("Signed out of YTMusic Deleter.")
         self.accountWidget.hide()
         self.accountPhotoButton.hide()
@@ -254,35 +261,39 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     @Slot()
     def prompt_for_auth(self):
-        oauth = OAuthCredentials()
-        code = oauth.get_code()
-
         self.message("Showing login prompt.")
-        url_prompt = QMessageBox()
-        url_prompt.setIcon(QMessageBox.Information)
-        url = f"{code['verification_url']}?user_code={code['user_code']}"
-        url_prompt.setText(
-            f"<html>Go to <a href={url!r}>{url}</a>, follow the instructions, and click OK in this window when done.</html>"
-        )
-        url_prompt.setInformativeText(
-            "<html>This OAuth flow uses the <a href='https://developers.google.com/youtube/v3/guides/auth/devices'>Google API flow for TV devices</a>.</html>"  # noqa
-        )
-        url_prompt.exec()
+        if self.oauth_enabled:
+            oauth = OAuthCredentials()
+            code = oauth.get_code()
 
-        raw_token = oauth.token_from_code(code["device_code"])
-        try:
-            ref_token = RefreshingToken(credentials=oauth, **raw_token)
-            # store the token in oauth.json
-            ref_token.store_token(Path(Path(self.credential_dir) / const.OAUTH_FILENAME))
-            if self.is_signed_in():
-                self.message("Successfully signed in.")
-            else:
-                self.message("Failed to sign in. Try again.")
-        except Exception as e:
-            logging.exception(e)
-            self.message("Failed to sign in. Try again.\n" + str(e))
+            url_prompt = QMessageBox()
+            url_prompt.setIcon(QMessageBox.Information)
+            url = f"{code['verification_url']}?user_code={code['user_code']}"
+            url_prompt.setText(
+                f"<html>Go to <a href={url!r}>{url}</a>, follow the instructions, and click OK in this window when done.</html>"
+            )
+            url_prompt.setInformativeText(
+                "<html>This OAuth flow uses the <a href='https://developers.google.com/youtube/v3/guides/auth/devices'>Google API flow for TV devices</a>.</html>"  # noqa
+            )
+            url_prompt.exec()
 
-        self.update_buttons()
+            raw_token = oauth.token_from_code(code["device_code"])
+            try:
+                ref_token = RefreshingToken(credentials=oauth, **raw_token)
+                # store the token in oauth.json
+                ref_token.store_token(Path(Path(self.credential_dir) / const.OAUTH_FILENAME))
+                if self.is_signed_in():
+                    self.message("Successfully signed in.")
+                else:
+                    self.message("Failed to sign in. Try again.")
+            except Exception as e:
+                logging.exception(e)
+                self.message("Failed to sign in. Try again.\n" + str(e))
+
+            self.update_buttons()
+        else:
+            self.auth_dialog = BrowserAuthDialog(self)
+            self.auth_dialog.show()
 
     @Slot()
     def prepare_to_invoke(self):
@@ -360,6 +371,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 "-n",
             ]
             + (["-v"] if self.verbose_logging else [])
+            + (["-o"] if self.oauth_enabled else [])
             + args
         )
         self.message(f"Executing process: {CLI_EXECUTABLE} {' '.join(cli_args)}")
@@ -432,13 +444,17 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     @Slot()
     def save_settings(self):
         self.settings.setValue("verbose_logging", self.preferences_dialog.verboseCheckBox.isChecked())
+        self.settings.setValue("oauth_enabled", self.preferences_dialog.oauthCheckbox.isChecked())
         self.load_settings()
 
     def load_settings(self):
         self.log_dir = self.settings.value("log_dir", APP_DATA_DIR)
         self.credential_dir = self.settings.value("credential_dir", APP_DATA_DIR)
         self.verbose_logging = self.settings.value("verbose_logging", False, type=bool)
+        self.oauth_enabled = self.settings.value("oauth_enabled", False, type=bool)
+
         logging.getLogger().setLevel(logging.DEBUG if self.verbose_logging else logging.INFO)
+        self.auth_file_name = const.OAUTH_FILENAME if self.oauth_enabled else const.BROWSER_FILENAME
 
     def log_unhandled_exception(self, exc_type, exc_value, exc_traceback):
         logging.exception("Unhandled exception occurred", exc_info=(exc_type, exc_value, exc_traceback))
