@@ -1,5 +1,5 @@
-import os
 import time
+from pathlib import Path
 
 import pytest
 from click.testing import CliRunner
@@ -157,7 +157,7 @@ class TestCli:
         result = runner.invoke(cli, ["whoami"], obj=yt_browser)
         assert result.exit_code == 0
 
-    def test_oauth(self):
+    def test_oauth(self, browser_filepath):
         with pytest.raises(YTMusicServerError, match="Server returned HTTP 400: Bad Request"):
             # using ensure_auth instead of CliRunner because the latter puts the exception in the return result instead
-            ensure_auth(os.getcwd(), True)
+            ensure_auth(Path(browser_filepath).parent, True)
