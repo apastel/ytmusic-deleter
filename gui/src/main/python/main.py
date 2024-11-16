@@ -30,6 +30,7 @@ from PySide6.QtCore import QRect
 from PySide6.QtCore import QSettings
 from PySide6.QtCore import Qt
 from PySide6.QtCore import Slot
+from PySide6.QtGui import QIcon
 from PySide6.QtGui import QImage
 from PySide6.QtGui import QPixmap
 from PySide6.QtWidgets import QCheckBox
@@ -220,8 +221,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             if display_message:
                 self.message(f"Signed in as {account_name!r}")
         else:
+            pixmap = QPixmap(AppContext._instance.get_resource("person.png"))
+            pixmap = pixmap.scaled(self.accountPhotoButton.size(), Qt.KeepAspectRatio, Qt.SmoothTransformation)
+            icon = QIcon(pixmap)
+            self.accountPhotoButton.setIcon(icon)
+            self.accountPhotoButton.setIconSize(pixmap.size())
+            self.accountNameLabel.setText("Signed in")
             self.channelHandleLabel.setText("")
-            self.accountNameLabel.setText("")
             if display_message:
                 self.message("Signed in.")
 
@@ -461,6 +467,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
 
 class AppContext(ApplicationContext):
+    _instance = None
+
+    def __new__(cls, *args, **kwargs):
+        if cls._instance is None:
+            cls._instance = super().__new__(cls)
+        return cls._instance
+
     @cached_property
     def window(self):
         return MainWindow()
@@ -489,7 +502,6 @@ class AppContext(ApplicationContext):
 
     def run(self):
         self.window.show()
-        self.app.setStyle("Fusion")
         return self.app.exec()
 
 
