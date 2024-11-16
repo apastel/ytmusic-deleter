@@ -9,10 +9,10 @@ from ytmusicapi import YTMusic
 
 class TestPlaylists:
     def test_check_for_duplicates(
-        self, yt_oauth: YTMusic, get_playlist_with_dupes, expected_dupe_groups: List[List[Dict]]
+        self, yt_browser: YTMusic, get_playlist_with_dupes, expected_dupe_groups: List[List[Dict]]
     ):
-        playlist = yt_oauth.get_playlist(get_playlist_with_dupes)
-        duplicate_groups = check_for_duplicates(playlist, yt_oauth)
+        playlist = yt_browser.get_playlist(get_playlist_with_dupes)
+        duplicate_groups = check_for_duplicates(playlist, yt_browser)
 
         assert lists_of_dictlists_equal(expected_dupe_groups, duplicate_groups)
 
@@ -62,12 +62,12 @@ class TestPlaylists:
         assert lists_of_dicts_equal(expected_tracks_to_delete, tracks_to_delete)
 
     def test_can_edit_playlist(
-        self, yt_oauth: YTMusic, create_playlist_and_delete_after: str, sample_public_playlist: str, sample_video: str
+        self, yt_browser: YTMusic, create_playlist_and_delete_after: str, sample_public_playlist: str, sample_video: str
     ):
-        owned_playlist = yt_oauth.get_playlist(create_playlist_and_delete_after)
+        owned_playlist = yt_browser.get_playlist(create_playlist_and_delete_after)
         assert can_edit_playlist(owned_playlist), f"Playlist should be editable: {owned_playlist}"
 
-        someone_elses_playlist = yt_oauth.get_playlist(sample_public_playlist)
+        someone_elses_playlist = yt_browser.get_playlist(sample_public_playlist)
         assert not can_edit_playlist(
             someone_elses_playlist
         ), f"Playlist should not be editable: {someone_elses_playlist}"

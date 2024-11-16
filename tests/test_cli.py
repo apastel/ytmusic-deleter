@@ -44,9 +44,9 @@ class TestCli:
                 return True
         raise AssertionError("Uploaded song was not added to library before deleting")
 
-    def test_remove_library(self, yt_oauth: YTMusic, add_library_album, add_podcast):
+    def test_remove_library(self, yt_browser: YTMusic, add_library_album, add_podcast):
         runner = CliRunner()
-        result = runner.invoke(cli, ["remove-library"], standalone_mode=False, obj=yt_oauth)
+        result = runner.invoke(cli, ["remove-library"], standalone_mode=False, obj=yt_browser)
         print(result.stdout)
         assert result.exit_code == 0
         albums_deleted, albums_total = result.return_value
@@ -55,14 +55,14 @@ class TestCli:
         assert albums_deleted >= 1, f"No library albums were removed. {albums_total} albums were found."
 
         # Verify there are no songs remaining in the library
-        songs_remaining = yt_oauth.get_library_songs(limit=None)
+        songs_remaining = yt_browser.get_library_songs(limit=None)
         assert len(songs_remaining) == 0, f"Not all songs were removed. {len(songs_remaining)} still remain."
 
         # Verify there are no podcasts remaining in the library
         # For some reason podcasts are taking longer to register that they've been deleted, so try it a few times
         retries_remaining = 5
         while retries_remaining:
-            podcasts_remaining = yt_oauth.get_library_podcasts(limit=None)
+            podcasts_remaining = yt_browser.get_library_podcasts(limit=None)
             podcasts_remaining = list(filter(lambda podcast: podcast["channel"]["id"], podcasts_remaining))
             if len(podcasts_remaining) == 0:
                 break
@@ -70,81 +70,81 @@ class TestCli:
             time.sleep(2)
         assert len(podcasts_remaining) == 0, f"Not all podcasts were removed. {len(podcasts_remaining)} still remain."
 
-    def test_unlike_all_songs(self, yt_oauth: YTMusic, like_song):
+    def test_unlike_all_songs(self, yt_browser: YTMusic, like_song):
         assert like_song
         runner = CliRunner()
-        result = runner.invoke(cli, ["unlike-all"], standalone_mode=False, obj=yt_oauth)
+        result = runner.invoke(cli, ["unlike-all"], standalone_mode=False, obj=yt_browser)
         print(result.stdout)
         assert result.exit_code == 0
         songs_unliked, songs_total = result.return_value
         assert songs_unliked >= 1, f"No songs were unliked. {songs_total} liked songs were found in total."
         time.sleep(5)
-        likes_remaining = yt_oauth.get_liked_songs(limit=None)["tracks"]
+        likes_remaining = yt_browser.get_liked_songs(limit=None)["tracks"]
         assert len(likes_remaining) == 0, f"There were still {len(likes_remaining)} liked songs remaining"
 
-    def test_delete_history(self, yt_oauth: YTMusic, add_history_items):
+    def test_delete_history(self, yt_browser: YTMusic, add_history_items):
         runner = CliRunner()
-        result = runner.invoke(cli, ["delete-history"], standalone_mode=False, obj=yt_oauth)
+        result = runner.invoke(cli, ["delete-history"], standalone_mode=False, obj=yt_browser)
         print(result.stdout)
         assert result.exit_code == 0
 
         items_deleted = result.return_value
         assert items_deleted >= add_history_items, "One or more history items were not deleted"
         with pytest.raises(Exception, match="None"):
-            yt_oauth.get_history()
+            yt_browser.get_history()
 
-    def test_delete_playlists(self, yt_oauth: YTMusic, create_playlist_and_delete_after):
+    def test_delete_playlists(self, yt_browser: YTMusic, create_playlist_and_delete_after):
         runner = CliRunner()
-        result = runner.invoke(cli, ["delete-playlists"], standalone_mode=False, obj=yt_oauth)
+        result = runner.invoke(cli, ["delete-playlists"], standalone_mode=False, obj=yt_browser)
         print(result.stdout)
         assert result.exit_code == 0
 
         playlists_deleted, playlists_total = result.return_value
         assert playlists_deleted >= 1, f"No playlists were deleted. {playlists_total} were found in total."
 
-    def test_sort_playlist(self, yt_oauth: YTMusic, create_playlist_and_delete_after):
+    def test_sort_playlist(self, yt_browser: YTMusic, create_playlist_and_delete_after):
         runner = CliRunner()
         result = runner.invoke(
-            cli, ["sort-playlist", "Test Playlist (to be deleted)"], standalone_mode=False, obj=yt_oauth
+            cli, ["sort-playlist", "Test Playlist (to be deleted)"], standalone_mode=False, obj=yt_browser
         )
         print(result.stdout)
         assert result.exit_code == 0
 
     @pytest.mark.skip(reason="Not super necessary to test, takes a while, might exceed rate limit")
-    def test_shuffle_playlist(self, yt_oauth: YTMusic, create_playlist_and_delete_after):
+    def test_shuffle_playlist(self, yt_browser: YTMusic, create_playlist_and_delete_after):
         runner = CliRunner()
-        result = runner.invoke(cli, ["sort-playlist", "-s", "Test Playlist"], standalone_mode=False, obj=yt_oauth)
+        result = runner.invoke(cli, ["sort-playlist", "-s", "Test Playlist"], standalone_mode=False, obj=yt_browser)
         print(result.stdout)
         assert result.exit_code == 0
 
-    def test_delete_playlist_duplicates(self, yt_oauth: YTMusic, create_playlist_with_dupes):
+    def test_delete_playlist_duplicates(self, yt_browser: YTMusic, create_playlist_with_dupes):
         time.sleep(3)  # wait for playlist to be created
-        playlist = yt_oauth.get_playlist(create_playlist_with_dupes)
+        playlist = yt_browser.get_playlist(create_playlist_with_dupes)
         assert 3 == len(
-            check_for_duplicates(playlist, yt_oauth)
+            check_for_duplicates(playlist, yt_browser)
         ), "Playlist to work on did not contain the right number of duplicates"
         runner = CliRunner()
         result = runner.invoke(
-            cli, ["remove-duplicates", "--exact", "Test Dupes (to be deleted)"], standalone_mode=False, obj=yt_oauth
+            cli, ["remove-duplicates", "--exact", "Test Dupes (to be deleted)"], standalone_mode=False, obj=yt_browser
         )
         print(result.stdout)
         assert result.exit_code == 0
 
         time.sleep(3)  # wait for tracks to have been deleted
-        processed_playlist = yt_oauth.get_playlist(create_playlist_with_dupes, limit=None)
+        processed_playlist = yt_browser.get_playlist(create_playlist_with_dupes, limit=None)
         assert 2 == len(
-            check_for_duplicates(processed_playlist, yt_oauth)
+            check_for_duplicates(processed_playlist, yt_browser)
         ), "Playlist contained wrong number of remaining duplicates"
 
     def test_add_all_library_songs_to_playlist(
-        self, yt_oauth: YTMusic, get_playlist_with_dupes: str, add_library_album
+        self, yt_browser: YTMusic, get_playlist_with_dupes: str, add_library_album
     ):
-        assert 13 == len(yt_oauth.get_playlist(get_playlist_with_dupes).get("tracks"))
+        assert 13 == len(yt_browser.get_playlist(get_playlist_with_dupes).get("tracks"))
         runner = CliRunner()
         result = runner.invoke(
-            cli, ["add-all-to-playlist", "--library", "Test Dupes"], standalone_mode=False, obj=yt_oauth
+            cli, ["add-all-to-playlist", "--library", "Test Dupes"], standalone_mode=False, obj=yt_browser
         )
         print(result.stdout)
         time.sleep(3)
-        assert 30 <= len(yt_oauth.get_playlist(get_playlist_with_dupes).get("tracks"))
+        assert 30 <= len(yt_browser.get_playlist(get_playlist_with_dupes).get("tracks"))
         assert result.exit_code == 0
