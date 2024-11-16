@@ -1,15 +1,18 @@
+import os
 import time
 
 import pytest
 from click.testing import CliRunner
+from ytmusic_deleter.auth import ensure_auth
 from ytmusic_deleter.cli import cli
 from ytmusic_deleter.duplicates import check_for_duplicates
 from ytmusicapi import YTMusic
+from ytmusicapi.exceptions import YTMusicServerError
 
 
 class TestCli:
     def test_delete_uploads(self, yt_browser: YTMusic, upload_song):
-        result = CliRunner().invoke(cli, ["delete-uploads"], standalone_mode=False, obj=yt_browser)
+        result = CliRunner().invoke(cli, ["delete-uploads"], standalone_mode=False)
         print(result.stdout)
         assert result.exit_code == 0
 
@@ -19,20 +22,20 @@ class TestCli:
         assert len(uploads_remaining) == 0
 
     def test_add_to_library(self, yt_browser: YTMusic, upload_song, config):
-        result = CliRunner().invoke(cli, ["delete-uploads", "-a"], standalone_mode=False, obj=yt_browser)
+        result = CliRunner().invoke(cli, ["delete-uploads", "-a"], standalone_mode=False)
         print(result.stdout)
         assert result.exit_code == 0
 
         return self.verify_added_to_library(yt_browser, config, result)
 
     def test_add_to_library_fuzzy(self, yt_browser: YTMusic, upload_song, config):
-        result = CliRunner().invoke(cli, ["delete-uploads", "-af"], standalone_mode=False, obj=yt_browser)
+        result = CliRunner().invoke(cli, ["delete-uploads", "-af"], standalone_mode=False)
         print(result.stdout)
         assert result.exit_code == 0
 
         return self.verify_added_to_library(yt_browser, config, result)
 
-    def verify_added_to_library(self, yt_browser, config, result):
+    def verify_added_to_library(self, yt_browser: YTMusic, config, result):
         albums_deleted, albums_total = result.return_value
         assert albums_deleted >= 1, f"No uploads were deleted. {albums_total} uploads were found."
         uploads_remaining = yt_browser.get_library_upload_songs(limit=None)
@@ -46,7 +49,7 @@ class TestCli:
 
     def test_remove_library(self, yt_browser: YTMusic, add_library_album, add_podcast):
         runner = CliRunner()
-        result = runner.invoke(cli, ["remove-library"], standalone_mode=False, obj=yt_browser)
+        result = runner.invoke(cli, ["remove-library"], standalone_mode=False)
         print(result.stdout)
         assert result.exit_code == 0
         albums_deleted, albums_total = result.return_value
@@ -73,7 +76,7 @@ class TestCli:
     def test_unlike_all_songs(self, yt_browser: YTMusic, like_song):
         assert like_song
         runner = CliRunner()
-        result = runner.invoke(cli, ["unlike-all"], standalone_mode=False, obj=yt_browser)
+        result = runner.invoke(cli, ["unlike-all"], standalone_mode=False)
         print(result.stdout)
         assert result.exit_code == 0
         songs_unliked, songs_total = result.return_value
@@ -84,7 +87,7 @@ class TestCli:
 
     def test_delete_history(self, yt_browser: YTMusic, add_history_items):
         runner = CliRunner()
-        result = runner.invoke(cli, ["delete-history"], standalone_mode=False, obj=yt_browser)
+        result = runner.invoke(cli, ["delete-history"], standalone_mode=False)
         print(result.stdout)
         assert result.exit_code == 0
 
@@ -95,25 +98,23 @@ class TestCli:
 
     def test_delete_playlists(self, yt_browser: YTMusic, create_playlist_and_delete_after):
         runner = CliRunner()
-        result = runner.invoke(cli, ["delete-playlists"], standalone_mode=False, obj=yt_browser)
+        result = runner.invoke(cli, ["delete-playlists"], standalone_mode=False)
         print(result.stdout)
         assert result.exit_code == 0
 
         playlists_deleted, playlists_total = result.return_value
         assert playlists_deleted >= 1, f"No playlists were deleted. {playlists_total} were found in total."
 
-    def test_sort_playlist(self, yt_browser: YTMusic, create_playlist_and_delete_after):
+    def test_sort_playlist(self, create_playlist_and_delete_after):
         runner = CliRunner()
-        result = runner.invoke(
-            cli, ["sort-playlist", "Test Playlist (to be deleted)"], standalone_mode=False, obj=yt_browser
-        )
+        result = runner.invoke(cli, ["sort-playlist", "Test Playlist (to be deleted)"], standalone_mode=False)
         print(result.stdout)
         assert result.exit_code == 0
 
     @pytest.mark.skip(reason="Not super necessary to test, takes a while, might exceed rate limit")
     def test_shuffle_playlist(self, yt_browser: YTMusic, create_playlist_and_delete_after):
         runner = CliRunner()
-        result = runner.invoke(cli, ["sort-playlist", "-s", "Test Playlist"], standalone_mode=False, obj=yt_browser)
+        result = runner.invoke(cli, ["sort-playlist", "-s", "Test Playlist"], standalone_mode=False)
         print(result.stdout)
         assert result.exit_code == 0
 
@@ -125,7 +126,7 @@ class TestCli:
         ), "Playlist to work on did not contain the right number of duplicates"
         runner = CliRunner()
         result = runner.invoke(
-            cli, ["remove-duplicates", "--exact", "Test Dupes (to be deleted)"], standalone_mode=False, obj=yt_browser
+            cli, ["remove-duplicates", "--exact", "Test Dupes (to be deleted)"], standalone_mode=False
         )
         print(result.stdout)
         assert result.exit_code == 0
@@ -141,10 +142,18 @@ class TestCli:
     ):
         assert 13 == len(yt_browser.get_playlist(get_playlist_with_dupes).get("tracks"))
         runner = CliRunner()
-        result = runner.invoke(
-            cli, ["add-all-to-playlist", "--library", "Test Dupes"], standalone_mode=False, obj=yt_browser
-        )
+        result = runner.invoke(cli, ["add-all-to-playlist", "--library", "Test Dupes"], standalone_mode=False)
         print(result.stdout)
         time.sleep(3)
         assert 30 <= len(yt_browser.get_playlist(get_playlist_with_dupes).get("tracks"))
         assert result.exit_code == 0
+
+    def test_browser_auth(self):
+        runner = CliRunner()
+        result = runner.invoke(cli, ["whoami"])
+        assert result.exit_code == 0
+
+    def test_oauth(self):
+        with pytest.raises(YTMusicServerError, match="Server returned HTTP 400: Bad Request"):
+            # using ensure_auth instead of CliRunner because the latter puts the exception in the return result instead
+            ensure_auth(os.getcwd(), True)
