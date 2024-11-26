@@ -152,6 +152,17 @@ class TestCli:
         assert 30 <= len(yt_browser.get_playlist(get_playlist_with_dupes).get("tracks"))
         assert result.exit_code == 0
 
+    def test_add_all_uploaded_songs_to_playlist(self, yt_browser: YTMusic, get_playlist_with_dupes: str, upload_song):
+        num_tracks_before_add = len(yt_browser.get_playlist(get_playlist_with_dupes).get("tracks"))
+        runner = CliRunner()
+        result = runner.invoke(
+            cli, ["add-all-to-playlist", "--uploads", "Test Dupes"], standalone_mode=False, obj=yt_browser
+        )
+        print(result.stdout)
+        time.sleep(3)
+        assert num_tracks_before_add + 1 == len(yt_browser.get_playlist(get_playlist_with_dupes).get("tracks"))
+        assert result.exit_code == 0
+
     def test_browser_auth(self, yt_browser: YTMusic):
         runner = CliRunner()
         result = runner.invoke(cli, ["whoami"], obj=yt_browser)
