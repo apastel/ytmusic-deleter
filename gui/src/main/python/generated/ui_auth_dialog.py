@@ -63,6 +63,6 @@ class Ui_AuthDialog(object):
         AuthDialog.setWindowTitle(QCoreApplication.translate("AuthDialog", u"Authentication", None))
         self.orLabel.setText(QCoreApplication.translate("AuthDialog", u"Or select an existing browser.json file", None))
         self.browseButton.setText(QCoreApplication.translate("AuthDialog", u"Browse", None))
-        self.helpLabel.setText(QCoreApplication.translate("AuthDialog", u"<html>See <a href=\"https://ytmusicapi.readthedocs.io/en/latest/setup.html#copy-authentication-headers\">https://ytmusicapi.readthedocs.io/en/latest/setup.html#copy-authentication-headers</a> for instructions on obtaining your request headers.</html>", None))
+        self.helpLabel.setText(QCoreApplication.translate("AuthDialog", u"<html>See <a href=\"https://ytmusicapi.readthedocs.io/en/stable/setup/browser.html#copy-authentication-headers\">https://ytmusicapi.readthedocs.io/en/stable/setup/browser.html#copy-authentication-headers</a> for instructions on obtaining your request headers.</html>", None))
     # retranslateUi
 

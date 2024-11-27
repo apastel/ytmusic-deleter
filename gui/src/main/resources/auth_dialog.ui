@@ -97,7 +97,7 @@
     </rect>
    </property>
    <property name="text">
-    <string>&lt;html&gt;See &lt;a href=&quot;https://ytmusicapi.readthedocs.io/en/latest/setup.html#copy-authentication-headers&quot;&gt;https://ytmusicapi.readthedocs.io/en/latest/setup.html#copy-authentication-headers&lt;/a&gt; for instructions on obtaining your request headers.&lt;/html&gt;</string>
+    <string>&lt;html&gt;See &lt;a href=&quot;https://ytmusicapi.readthedocs.io/en/stable/setup/browser.html#copy-authentication-headers&quot;&gt;https://ytmusicapi.readthedocs.io/en/stable/setup/browser.html#copy-authentication-headers&lt;/a&gt; for instructions on obtaining your request headers.&lt;/html&gt;</string>
    </property>
    <property name="alignment">
     <set>Qt::AlignCenter</set>
