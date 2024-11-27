@@ -71,8 +71,8 @@ class BrowserAuthDialog(QDialog, Ui_AuthDialog):
             error_dialog.setIcon(QMessageBox.Critical)
             error_dialog.setText(auth_result)
             error_dialog.setInformativeText(
-                "<html>See <a href=https://ytmusicapi.readthedocs.io/en/latest/setup.html#copy-authentication-headers>"
-                "https://ytmusicapi.readthedocs.io/en/latest/setup.html#copy-authentication-headers</a> for "
+                "<html>See <a href=https://ytmusicapi.readthedocs.io/en/stable/setup/browser.html#copy-authentication-headers>"
+                "https://ytmusicapi.readthedocs.io/en/stable/setup/browser.html#copy-authentication-headers</a> for "
                 "instructions on obtaining your request headers.</html>"
             )
             error_dialog.setWindowTitle("Error")
