@@ -1,5 +1,4 @@
 import logging
-import re
 from typing import Dict
 from typing import List
 from typing import TypedDict
@@ -134,12 +133,8 @@ def add_album_to_library(upload_artist, upload_title) -> bool:
                 break
             else:
                 # Try again but strip out parenthetical expressions at the end of the title, and all symbols
-                sanitze_regex = r"\s*\([^)]*\)$|\s*\[[^)]*\]$|[^\w\s]"
-                extra_whitespace_regex = r"\s+"
-                upload_title = re.sub(sanitze_regex, "", upload_title).strip()
-                upload_title = re.sub(extra_whitespace_regex, " ", upload_title)
-                search_result_title = re.sub(sanitze_regex, "", search_result_title).strip()
-                search_result_title = re.sub(extra_whitespace_regex, " ", search_result_title)
+                upload_title = const.strip_parentheticals(upload_title)
+                search_result_title = const.strip_parentheticals(search_result_title)
                 logging.info(f"\t\tSanitized upload is: {upload_artist} - {upload_title}")
                 logging.info(f"\t\tSanitized match is:  {search_result_artist} - {search_result_title}")
                 if upload_title in search_result_title:
