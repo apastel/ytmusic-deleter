@@ -28,12 +28,7 @@ mkdir -p "$FREEZE_DIR"/mac/_internal/ytmusicapi
 echo Copy executables to freeze directories
 cp "$EXE_PATH" "$FREEZE_DIR"/linux/_internal
 cp "$EXE_PATH" "$FREEZE_DIR"/windows/_internal
-cp "$EXE_PATH" "$FREEZE_DIR"/mac/_internal
-
-echo List the contents of the freeze directory
-ls -l "$FREEZE_DIR"/mac/_internal
-
-echo $FREEZE_DIR
+cp "$EXE_PATH" "$FREEZE_DIR"/mac/Contents
 
 echo Copy locale files to freeze directories
 cp -R "$SITE_PACKAGES"/ytmusicapi/locales "$FREEZE_DIR"/linux/_internal/ytmusicapi
