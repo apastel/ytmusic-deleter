@@ -110,12 +110,6 @@ jobs:
             echo $output
             exit 1
         fi
-    - uses: ruby/setup-ruby@v1
-      with:
-        ruby-version: ruby
-    # - name: Install fpm
-    #   run: |
-    #     sudo gem install fpm
     - name: Create installer
       run: |
         pdm fbs installer
