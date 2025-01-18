@@ -51,6 +51,7 @@ jobs:
     - name: Install dependencies
       run: |
         # sudo apt update && sudo apt install -y libegl1
+        brew install coreutils
         pdm install -dG gui --no-editable
     - name: Run CLI from venv
       id: run-cli
@@ -71,8 +72,7 @@ jobs:
         # We don't want the timing out to fail the job. Normally using `timeout --preserve-status` would handle this but
         # still getting exit code "241" which is an unknown code. Alternatively, running the entire step in a separate
         # script file allows using just `timeout 10s pdm fbs run` but would rather not do that.
-        brew install coreutils
-        output=$(gtimeout 10s pdm fbs run || true)
+        output=$(timeout 10s pdm fbs run || true)
 
         # Check if the output contains the right CLI version
         if grep -q "$version_str" <<< "$output"; then
@@ -142,7 +142,8 @@ jobs:
           sudo dpkg -i ./YTMusic_Deleter-${{ needs.build.outputs.installer-version }}-Linux-Installer.deb
       - name: Install dependencies
         run: |
-          sudo apt update && sudo apt install -y libegl1
+          # sudo apt update && sudo apt install -y libegl1
+          brew install coreutils
       - name: Run application
         run: |
 
