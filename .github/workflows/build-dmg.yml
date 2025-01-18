@@ -50,7 +50,7 @@ jobs:
         curl -L https://drive.google.com/uc?id=$FBS_URL_ID --output fbs_pro-1.2.1.tar.gz
     - name: Install dependencies
       run: |
-        sudo apt update && sudo apt install -y libegl1
+        # sudo apt update && sudo apt install -y libegl1
         pdm install -dG gui --no-editable
     - name: Run CLI from venv
       id: run-cli
@@ -71,7 +71,8 @@ jobs:
         # We don't want the timing out to fail the job. Normally using `timeout --preserve-status` would handle this but
         # still getting exit code "241" which is an unknown code. Alternatively, running the entire step in a separate
         # script file allows using just `timeout 10s pdm fbs run` but would rather not do that.
-        output=$(timeout 10s pdm fbs run || true)
+        brew install coreutils
+        output=$(gtimeout 10s pdm fbs run || true)
 
         # Check if the output contains the right CLI version
         if grep -q "$version_str" <<< "$output"; then
