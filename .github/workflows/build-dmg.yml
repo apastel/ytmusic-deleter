@@ -138,31 +138,28 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: installer-dmg
-      - name: Run installer
+      - name: Attach app image
         run: |
 
           # sudo dpkg -i ./YTMusic_Deleter-${{ needs.build.outputs.installer-version }}-MacOS-Installer.dmg
-          echo "list files in cwd"
-          ls -l
           hdiutil attach ./YTMusic_Deleter-${{ needs.build.outputs.installer-version }}-MacOS-Installer.dmg
-          echo "list files in /Volumes/YTMusic_Deleter/YTMusic_Deleter.app"
-          ls -l /Volumes/YTMusic_Deleter/YTMusic_Deleter.app
-          brew install tree
-          tree /Volumes
-          sudo installer -package /Volumes/YTMusic_Deleter/YTMusic_Deleter.app/anyonesguess -target /
-          hdiutil detach /Volumes/YTMusic_Deleter
+          # brew install tree
+          # tree /Volumes
+          # sudo installer -package /Volumes/YTMusic_Deleter/YTMusic_Deleter.app/anyonesguess -target /
+          # hdiutil detach /Volumes/YTMusic_Deleter
       - name: Install dependencies
         run: |
 
           # sudo apt update && sudo apt install -y libegl1
-          brew install coreutils
+          brew install coreutils tree
       - name: Run application
         run: |
 
           # Makes app run headless
           export QT_QPA_PLATFORM=offscreen
           logfile="$HOME/YTMusic_Deleter/ytmusic-deleter-gui*.log"
-          timeout 10s /opt/YTMusic_Deleter/YTMusic_Deleter || true
+          timeout 10s /Volumes/YTMusic_Deleter/Contents/Frameworks/MacOS/YTMusic_Deleter || true
+          tree "$HOME/YTMusic_Deleter"
           version_str="${{ needs.build.outputs.cli-version }}"
           if grep -q "$version_str" $logfile; then
             echo "GUI is running the right CLI version: $version_str"
