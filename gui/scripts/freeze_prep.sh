@@ -3,7 +3,7 @@ set -e
 
 echo Set up directories
 VENV_PATH=$PDM_PROJECT_ROOT/.venv
-if [[ $(uname) == "Linux" ]]; then
+if [[ $(uname) == "Linux" || $(uname) == "Darwin" ]]; then
     VENV_BIN="bin"
     SITE_PACKAGES=$(python -c "import site; print(site.getsitepackages()[0])")
 else
