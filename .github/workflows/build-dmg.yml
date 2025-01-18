@@ -142,13 +142,6 @@ jobs:
         run: |
 
           hdiutil attach ./YTMusic_Deleter-${{ needs.build.outputs.installer-version }}-MacOS-Installer.dmg
-          brew install tree
-          ls -l /Volumes/YTMusic_Deleter/YTMusic_Deleter.app
-          tree /Volumes/YTMusic_Deleter/YTMusic_Deleter.app/Contents/Frameworks
-          ls -l /Volumes/YTMusic_Deleter/YTMusic_Deleter.app/Contents/Frameworks
-          find /Volumes/YTMusic_Deleter -name "YTMusic_Deleter" -type f
-          # tree /Volumes
-          # sudo installer -package /Volumes/YTMusic_Deleter/YTMusic_Deleter.app/anyonesguess -target /
           # hdiutil detach /Volumes/YTMusic_Deleter
       - name: Install dependencies
         run: |
@@ -161,10 +154,7 @@ jobs:
           # Makes app run headless
           export QT_QPA_PLATFORM=offscreen
           logfile="$HOME/YTMusic_Deleter/ytmusic-deleter-gui*.log"
-          ls -l /Volumes
-          ls -l /Volumes/YTMusic_Deleter/YTMusic_Deleter.app/Contents/Frameworks/MacOS
-          tree /Volumes/YTMusic_Deleter/YTMusic_Deleter.app/Contents/Frameworks
-          timeout 10s /Volumes/YTMusic_Deleter/YTMusic_Deleter.app/Contents/Frameworks/MacOS/YTMusic_Deleter || true
+          timeout 10s /Volumes/YTMusic_Deleter/YTMusic_Deleter.app/Contents/MacOS/YTMusic_Deleter || true
           tree "$HOME/YTMusic_Deleter"
           version_str="${{ needs.build.outputs.cli-version }}"
           if grep -q "$version_str" $logfile; then
