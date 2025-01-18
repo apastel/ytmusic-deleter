@@ -142,6 +142,7 @@ jobs:
         run: |
 
           hdiutil attach ./YTMusic_Deleter-${{ needs.build.outputs.installer-version }}-MacOS-Installer.dmg
+          ls -l /Volumes/YTMusic_Deleter/YTMusic_Deleter.app/Contents/Frameworks/MacOS
           # brew install tree
           # tree /Volumes
           # sudo installer -package /Volumes/YTMusic_Deleter/YTMusic_Deleter.app/anyonesguess -target /
@@ -157,6 +158,9 @@ jobs:
           # Makes app run headless
           export QT_QPA_PLATFORM=offscreen
           logfile="$HOME/YTMusic_Deleter/ytmusic-deleter-gui*.log"
+          ls -l /Volumes
+          ls -l /Volumes/YTMusic_Deleter/YTMusic_Deleter.app/Contents/Frameworks/MacOS
+          tree /Volumes/YTMusic_Deleter/YTMusic_Deleter.app/Contents/Frameworks
           timeout 10s /Volumes/YTMusic_Deleter/YTMusic_Deleter.app/Contents/Frameworks/MacOS/YTMusic_Deleter || true
           tree "$HOME/YTMusic_Deleter"
           version_str="${{ needs.build.outputs.cli-version }}"
