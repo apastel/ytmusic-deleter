@@ -142,8 +142,10 @@ jobs:
         run: |
 
           hdiutil attach ./YTMusic_Deleter-${{ needs.build.outputs.installer-version }}-MacOS-Installer.dmg
-          ls -l /Volumes/YTMusic_Deleter/YTMusic_Deleter.app/Contents/Frameworks/MacOS
-          # brew install tree
+          brew install tree
+          ls -l /Volumes/YTMusic_Deleter/YTMusic_Deleter.app
+          tree /Volumes/YTMusic_Deleter/YTMusic_Deleter.app/Contents/Frameworks
+          ls -l /Volumes/YTMusic_Deleter/YTMusic_Deleter.app/Contents/Frameworks
           # tree /Volumes
           # sudo installer -package /Volumes/YTMusic_Deleter/YTMusic_Deleter.app/anyonesguess -target /
           # hdiutil detach /Volumes/YTMusic_Deleter
