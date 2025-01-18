@@ -147,7 +147,7 @@ jobs:
           hdiutil attach ./YTMusic_Deleter-${{ needs.build.outputs.installer-version }}-MacOS-Installer.dmg
           echo "list files in /Volumes/YTMusic_Deleter"
           ls -l /Volumes/YTMusic_Deleter
-          sudo installer -package /Volumes/YTMusic_Deleter/YTMusic_Deleter-${{ needs.build.outputs.installer-version }}-MacOS-Installer.pkg -target /
+          sudo installer -package /Volumes/YTMusic_Deleter/YTMusic_Deleter.app -target /
           hdiutil detach /Volumes/YTMusic_Deleter
       - name: Install dependencies
         run: |
