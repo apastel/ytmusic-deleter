@@ -20,11 +20,14 @@ echo Clean and re-create the freeze directories
 rm -rf "$FREEZE_DIR"
 mkdir -p "$FREEZE_DIR"/linux/_internal/ytmusicapi
 mkdir -p "$FREEZE_DIR"/windows/_internal/ytmusicapi
+mkdir -p "$FREEZE_DIR"/mac/_internal/ytmusicapi
 
 echo Copy executables to freeze directories
 cp "$EXE_PATH" "$FREEZE_DIR"/linux/_internal
 cp "$EXE_PATH" "$FREEZE_DIR"/windows/_internal
+cp "$EXE_PATH" "$FREEZE_DIR"/mac/_internal
 
 echo Copy locale files to freeze directories
 cp -R "$SITE_PACKAGES"/ytmusicapi/locales "$FREEZE_DIR"/linux/_internal/ytmusicapi
 cp -R "$SITE_PACKAGES"/ytmusicapi/locales "$FREEZE_DIR"/windows/_internal/ytmusicapi
+cp -R "$SITE_PACKAGES"/ytmusicapi/locales "$FREEZE_DIR"/mac/_internal/ytmusicapi
