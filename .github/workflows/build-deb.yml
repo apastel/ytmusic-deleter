@@ -49,7 +49,7 @@ jobs:
         curl -L https://drive.google.com/uc?id=$FBS_URL_ID --output fbs_pro-1.2.1.tar.gz
     - name: Install dependencies
       run: |
-        sudo apt update && sudo apt install -y libegl1 libegl1-mesa
+        sudo apt update && sudo apt install -y libegl1
         pdm install -dG gui --no-editable
     - name: Run CLI from venv
       id: run-cli
@@ -140,7 +140,7 @@ jobs:
           sudo dpkg -i ./YTMusic_Deleter-${{ needs.build.outputs.installer-version }}-Linux-Installer.deb
       - name: Install dependencies
         run: |
-          sudo apt update && sudo apt install -y libegl1 libegl1-mesa
+          sudo apt update && sudo apt install -y libegl1
       - name: Run application
         run: |
 
