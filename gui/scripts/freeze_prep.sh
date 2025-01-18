@@ -16,9 +16,6 @@ FREEZE_DIR=$PDM_PROJECT_ROOT/gui/src/freeze
 echo Create CLI executable
 pyinstaller ytmusic_deleter.spec
 
-echo List the contents of the exe directory
-ls -l "$EXE_PATH"
-
 echo Clean and re-create the freeze directories
 rm -rf "$FREEZE_DIR"
 mkdir -p "$FREEZE_DIR"/linux/_internal/ytmusicapi

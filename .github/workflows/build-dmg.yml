@@ -50,6 +50,7 @@ jobs:
         curl -L https://drive.google.com/uc?id=$FBS_URL_ID --output fbs_pro-1.2.1.tar.gz
     - name: Install dependencies
       run: |
+
         # sudo apt update && sudo apt install -y libegl1
         brew install coreutils
         pdm install -dG gui --no-editable
@@ -98,7 +99,6 @@ jobs:
         export QT_QPA_PLATFORM=offscreen
 
         # Launch the fbs app and kill it after 10 seconds, saving the output.
-        #output=$(timeout 10s ./gui/target/YTMusic_Deleter/YTMusic_Deleter || true)
         output=$(timeout 10s ./gui/target/YTMusic_Deleter.app/Contents/MacOS/YTMusic_Deleter || true)
 
         # Check if the output contains the right CLI version
@@ -123,26 +123,35 @@ jobs:
       uses: zoexx/github-action-json-file-properties@1.0.6
       with:
         file_path: gui/src/build/settings/base.json
-    - name: Save .deb as artifact
-      id: upload_deb
+    - name: Save .dmg as artifact
+      id: upload_dmg
       uses: actions/upload-artifact@v4
       with:
-        name: installer-deb
-        path: ./gui/target/YTMusic_Deleter-${{ steps.json-properties.outputs.version }}-Linux-Installer.deb
+        name: installer-dmg
+        path: ./gui/target/YTMusic_Deleter-${{ steps.json-properties.outputs.version }}-MacOS-Installer.dmg
 
   verify:
-    runs-on: ubuntu-latest
+    runs-on: macos-latest
     needs: build
     steps:
       - name: Download Artifact
         uses: actions/download-artifact@v4
         with:
-          name: installer-deb
+          name: installer-dmg
       - name: Run installer
         run: |
-          sudo dpkg -i ./YTMusic_Deleter-${{ needs.build.outputs.installer-version }}-Linux-Installer.deb
+
+          # sudo dpkg -i ./YTMusic_Deleter-${{ needs.build.outputs.installer-version }}-MacOS-Installer.dmg
+          echo "list files in cwd"
+          ls -l
+          hdiutil attach ./YTMusic_Deleter-${{ needs.build.outputs.installer-version }}-MacOS-Installer.dmg
+          echo "list files in /Volumes"
+          ls -l /Volumes
+          sudo installer -package /Volumes/YTMusic_Deleter-${{ needs.build.outputs.installer-version }}-MacOS-Installer/YTMusic_Deleter-${{ needs.build.outputs.installer-version }}-MacOS-Installer.pkg -target /
+          hdiutil detach /Volumes/YTMusic_Deleter-${{ needs.build.outputs.installer-version }}-MacOS-Installer
       - name: Install dependencies
         run: |
+
           # sudo apt update && sudo apt install -y libegl1
           brew install coreutils
       - name: Run application
