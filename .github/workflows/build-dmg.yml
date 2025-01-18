@@ -145,10 +145,10 @@ jobs:
           echo "list files in cwd"
           ls -l
           hdiutil attach ./YTMusic_Deleter-${{ needs.build.outputs.installer-version }}-MacOS-Installer.dmg
-          echo "list files in /Volumes"
-          ls -l /Volumes
-          sudo installer -package /Volumes/YTMusic_Deleter-${{ needs.build.outputs.installer-version }}-MacOS-Installer/YTMusic_Deleter-${{ needs.build.outputs.installer-version }}-MacOS-Installer.pkg -target /
-          hdiutil detach /Volumes/YTMusic_Deleter-${{ needs.build.outputs.installer-version }}-MacOS-Installer
+          echo "list files in /Volumes/YTMusic_Deleter"
+          ls -l /Volumes/YTMusic_Deleter
+          sudo installer -package /Volumes/YTMusic_Deleter/YTMusic_Deleter-${{ needs.build.outputs.installer-version }}-MacOS-Installer.pkg -target /
+          hdiutil detach /Volumes/YTMusic_Deleter
       - name: Install dependencies
         run: |
 
