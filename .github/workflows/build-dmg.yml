@@ -1,6 +1,6 @@
-# This workflow builds and tests the Linux installer for YTMusic Deleterr.
+# This workflow builds and tests the macOS installer for YTMusic Deleterr.
 
-name: Build and Verify (Linux)
+name: Build and Verify (macOS)
 
 on:
   push:
@@ -12,7 +12,7 @@ on:
       - '.gitignore'
       - '.pre-commit-comfig.yaml'
       - '**/build-exe.yml'
-      - '**/build-dmg.yml'
+      - '**/build-deb.yml'
       - '**/pytest.yml'
       - '**/release.yml'
   pull_request:
@@ -22,7 +22,7 @@ on:
     - cron: '0 10 * * *'
 
 concurrency:
-  group: build-deb
+  group: build-dmg
   cancel-in-progress: true
 
 permissions:
@@ -34,7 +34,7 @@ defaults:
 
 jobs:
   build:
-    runs-on: ubuntu-22.04
+    runs-on: macos-latest
     outputs:
       installer-version: ${{ steps.json-properties.outputs.version }}
       cli-version: ${{ steps.run-cli.outputs.version }}
@@ -50,7 +50,7 @@ jobs:
         curl -L https://drive.google.com/uc?id=$FBS_URL_ID --output fbs_pro-1.2.1.tar.gz
     - name: Install dependencies
       run: |
-        sudo apt update && sudo apt install -y libegl1 libegl1-mesa
+        sudo apt update && sudo apt install -y libegl1
         pdm install -dG gui --no-editable
     - name: Run CLI from venv
       id: run-cli
@@ -129,7 +129,7 @@ jobs:
         path: ./gui/target/YTMusic_Deleter-${{ steps.json-properties.outputs.version }}-Linux-Installer.deb
 
   verify:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     needs: build
     steps:
       - name: Download Artifact

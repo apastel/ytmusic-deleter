@@ -12,6 +12,7 @@ on:
       - '.gitignore'
       - '.pre-commit-comfig.yaml'
       - '**/build-deb.yml'
+      - '**/build-dmg.yml'
       - '**/pytest.yml'
       - '**/release.yml'
   pull_request:
