@@ -22,8 +22,10 @@ Installation instructions of this command-line interface:
 ## Authentication (Browser)
 
 The first time you run ytmusic-deleter, you will be asked to paste your request headers from your browser.
-This allows ytmusic-deleter to make requests against your music library. To copy your request headers follow the
-instructions from the [ytmusicapi docs](https://ytmusicapi.readthedocs.io/en/stable/setup/browser.html) under "Copy authentication headers".
+This allows ytmusic-deleter to make requests against your music library. Follow the instructions in the 
+[ytmusicapi](https://ytmusicapi.readthedocs.io/en/stable/setup/browser.html#copy-authentication-headers) documentation
+or my [sign-in video tutorial](https://youtu.be/FZ7gaMTUYN4) to copy your request headers to your clipboard, then paste
+them into the terminal window and press the shown key sequence.
 
 ```sh
 $ ytmusic-deleter whoami

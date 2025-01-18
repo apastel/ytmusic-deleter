@@ -40,10 +40,16 @@ class BrowserAuthDialog(QDialog, Ui_AuthDialog):
             """
 
             Paste your raw request headers here and click OK.
-            See https://ytmusicapi.readthedocs.io/en/stable/setup/browser.html#copy-authentication-headers
-            Alternatively, use Browse to select an existing browser.json file.
+            See the links below for instructions.
+            Or use Browse to select an existing browser.json file.
             """
         )
+        self.instructions_str = (
+            "<html>See the <a href=https://ytmusicapi.readthedocs.io/en/stable/setup/browser.html#copy-authentication-headers>"
+            "ytmusicapi docs</a> or this <a href=https://youtu.be/FZ7gaMTUYN4>YouTube video</a> for instructions on "
+            "obtaining your request headers.</html>"
+        )
+        self.helpLabel.setText(self.instructions_str)
 
     def accept(self):
         self.thread = QThread(self)
@@ -70,11 +76,7 @@ class BrowserAuthDialog(QDialog, Ui_AuthDialog):
             error_dialog = QMessageBox()
             error_dialog.setIcon(QMessageBox.Critical)
             error_dialog.setText(auth_result)
-            error_dialog.setInformativeText(
-                "<html>See <a href=https://ytmusicapi.readthedocs.io/en/stable/setup/browser.html#copy-authentication-headers>"
-                "https://ytmusicapi.readthedocs.io/en/stable/setup/browser.html#copy-authentication-headers</a> for "
-                "instructions on obtaining your request headers.</html>"
-            )
+            error_dialog.setInformativeText(self.instructions_str)
             error_dialog.setWindowTitle("Error")
             error_dialog.exec()
 
