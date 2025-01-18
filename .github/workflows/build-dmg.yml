@@ -51,9 +51,10 @@ jobs:
     - name: Install dependencies
       run: |
 
-        # sudo apt update && sudo apt install -y libegl1
-        brew install coreutils
         pdm install -dG gui --no-editable
+
+        # adds `timeout` command
+        brew install coreutils
     - name: Run CLI from venv
       id: run-cli
       run: |
@@ -112,9 +113,9 @@ jobs:
     - uses: ruby/setup-ruby@v1
       with:
         ruby-version: ruby
-    - name: Install fpm
-      run: |
-        sudo gem install fpm
+    # - name: Install fpm
+    #   run: |
+    #     sudo gem install fpm
     - name: Create installer
       run: |
         pdm fbs installer
@@ -140,22 +141,20 @@ jobs:
           name: installer-dmg
       - name: Attach app image
         run: |
-
           hdiutil attach ./YTMusic_Deleter-${{ needs.build.outputs.installer-version }}-MacOS-Installer.dmg
-          # hdiutil detach /Volumes/YTMusic_Deleter
       - name: Install dependencies
         run: |
 
-          # sudo apt update && sudo apt install -y libegl1
-          brew install coreutils tree
+          # adds `timeout` command
+          brew install coreutils
       - name: Run application
         run: |
 
           # Makes app run headless
           export QT_QPA_PLATFORM=offscreen
+
           logfile="$HOME/YTMusic_Deleter/ytmusic-deleter-gui*.log"
           timeout 10s /Volumes/YTMusic_Deleter/YTMusic_Deleter.app/Contents/MacOS/YTMusic_Deleter || true
-          tree "$HOME/YTMusic_Deleter"
           version_str="${{ needs.build.outputs.cli-version }}"
           if grep -q "$version_str" $logfile; then
             echo "GUI is running the right CLI version: $version_str"
