@@ -24,6 +24,7 @@ rm -rf "$FREEZE_DIR"
 mkdir -p "$FREEZE_DIR"/linux/_internal/ytmusicapi
 mkdir -p "$FREEZE_DIR"/windows/_internal/ytmusicapi
 mkdir -p "$FREEZE_DIR"/mac/_internal/ytmusicapi
+mkdir -p "$FREEZE_DIR"/mac/Contents
 
 echo Copy executables to freeze directories
 cp "$EXE_PATH" "$FREEZE_DIR"/linux/_internal
