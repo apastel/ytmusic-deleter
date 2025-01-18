@@ -43,20 +43,21 @@ Windows or Debian Linux users (including Ubuntu) can download an .exe (or .deb, 
 Find the .exe (or .deb) file in the [Releases](https://github.com/apastel/ytmusic-deleter/releases) area. Just click the latest release and look at the Assets section.  
 > Please note you may get a browser warning when downloading the file, and a Windows warning for installing files from an unknown publisher. Click the "More Info" button, then the "Run Anyway" button to finish installing. This warning appears whenever you install something from an unsigned publisher.
 
-### (Advanced) Command-line interface for non-Windows users
-See [CLI README](ytmusic_deleter/README.md) 
-
 ## Setup
 Once installed and running, click the "Sign In" button to authenticate to your YouTube Music account.
 
-Since Google has removed the ability to sign in using OAuth, you must now sign in using a cookie from your browser.
+Since Google has removed the ability to sign in to 3rd party apps using OAuth, you must now sign in using a cookie from your browser.
 
-Follow the instructions in the [ytmusicapi](https://ytmusicapi.readthedocs.io/en/stable/setup/browser.html#copy-authentication-headers)
-project to copy your request headers to your clipboard. Then paste them into the window in YTMusic Deleter.
-> Note: It's recommended to use Firefox for copying the headers since Firefox conveniently has a "Copy Request Headers" button.
+Follow the instructions in the [ytmusicapi](https://ytmusicapi.readthedocs.io/en/stable/setup/browser.html#copy-authentication-headers) documentation or my [sign-in video tutorial](https://youtu.be/FZ7gaMTUYN4)
+to copy your request headers to your clipboard. Then paste them into the window in YTMusic Deleter.
+> It's recommended to use Firefox for copying the headers since Firefox conveniently has a "Copy Request Headers" button.
 
-[Video Tutorial](https://youtu.be/oV-yLi1AW1c) on using YTMusic Deleter
-
+### (Advanced) Command-line interface for non-Windows users
+If you would prefer to use the command-line interface (or if you're running macOS), see [CLI README](ytmusic_deleter/README.md) for instructions on running the CLI version of YTMusic Deleter. This is completely separate from the GUI version. There is no reason to download both -- use one or the other.
 
 ## Troubleshooting
+[Video Tutorial](https://youtu.be/oV-yLi1AW1c) on using YTMusic Deleter in general (this shows an outdated sign-in method which was unfortunately deprecated).
+
+[Sign-in video tutorial](https://youtu.be/FZ7gaMTUYN4)
+
 Various exceptions may occur while running ytmusic-deleter because there is a wide swath of possible metadata on your library, and the YouTube Music backend is changing rapidly. Most errors deleting albums have been accounted for and you may just have to delete a couple albums manually that got left behind. If there are any errors that halt the entire program in the middle of deletion, please create an Issue and post the full error.
