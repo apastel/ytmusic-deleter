@@ -146,6 +146,7 @@ jobs:
           ls -l /Volumes/YTMusic_Deleter/YTMusic_Deleter.app
           tree /Volumes/YTMusic_Deleter/YTMusic_Deleter.app/Contents/Frameworks
           ls -l /Volumes/YTMusic_Deleter/YTMusic_Deleter.app/Contents/Frameworks
+          find /Volumes/YTMusic_Deleter -name "YTMusic_Deleter" -type f
           # tree /Volumes
           # sudo installer -package /Volumes/YTMusic_Deleter/YTMusic_Deleter.app/anyonesguess -target /
           # hdiutil detach /Volumes/YTMusic_Deleter
