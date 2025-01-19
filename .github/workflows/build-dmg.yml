@@ -113,7 +113,7 @@ jobs:
             echo $output
             exit 1
         fi
-    - name: Create installer (with retries)
+    - name: Create installer
       uses: nick-fields/retry@v3
       with:
         command: pdm fbs installer
@@ -124,12 +124,19 @@ jobs:
       uses: zoexx/github-action-json-file-properties@1.0.6
       with:
         file_path: gui/src/build/settings/base.json
+    - name: Rename installer per version
+      run: |
+
+        pwd
+        ls -l
+        mv ./gui/target/YTMusic_Deleter-${{ steps.json-properties.outputs.version }}-MacOS-Installer.dmg \
+           ./gui/target/YTMusic_Deleter-${{ steps.json-properties.outputs.version }}-${{ matrix.os }}-Installer.dmg
     - name: Save .dmg as artifact
       id: upload_dmg
       uses: actions/upload-artifact@v4
       with:
         name: installer-dmg-${{ matrix.os }}
-        path: ./gui/target/YTMusic_Deleter-${{ steps.json-properties.outputs.version }}-MacOS-Installer.dmg
+        path: ./gui/target/YTMusic_Deleter-${{ steps.json-properties.outputs.version }}-${{ matrix.os }}-Installer.dmg
 
   verify:
     strategy:
@@ -144,7 +151,7 @@ jobs:
           name: installer-dmg-${{ matrix.os }}
       - name: Attach app image
         run: |
-          hdiutil attach ./YTMusic_Deleter-${{ needs.build.outputs.installer-version }}-MacOS-Installer.dmg
+          hdiutil attach ./YTMusic_Deleter-${{ needs.build.outputs.installer-version }}-${{ matrix.os }}-Installer.dmg
       - name: Install dependencies
         run: |
 

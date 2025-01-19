@@ -139,10 +139,15 @@ jobs:
       uses: actions/download-artifact@v4
       with:
         name: installer-deb
-    - name: Download MacOS installer
+    - name: Download MacOS 13 installer (Intel)
       uses: actions/download-artifact@v4
       with:
-        name: installer-dmg
+        name: installer-dmg-macos-13
+    - name: Download MacOS 14 installer (Apple)
+      uses: actions/download-artifact@v4
+      with:
+        name: installer-dmg-macos-14
+        path:
     - name: Upload executable installers to Github Release
       env:
         GITHUB_TOKEN: ${{ github.token }}
@@ -152,4 +157,5 @@ jobs:
         --repo '${{ github.repository }}' \
         YTMusic_Deleter-${{ steps.json-properties.outputs.version }}-Windows-Installer.exe \
         YTMusic_Deleter-${{ steps.json-properties.outputs.version }}-Linux-Installer.deb \
-        YTMusic_Deleter-${{ steps.json-properties.outputs.version }}-MacOS-Installer.deb
+        YTMusic_Deleter-${{ steps.json-properties.outputs.version }}-macos-13-Installer.dmg
+        YTMusic_Deleter-${{ steps.json-properties.outputs.version }}-macos-14-Installer.dmg
