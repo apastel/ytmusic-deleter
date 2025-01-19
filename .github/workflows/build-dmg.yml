@@ -110,9 +110,15 @@ jobs:
             echo $output
             exit 1
         fi
-    - name: Create installer
-      run: |
-        pdm fbs installer
+    # - name: Create installer
+    #   run: |
+    #     pdm fbs installer
+    - name: Create installer (with retries)
+      uses: nick-fields/retry@v3
+      with:
+        command: pdm fbs installer
+        max_attempts: 10
+        timeout_minutes: 20
     - name: Get base.json file
       id: json-properties
       uses: zoexx/github-action-json-file-properties@1.0.6
