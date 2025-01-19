@@ -34,12 +34,10 @@ defaults:
 
 jobs:
   build:
-    runs-on: ${{ matrix.os }}
-
     strategy:
       matrix:
         os: [macos-13, macos-14]
-
+    runs-on: ${{ matrix.os }}
     outputs:
       installer-version: ${{ steps.json-properties.outputs.version }}
       cli-version: ${{ steps.run-cli.outputs.version }}
@@ -134,7 +132,10 @@ jobs:
         path: ./gui/target/YTMusic_Deleter-${{ steps.json-properties.outputs.version }}-MacOS-Installer.dmg
 
   verify:
-    runs-on: macos-13
+    strategy:
+      matrix:
+        os: [macos-13, macos-14]
+    runs-on: ${{ matrix.os }}
     needs: build
     steps:
       - name: Download Artifact
