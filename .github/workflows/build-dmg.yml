@@ -34,7 +34,12 @@ defaults:
 
 jobs:
   build:
-    runs-on: macos-13
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        os: [macos-13, macos-14]
+
     outputs:
       installer-version: ${{ steps.json-properties.outputs.version }}
       cli-version: ${{ steps.run-cli.outputs.version }}
@@ -110,9 +115,6 @@ jobs:
             echo $output
             exit 1
         fi
-    # - name: Create installer
-    #   run: |
-    #     pdm fbs installer
     - name: Create installer (with retries)
       uses: nick-fields/retry@v3
       with:
@@ -128,7 +130,7 @@ jobs:
       id: upload_dmg
       uses: actions/upload-artifact@v4
       with:
-        name: installer-dmg
+        name: installer-dmg-${{ matrix.os }}
         path: ./gui/target/YTMusic_Deleter-${{ steps.json-properties.outputs.version }}-MacOS-Installer.dmg
 
   verify:
@@ -138,7 +140,7 @@ jobs:
       - name: Download Artifact
         uses: actions/download-artifact@v4
         with:
-          name: installer-dmg
+          name: installer-dmg-${{ matrix.os }}
       - name: Attach app image
         run: |
           hdiutil attach ./YTMusic_Deleter-${{ needs.build.outputs.installer-version }}-MacOS-Installer.dmg
