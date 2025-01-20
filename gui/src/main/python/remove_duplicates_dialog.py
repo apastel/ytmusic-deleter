@@ -54,7 +54,7 @@ class RemoveDuplicatesDialog(QDialog, Ui_PlaylistSelectionDialog):
             # alert that playlist selection was invalid somehow
             raise Exception
         yt_auth: YTMusic = self.parent().ytmusic
-        playlist = yt_auth.get_playlist(selected_playlist_id)
+        playlist = yt_auth.get_playlist(selected_playlist_id, limit=None)
 
         # Ensure can edit playlist
         if not can_edit_playlist(playlist):

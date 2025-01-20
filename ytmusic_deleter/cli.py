@@ -559,7 +559,7 @@ def get_playlist_from_title(yt_auth: YTMusic, playlist_title: str) -> dict:
             f"No playlist found named {playlist_title!r}. Double-check your playlist name "
             '(or surround it "with quotes") and try again.'
         )
-    playlist: dict = yt_auth.get_playlist(selected_playlist_id)
+    playlist: dict = yt_auth.get_playlist(selected_playlist_id, limit=None)
     playlist_title_formatted = playlist.get("title")
     logging.info(f"Retrieved playlist named {playlist_title_formatted!r} with {len(playlist.get('tracks'))} tracks.")
     if not can_edit_playlist(playlist):
