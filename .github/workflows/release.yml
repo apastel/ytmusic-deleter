@@ -157,5 +157,5 @@ jobs:
         --repo '${{ github.repository }}' \
         YTMusic_Deleter-${{ steps.json-properties.outputs.version }}-Windows-Installer.exe \
         YTMusic_Deleter-${{ steps.json-properties.outputs.version }}-Linux-Installer.deb \
-        YTMusic_Deleter-${{ steps.json-properties.outputs.version }}-macos-13-Installer.dmg
-        YTMusic_Deleter-${{ steps.json-properties.outputs.version }}-macos-14-Installer.dmg
+        YTMusic_Deleter-${{ steps.json-properties.outputs.version }}-MacOS-Installer_x86_64.dmg
+        YTMusic_Deleter-${{ steps.json-properties.outputs.version }}-MacOS-Installer_arm.dmg

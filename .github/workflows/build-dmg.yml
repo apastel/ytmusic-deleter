@@ -134,14 +134,14 @@ jobs:
           ARCH=arm
         fi
         mv ./gui/target/mac-installer-to-be-renamed.dmg \
-           ./gui/target/YTMusic_Deleter-${{ steps.json-properties.outputs.version }}-MacOS-Installer-$ARCH.dmg
+           ./gui/target/YTMusic_Deleter-${{ steps.json-properties.outputs.version }}-MacOS-Installer_$ARCH.dmg
         echo "ARCH=$ARCH" >> $GITHUB_ENV
     - name: Save .dmg as artifact
       id: upload_dmg
       uses: actions/upload-artifact@v4
       with:
         name: installer-dmg-${{ matrix.os }}
-        path: ./gui/target/YTMusic_Deleter-${{ steps.json-properties.outputs.version }}-MacOS-Installer-${{ env.ARCH }}.dmg
+        path: ./gui/target/YTMusic_Deleter-${{ steps.json-properties.outputs.version }}-MacOS-Installer_${{ env.ARCH }}.dmg
       env:
         ARCH: ${{ env.ARCH }}
 
@@ -165,7 +165,7 @@ jobs:
           else
             ARCH=arm
           fi
-          hdiutil attach ./YTMusic_Deleter-${{ needs.build.outputs.installer-version }}-MacOS-Installer-$ARCH.dmg
+          hdiutil attach ./YTMusic_Deleter-${{ needs.build.outputs.installer-version }}-MacOS-Installer_$ARCH.dmg
       - name: Install dependencies
         run: |
 
