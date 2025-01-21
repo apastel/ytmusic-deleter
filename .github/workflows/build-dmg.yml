@@ -41,6 +41,7 @@ jobs:
     outputs:
       installer-version: ${{ steps.json-properties.outputs.version }}
       cli-version: ${{ steps.run-cli.outputs.version }}
+      arch: ${{ steps.rename-installer.outputs.ARCH }}
     steps:
     - uses: actions/checkout@v4
       with:
@@ -125,21 +126,23 @@ jobs:
       with:
         file_path: gui/src/build/settings/base.json
     - name: Rename installer per version
+      id: rename-installer
       run: |
 
-        if [[${{ matrix.os }} == 'macos-13']]; then
+        if [[ "${{ matrix.os }}" == "macos-13" ]]; then
           arch=x86_64
         else
           arch=arm
         fi
         mv ./gui/target/mac-installer-to-be-renamed.dmg \
            ./gui/target/YTMusic_Deleter-${{ steps.json-properties.outputs.version }}-$arch-Installer.dmg
+        echo "ARCH=$arch" >> $GITHUB_OUTPUT
     - name: Save .dmg as artifact
       id: upload_dmg
       uses: actions/upload-artifact@v4
       with:
         name: installer-dmg-${{ matrix.os }}
-        path: ./gui/target/YTMusic_Deleter-${{ steps.json-properties.outputs.version }}-${{ matrix.os }}-Installer.dmg
+        path: ./gui/target/YTMusic_Deleter-${{ steps.json-properties.outputs.version }}-${{ steps.rename-installer.outputs.ARCH }}-Installer.dmg
 
   verify:
     strategy:
@@ -154,7 +157,7 @@ jobs:
           name: installer-dmg-${{ matrix.os }}
       - name: Attach app image
         run: |
-          hdiutil attach ./YTMusic_Deleter-${{ needs.build.outputs.installer-version }}-${{ matrix.os }}-Installer.dmg
+          hdiutil attach ./YTMusic_Deleter-${{ needs.build.outputs.installer-version }}-${{ needs.build.outputs.arch }}-Installer.dmg
       - name: Install dependencies
         run: |
 
