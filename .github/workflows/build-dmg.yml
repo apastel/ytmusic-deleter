@@ -127,10 +127,13 @@ jobs:
     - name: Rename installer per version
       run: |
 
-        pwd
-        ls -l
-        mv ./gui/target/YTMusic_Deleter-${{ steps.json-properties.outputs.version }}-MacOS-Installer.dmg \
-           ./gui/target/YTMusic_Deleter-${{ steps.json-properties.outputs.version }}-${{ matrix.os }}-Installer.dmg
+        if [[${{ matrix.os }} == 'macos-13']]; then
+          arch=x86_64
+        else
+          arch=arm
+        fi
+        mv ./gui/target/mac-installer-to-be-renamed.dmg \
+           ./gui/target/YTMusic_Deleter-${{ steps.json-properties.outputs.version }}-$arch-Installer.dmg
     - name: Save .dmg as artifact
       id: upload_dmg
       uses: actions/upload-artifact@v4
