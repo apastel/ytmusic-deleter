@@ -141,7 +141,7 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: installer-dmg-${{ matrix.os }}
-        path: ./gui/target/YTMusic_Deleter-${{ steps.json-properties.outputs.version }}-MacOS-Installer-$ARCH.dmg
+        path: ./gui/target/YTMusic_Deleter-${{ steps.json-properties.outputs.version }}-MacOS-Installer-${{ env.ARCH }}.dmg
       env:
         ARCH: ${{ env.ARCH }}
 
