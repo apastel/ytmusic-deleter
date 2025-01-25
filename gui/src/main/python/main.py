@@ -502,6 +502,7 @@ class AppContext(ApplicationContext):
         scope.set_extra("os", platform.name())
 
     def run(self):
+        self.app.setStyle("Fusion")
         self.window.show()
         return self.app.exec()
 
