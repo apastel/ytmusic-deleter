@@ -60,4 +60,12 @@ If you would prefer to use the command-line interface (or if you're running macO
 
 [Sign-in video tutorial](https://youtu.be/FZ7gaMTUYN4)
 
-Various exceptions may occur while running ytmusic-deleter because there is a wide swath of possible metadata on your library, and the YouTube Music backend is changing rapidly. Most errors deleting albums have been accounted for and you may just have to delete a couple albums manually that got left behind. If there are any errors that halt the entire program in the middle of deletion, please create an Issue and post the full error.
+If you see:
+```
+ytmusicapi.exceptions.YTMusicServerError: Server returned HTTP 401: Unauthorized.
+You must be signed in to perform this operation.
+```
+then your sign-in has expired (happens monthly, roughly). Click the profile icon and click "Sign Out", then sign back in
+again by following the steps in [Setup](./README.md#setup).
+
+Various other exceptions may occur while running ytmusic-deleter because there is a wide swath of possible metadata on your library, and the YouTube Music backend is changing rapidly. Most errors deleting albums have been accounted for and you may just have to delete a couple albums manually that got left behind. If there are any errors that halt the entire program in the middle of deletion, please create an Issue and post the full error.
