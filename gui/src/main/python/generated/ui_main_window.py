@@ -25,8 +25,8 @@ class Ui_MainWindow(object):
         if not MainWindow.objectName():
             MainWindow.setObjectName(u"MainWindow")
         MainWindow.resize(900, 685)
-        self.actionPreferences = QAction(MainWindow)
-        self.actionPreferences.setObjectName(u"actionPreferences")
+        self.actionSettings = QAction(MainWindow)
+        self.actionSettings.setObjectName(u"actionSettings")
         self.actionExit = QAction(MainWindow)
         self.actionExit.setObjectName(u"actionExit")
         self.centralWidget = QWidget(MainWindow)
@@ -143,7 +143,7 @@ class Ui_MainWindow(object):
         MainWindow.setStatusBar(self.statusbar)
 
         self.menubar.addAction(self.menuSettings.menuAction())
-        self.menuSettings.addAction(self.actionPreferences)
+        self.menuSettings.addAction(self.actionSettings)
         self.menuSettings.addAction(self.actionExit)
 
         self.retranslateUi(MainWindow)
@@ -164,7 +164,7 @@ class Ui_MainWindow(object):
 
     def retranslateUi(self, MainWindow):
         MainWindow.setWindowTitle(QCoreApplication.translate("MainWindow", u"YTMusic Deleter", None))
-        self.actionPreferences.setText(QCoreApplication.translate("MainWindow", u"Preferences...", None))
+        self.actionSettings.setText(QCoreApplication.translate("MainWindow", u"Settings...", None))
         self.actionExit.setText(QCoreApplication.translate("MainWindow", u"Exit", None))
 #if QT_CONFIG(statustip)
         self.removeLibraryButton.setStatusTip(QCoreApplication.translate("MainWindow", u"Remove all songs and podcasts that you have added to your library from within YouTube Music.", None))
