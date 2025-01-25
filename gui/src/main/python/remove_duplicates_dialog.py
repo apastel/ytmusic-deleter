@@ -1,3 +1,4 @@
+import ytmusicapi
 from checkbox_track_listing import CheckboxTrackListingDialog
 from generated.ui_playlist_selection_dialog import Ui_PlaylistSelectionDialog
 from PySide6.QtCore import Slot
@@ -26,7 +27,12 @@ class RemoveDuplicatesDialog(QDialog, Ui_PlaylistSelectionDialog):
         self.radioButtonLibrary.setVisible(False)
         self.radioButtonUploads.setVisible(False)
 
-        self.all_playlists = parent.ytmusic.get_library_playlists(limit=None)
+        try:
+            self.all_playlists = parent.ytmusic.get_library_playlists(limit=None)
+        except ytmusicapi.exceptions.YTMusicError as e:
+            # Ensure we log an exception in the console (not just log file) if fetching playlists fails
+            self.parentWidget().message(str(e))
+            raise
         self.playlistList.insertItems(0, [playlist["title"] for playlist in self.all_playlists])
 
     def accept(self):

@@ -1,3 +1,4 @@
+import ytmusicapi
 from generated.ui_playlist_selection_dialog import Ui_PlaylistSelectionDialog
 from PySide6.QtCore import Slot
 from PySide6.QtWidgets import QDialog
@@ -15,7 +16,12 @@ class AddAllToPlaylistDialog(QDialog, Ui_PlaylistSelectionDialog):
         self.playlistList.itemSelectionChanged.connect(self.enable_ok_button)
         self.shuffleCheckBox.hide()
 
-        self.all_playlists = parent.ytmusic.get_library_playlists(limit=None)
+        try:
+            self.all_playlists = parent.ytmusic.get_library_playlists(limit=None)
+        except ytmusicapi.exceptions.YTMusicError as e:
+            # Ensure we log an exception in the console (not just log file) if fetching playlists fails
+            self.parentWidget().message(str(e))
+            raise
         self.playlistList.insertItems(0, [playlist["title"] for playlist in self.all_playlists])
 
     def accept(self):

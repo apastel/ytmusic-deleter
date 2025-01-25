@@ -1,3 +1,4 @@
+import ytmusicapi
 from generated.ui_sort_playlist_dialog import Ui_SortPlaylistDialog
 from PySide6.QtCore import Slot
 from PySide6.QtWidgets import QAbstractItemView
@@ -31,7 +32,12 @@ class SortPlaylistsDialog(QDialog, Ui_SortPlaylistDialog):
             list_item = QListWidgetItem(item_text)
             self.availableAttributesListWidget.addItem(list_item)
 
-        playlists = parent.ytmusic.get_library_playlists(limit=None)
+        try:
+            playlists = parent.ytmusic.get_library_playlists(limit=None)
+        except ytmusicapi.exceptions.YTMusicError as e:
+            # Ensure we log an exception in the console (not just log file) if fetching playlists fails
+            self.parentWidget().message(str(e))
+            raise
         self.playlistList.insertItems(0, [playlist["title"] for playlist in playlists])
 
     def accept(self):
