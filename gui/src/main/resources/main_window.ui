@@ -419,15 +419,15 @@
     <property name="title">
      <string>File</string>
     </property>
-    <addaction name="actionPreferences"/>
+    <addaction name="actionSettings"/>
     <addaction name="actionExit"/>
    </widget>
    <addaction name="menuSettings"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
-  <action name="actionPreferences">
+  <action name="actionSettings">
    <property name="text">
-    <string>Preferences...</string>
+    <string>Settings...</string>
    </property>
   </action>
   <action name="actionExit">

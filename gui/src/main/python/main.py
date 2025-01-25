@@ -21,7 +21,6 @@ from fbs_runtime.application_context import is_frozen
 from fbs_runtime.application_context.PySide6 import ApplicationContext
 from fbs_runtime.excepthook.sentry import SentryExceptionHandler
 from generated.ui_main_window import Ui_MainWindow
-from preferences_dialog import PreferencesDialog
 from progress_dialog import ProgressDialog
 from PySide6.QtCore import QCoreApplication
 from PySide6.QtCore import QEvent
@@ -38,6 +37,7 @@ from PySide6.QtWidgets import QLabel
 from PySide6.QtWidgets import QMainWindow
 from PySide6.QtWidgets import QMessageBox
 from remove_duplicates_dialog import RemoveDuplicatesDialog
+from settings_dialog import SettingsDialog
 from sort_playlists_dialog import SortPlaylistsDialog
 from ytmusic_deleter import common as const
 from ytmusicapi import YTMusic
@@ -45,10 +45,11 @@ from ytmusicapi.auth.oauth import OAuthCredentials
 from ytmusicapi.auth.oauth import RefreshingToken
 from ytmusicapi.auth.types import AuthType
 
+from common import APP_DATA_DIR
+
 
 internal_directory = os.path.dirname(os.path.abspath(__file__))
 CLI_EXECUTABLE = f"{internal_directory}/ytmusic-deleter" if is_frozen() else "ytmusic-deleter"
-APP_DATA_DIR = str(Path(os.getenv("APPDATA" if os.name == "nt" else "HOME")) / PUBLIC_SETTINGS["app_name"])
 progress_re = re.compile(r"Total complete: (\d+)%")
 item_processing_re = re.compile(r"(Processing .+)")
 
@@ -100,9 +101,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.accountPhotoButton.clicked.connect(self.account_button_clicked)
         self.signOutButton.clicked.connect(self.sign_out)
         self.accountWidgetCloseButton.clicked.connect(self.accountWidget.close)
-        self.preferences_dialog = PreferencesDialog(self)
-        self.preferences_dialog.save_settings_signal.connect(self.save_settings)
-        self.actionPreferences.triggered.connect(self.preferences_dialog.exec)
+        self.settings_dialog = SettingsDialog(self)
+        self.settings_dialog.save_settings_signal.connect(self.save_settings)
+        self.actionSettings.triggered.connect(self.settings_dialog.exec)
         self.actionExit.triggered.connect(QCoreApplication.quit)
         self.removeLibraryButton.clicked.connect(self.prepare_to_invoke)
         self.deleteUploadsButton.clicked.connect(self.prepare_to_invoke)
@@ -449,8 +450,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     @Slot()
     def save_settings(self):
-        self.settings.setValue("verbose_logging", self.preferences_dialog.verboseCheckBox.isChecked())
-        self.settings.setValue("oauth_enabled", self.preferences_dialog.oauthCheckbox.isChecked())
+        self.settings.setValue("verbose_logging", self.settings_dialog.verboseCheckBox.isChecked())
+        self.settings.setValue("oauth_enabled", self.settings_dialog.oauthCheckbox.isChecked())
         self.load_settings()
 
     def load_settings(self):
