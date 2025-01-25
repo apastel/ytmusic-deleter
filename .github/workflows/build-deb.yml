@@ -33,7 +33,7 @@ defaults:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     outputs:
       installer-version: ${{ steps.json-properties.outputs.version }}
       cli-version: ${{ steps.run-cli.outputs.version }}
@@ -49,7 +49,7 @@ jobs:
         curl -L https://drive.google.com/uc?id=$FBS_URL_ID --output fbs_pro-1.2.1.tar.gz
     - name: Install dependencies
       run: |
-        sudo apt update && sudo apt install -y libegl1
+        sudo apt update && sudo apt install -y libegl1 libegl1-mesa
         pdm install -dG gui --no-editable
     - name: Run CLI from venv
       id: run-cli
@@ -128,7 +128,7 @@ jobs:
         path: ./gui/target/YTMusic_Deleter-${{ steps.json-properties.outputs.version }}-Linux-Installer.deb
 
   verify:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     needs: build
     steps:
       - name: Download Artifact
