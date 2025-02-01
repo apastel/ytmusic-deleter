@@ -40,6 +40,7 @@ jobs:
     needs:
       - build-exe
       - build-deb
+      - build-dmg
 
     steps:
     - uses: actions/checkout@v4
