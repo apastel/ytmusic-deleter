@@ -7,12 +7,12 @@ import subprocess
 import sys
 import webbrowser
 from importlib.metadata import version
-from json import JSONDecodeError
 from pathlib import Path
 from time import strftime
 from typing import List
 
 import requests
+import ytmusicapi.exceptions
 from add_all_to_playlist_dialog import AddAllToPlaylistDialog
 from browser_auth_dialog import BrowserAuthDialog
 from fbs_runtime import PUBLIC_SETTINGS
@@ -40,8 +40,7 @@ from remove_duplicates_dialog import RemoveDuplicatesDialog
 from settings_dialog import SettingsDialog
 from sort_playlists_dialog import SortPlaylistsDialog
 from ytmusic_deleter import common as const
-from ytmusicapi import YTMusic
-from ytmusicapi.auth.oauth import OAuthCredentials
+from ytmusicapi import OAuthCredentials
 from ytmusicapi.auth.oauth import RefreshingToken
 from ytmusicapi.auth.types import AuthType
 
@@ -184,15 +183,15 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         """Check if user is signed in. If true, display their account info."""
         try:
             # Check for browser.json / oauth.json
-            self.ytmusic = YTMusic(str(Path(self.credential_dir) / self.auth_file_name))
-        except JSONDecodeError:
+            self.ytmusic = ytmusicapi.YTMusic(str(Path(self.credential_dir) / self.auth_file_name))
+        except ytmusicapi.exceptions.YTMusicUserError:
             # User is not signed in
             if display_message:
                 self.message("Click the 'Sign In' button to connect to your account.")
             return False
 
         # Display account name in popover
-        if self.ytmusic.auth_type in AuthType.oauth_types():
+        if self.ytmusic.auth_type == AuthType.OAUTH_CUSTOM_CLIENT:
             try:
                 account_info: dict = self.ytmusic.get_account_info()
             except Exception as e:
