@@ -8,11 +8,11 @@
 ![Codecov](https://img.shields.io/codecov/c/github/apastel/ytmusic-deleter?color=green)  
 [![Discord](https://img.shields.io/discord/1156973782741827686?logo=discord)](https://discord.gg/M9t5H8njrM)
 
-This is the command-line interface for ytmusic-deleter. For the graphical Windows .exe edition, visit the [main page](https://github.com/apastel/ytmusic-deleter)
+This is the command-line interface for ytmusic-deleter. For the graphical user interface edition, visit the [main page](https://github.com/apastel/ytmusic-deleter)
 
 ## Command-line interface install using Python / PIP
-The CLI version of ytmusic-deleter is for advanced users who would rather use a command-line or are running macOS.
-> For the graphical Windows .exe edition (or Linux), visit the [main page](https://github.com/apastel/ytmusic-deleter)
+The CLI version of ytmusic-deleter is for advanced users who would rather use a command-line.
+> For the graphical user interface edition, visit the [main page](https://github.com/apastel/ytmusic-deleter)
 
 Installation instructions of this command-line interface:
 1. Install [Python](https://www.python.org/downloads/). Make sure it is available on your PATH.
@@ -34,7 +34,7 @@ $ ytmusic-deleter whoami
 Please paste the request headers from Firefox and press 'Enter, Ctrl-Z, Enter' to continue:
 ```
 > If you are running macOS, please see the [special pasting instructions](https://ytmusicapi.readthedocs.io/en/stable/setup/browser.html#using-the-headers-in-your-project)
-in the "MacOS special pasting instructions" section of the ytmusicapi docs.
+in the "macOS special pasting instructions" section of the ytmusicapi docs.
 
 
 ### Usage

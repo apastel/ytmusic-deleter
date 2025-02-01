@@ -139,11 +139,11 @@ jobs:
       uses: actions/download-artifact@v4
       with:
         name: installer-deb
-    - name: Download MacOS 13 installer (Intel)
+    - name: Download macOS 13 installer (Intel)
       uses: actions/download-artifact@v4
       with:
         name: installer-dmg-macos-13
-    - name: Download MacOS 14 installer (Apple)
+    - name: Download macOS 14 installer (Apple)
       uses: actions/download-artifact@v4
       with:
         name: installer-dmg-macos-14

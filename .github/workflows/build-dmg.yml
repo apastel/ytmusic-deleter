@@ -1,4 +1,4 @@
-# This workflow builds and tests the macOS installer for YTMusic Deleterr.
+# This workflow builds and tests the macOS installer for YTMusic Deleter.
 
 name: Build and Verify (macOS)
 
