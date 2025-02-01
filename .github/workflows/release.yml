@@ -29,6 +29,10 @@ jobs:
   build-deb:
     uses: ./.github/workflows/build-deb.yml
     secrets: inherit
+  build-dmg:
+    uses: ./.github/workflows/build-dmg.yml
+    secrets: inherit
+
 
   build-wheel:
     name: Build PyPI dist
@@ -135,6 +139,15 @@ jobs:
       uses: actions/download-artifact@v4
       with:
         name: installer-deb
+    - name: Download macOS 13 installer (Intel)
+      uses: actions/download-artifact@v4
+      with:
+        name: installer-dmg-macos-13
+    - name: Download macOS 14 installer (Apple)
+      uses: actions/download-artifact@v4
+      with:
+        name: installer-dmg-macos-14
+        path:
     - name: Upload executable installers to Github Release
       env:
         GITHUB_TOKEN: ${{ github.token }}
@@ -143,4 +156,6 @@ jobs:
         '${{ github.ref_name }}' \
         --repo '${{ github.repository }}' \
         YTMusic_Deleter-${{ steps.json-properties.outputs.version }}-Windows-Installer.exe \
-        YTMusic_Deleter-${{ steps.json-properties.outputs.version }}-Linux-Installer.deb
+        YTMusic_Deleter-${{ steps.json-properties.outputs.version }}-Linux-Installer.deb \
+        YTMusic_Deleter-${{ steps.json-properties.outputs.version }}-MacOS-Installer_x86_64.dmg
+        YTMusic_Deleter-${{ steps.json-properties.outputs.version }}-MacOS-Installer_arm.dmg

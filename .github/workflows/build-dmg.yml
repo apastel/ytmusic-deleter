@@ -1,6 +1,6 @@
-# This workflow builds and tests the Linux installer for YTMusic Deleter.
+# This workflow builds and tests the macOS installer for YTMusic Deleter.
 
-name: Build and Verify (Linux)
+name: Build and Verify (macOS)
 
 on:
   push:
@@ -12,7 +12,7 @@ on:
       - '.gitignore'
       - '.pre-commit-comfig.yaml'
       - '**/build-exe.yml'
-      - '**/build-dmg.yml'
+      - '**/build-deb.yml'
       - '**/pytest.yml'
       - '**/release.yml'
   pull_request:
@@ -22,7 +22,7 @@ on:
     - cron: '0 10 * * *'
 
 concurrency:
-  group: build-deb
+  group: build-dmg
   cancel-in-progress: true
 
 permissions:
@@ -34,7 +34,10 @@ defaults:
 
 jobs:
   build:
-    runs-on: ubuntu-22.04
+    strategy:
+      matrix:
+        os: [macos-13, macos-14]
+    runs-on: ${{ matrix.os }}
     outputs:
       installer-version: ${{ steps.json-properties.outputs.version }}
       cli-version: ${{ steps.run-cli.outputs.version }}
@@ -50,8 +53,11 @@ jobs:
         curl -L https://drive.google.com/uc?id=$FBS_URL_ID --output fbs_pro-1.2.1.tar.gz
     - name: Install dependencies
       run: |
-        sudo apt update && sudo apt install -y libegl1 libegl1-mesa
+
         pdm install -dG gui --no-editable
+
+        # adds `timeout` command
+        brew install coreutils
     - name: Run CLI from venv
       id: run-cli
       run: |
@@ -97,7 +103,7 @@ jobs:
         export QT_QPA_PLATFORM=offscreen
 
         # Launch the fbs app and kill it after 10 seconds, saving the output.
-        output=$(timeout 10s ./gui/target/YTMusic_Deleter/YTMusic_Deleter || true)
+        output=$(timeout 10s ./gui/target/YTMusic_Deleter.app/Contents/MacOS/YTMusic_Deleter || true)
 
         # Check if the output contains the right CLI version
         if grep -q "$version_str" <<< "$output"; then
@@ -107,48 +113,72 @@ jobs:
             echo $output
             exit 1
         fi
-    - uses: ruby/setup-ruby@v1
-      with:
-        ruby-version: ruby
-    - name: Install fpm
-      run: |
-        sudo gem install fpm
     - name: Create installer
-      run: |
-        pdm fbs installer
+      uses: nick-fields/retry@v3
+      with:
+        command: pdm fbs installer
+        max_attempts: 10
+        timeout_minutes: 20
     - name: Get base.json file
       id: json-properties
       uses: zoexx/github-action-json-file-properties@1.0.6
       with:
         file_path: gui/src/build/settings/base.json
-    - name: Save .deb as artifact
-      id: upload_deb
+    - name: Rename installer per version
+      id: rename-installer
+      run: |
+
+        if [[ "${{ matrix.os }}" == "macos-13" ]]; then
+          ARCH=x86_64
+        else
+          ARCH=arm
+        fi
+        mv ./gui/target/mac-installer-to-be-renamed.dmg \
+           ./gui/target/YTMusic_Deleter-${{ steps.json-properties.outputs.version }}-MacOS-Installer_$ARCH.dmg
+        echo "ARCH=$ARCH" >> $GITHUB_ENV
+    - name: Save .dmg as artifact
+      id: upload_dmg
       uses: actions/upload-artifact@v4
       with:
-        name: installer-deb
-        path: ./gui/target/YTMusic_Deleter-${{ steps.json-properties.outputs.version }}-Linux-Installer.deb
+        name: installer-dmg-${{ matrix.os }}
+        path: ./gui/target/YTMusic_Deleter-${{ steps.json-properties.outputs.version }}-MacOS-Installer_${{ env.ARCH }}.dmg
+      env:
+        ARCH: ${{ env.ARCH }}
 
   verify:
-    runs-on: ubuntu-22.04
+    strategy:
+      matrix:
+        os: [macos-13, macos-14]
+    runs-on: ${{ matrix.os }}
     needs: build
     steps:
       - name: Download Artifact
         uses: actions/download-artifact@v4
         with:
-          name: installer-deb
-      - name: Run installer
+          name: installer-dmg-${{ matrix.os }}
+      - name: Attach app image
         run: |
-          sudo dpkg -i ./YTMusic_Deleter-${{ needs.build.outputs.installer-version }}-Linux-Installer.deb
+
+          # Have to redefine arch
+          if [[ "${{ matrix.os }}" == "macos-13" ]]; then
+            ARCH=x86_64
+          else
+            ARCH=arm
+          fi
+          hdiutil attach ./YTMusic_Deleter-${{ needs.build.outputs.installer-version }}-MacOS-Installer_$ARCH.dmg
       - name: Install dependencies
         run: |
-          sudo apt update && sudo apt install -y libegl1
+
+          # adds `timeout` command
+          brew install coreutils
       - name: Run application
         run: |
 
           # Makes app run headless
           export QT_QPA_PLATFORM=offscreen
+
           logfile="$HOME/YTMusic_Deleter/ytmusic-deleter-gui*.log"
-          timeout 10s /opt/YTMusic_Deleter/YTMusic_Deleter || true
+          timeout 10s /Volumes/YTMusic_Deleter/YTMusic_Deleter.app/Contents/MacOS/YTMusic_Deleter || true
           version_str="${{ needs.build.outputs.cli-version }}"
           if grep -q "$version_str" $logfile; then
             echo "GUI is running the right CLI version: $version_str"

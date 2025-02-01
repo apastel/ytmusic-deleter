@@ -37,11 +37,24 @@ Features
 ![YTMusic Deleter screenshot](https://i.imgur.com/TVpB6xY.gif)  
 
 ## Installation
-### Easy Install (Windows or Debian Linux Only)
-Windows or Debian Linux users (including Ubuntu) can download an .exe (or .deb, for Linux) to install the YTMusic Deleter GUI (Graphical User Interface).
+### Easy Install on Windows, macOS, or Debian Linux
+Windows, macOS, or Debian Linux users (including Ubuntu) can download an .exe, .dmg, or .deb file to install the YTMusic Deleter GUI (Graphical User Interface).
 
-Find the .exe (or .deb) file in the [Releases](https://github.com/apastel/ytmusic-deleter/releases) area. Just click the latest release and look at the Assets section.  
+Find the executable file in the [Releases](https://github.com/apastel/ytmusic-deleter/releases) area. Just click the latest release and look at the Assets section.  
+* Windows users: Download the Windows-Installer.exe
+* Linux users (Debian only): Download the Linux-Installer.deb
 > Please note you may get a browser warning when downloading the file, and a Windows warning for installing files from an unknown publisher. Click the "More Info" button, then the "Run Anyway" button to finish installing. This warning appears whenever you install something from an unsigned publisher.
+#### macOS users: Download the MacOS-Installer.dmg
+  * Choose the `x86_64` version if you have an Intel CPU (2020 and earlier Macs usually have this)
+  * Choose the `arm` version if you have a newer Mac with an Apple silicon chip.
+  * You will know if you chose the wrong version because you will get an error saying "You can't open the application 'YTMusic_Deleter' because this application is not supported on this Mac."
+  * You must open Terminal and run this command before using YTMusic Deleter on macOS:
+    ```
+    xattr -d com.apple.quarantine ~/Downloads/YTMusic_Deleter-[x.y.z]-MacOS-Installer_[arch].dmg
+    ```
+    replacing `[x.y.z]` and `[arch]` with the actual values, and replacing `~/Downloads` with the correct folder if that is not where it was downloaded to.  
+    If you do not run this command, you will see an error when you try to run the program that says "'YTMusic_Deleter' is damaged and can't be opened. You should eject the disk image."  
+    This happens because macOS automatically blocks DMG files downloaded from the internet that it doesn't recognize, and running this command will remove it from quarantine.
 
 ## Setup
 Once installed and running, click the "Sign In" button to authenticate to your YouTube Music account.
@@ -52,8 +65,8 @@ Follow the instructions in the [ytmusicapi](https://ytmusicapi.readthedocs.io/en
 to copy your request headers to your clipboard. Then paste them into the window in YTMusic Deleter.
 > It's recommended to use Firefox for copying the headers since Firefox conveniently has a "Copy Request Headers" button.
 
-### (Advanced) Command-line interface for non-Windows users
-If you would prefer to use the command-line interface (or if you're running macOS), see [CLI README](ytmusic_deleter/README.md) for instructions on running the CLI version of YTMusic Deleter. This is completely separate from the GUI version. There is no reason to download both -- use one or the other.
+### (Advanced) Command-line interface
+If you would prefer to use the command-line interface, see [CLI README](ytmusic_deleter/README.md) for instructions on running the CLI version of YTMusic Deleter. This is completely separate from the GUI version. There is no reason to download both -- use one or the other.
 
 ## Troubleshooting
 [Video Tutorial](https://youtu.be/oV-yLi1AW1c) on using YTMusic Deleter in general (this shows an outdated sign-in method which was unfortunately deprecated).

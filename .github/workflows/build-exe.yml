@@ -1,4 +1,4 @@
-# This workflow builds and tests the Windows installer for YTMusic Deleterr.
+# This workflow builds and tests the Windows installer for YTMusic Deleter.
 
 name: Build and Verify (Windows)
 
@@ -12,6 +12,7 @@ on:
       - '.gitignore'
       - '.pre-commit-comfig.yaml'
       - '**/build-deb.yml'
+      - '**/build-dmg.yml'
       - '**/pytest.yml'
       - '**/release.yml'
   pull_request:
