@@ -3,6 +3,7 @@
 [![PyPI - Downloads](https://img.shields.io/pypi/dm/ytmusic-deleter?logo=pypi&logoColor=yellow&label=PyPI%20Downloads)](https://pypi.org/project/ytmusic-deleter/)
 ![GitHub Release](https://img.shields.io/github/v/release/apastel/ytmusic-deleter)
 [![Release test](https://github.com/apastel/ytmusic-deleter/actions/workflows/build-exe.yml/badge.svg)](https://github.com/apastel/ytmusic-deleter/actions/workflows/build-exe.yml)
+[![Release test](https://github.com/apastel/ytmusic-deleter/actions/workflows/build-dmg.yml/badge.svg)](https://github.com/apastel/ytmusic-deleter/actions/workflows/build-dmg.yml)
 [![Release test](https://github.com/apastel/ytmusic-deleter/actions/workflows/build-deb.yml/badge.svg)](https://github.com/apastel/ytmusic-deleter/actions/workflows/build-deb.yml)
 [![Pytest](https://github.com/apastel/ytmusic-deleter/actions/workflows/pytest.yml/badge.svg)](https://github.com/apastel/ytmusic-deleter/actions/workflows/pytest.yml)
 ![Codecov](https://img.shields.io/codecov/c/github/apastel/ytmusic-deleter?color=green)
