@@ -53,8 +53,8 @@ Find the executable file in the [Releases](https://github.com/apastel/ytmusic-de
     ```
     xattr -d com.apple.quarantine ~/Downloads/YTMusic_Deleter-[x.y.z]-MacOS-Installer_[arch].dmg
     ```
-    replacing `[x.y.z]` and `[arch]` with the actual values, and replacing `~/Downloads` with the correct folder if that is not where it was downloaded to.  
-    If you do not run this command, you will see an error when you try to run the program that says "'YTMusic_Deleter' is damaged and can't be opened. You should eject the disk image."  
+    replacing `[x.y.z]` and `[arch]` with the actual values, and replacing `~/Downloads` with the correct folder (if your downloads go in some other folder).  
+    If you do not run this command, you will see the following error when running the program: "'YTMusic_Deleter' is damaged and can't be opened. You should eject the disk image."  
     This happens because macOS automatically blocks DMG files downloaded from the internet that it doesn't recognize, and running this command will remove it from quarantine.
 
 ## Setup
