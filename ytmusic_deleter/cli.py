@@ -84,16 +84,10 @@ def whoami():
     help="Add the corresponding album to your library before deleting a song from uploads.",
 )
 @click.option(
-    "--fuzzy",
-    "-f",
-    is_flag=True,
-    help="When using --add-to-library, this enables 'fuzzy' matching, allowing more flexibility when searching for matches among the YTM online catalog.",  # noqa: B950
-)
-@click.option(
     "--score-cutoff",
     "-s",
     default=90,
-    help="When combined with the --add-to-library and --fuzzy flags, this optional integer argument between 0 and 100 is used when finding matches in the YTM online catalog. No matches with a score less than this number will be added to your library. Defaults to 90.",  # noqa: B950
+    help="When combined with the --add-to-library flag, this optional integer argument between 0 and 100 is used when finding matches in the YTM online catalog. No matches with a score less than this number will be added to your library. Defaults to 85.",  # noqa: B950
 )
 @click.pass_context
 def delete_uploads(ctx: click.Context, **kwargs):

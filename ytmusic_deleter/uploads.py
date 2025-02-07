@@ -52,14 +52,14 @@ def maybe_delete_uploaded_albums() -> tuple[int, int]:
         if get_current_context().params["add_to_library"]:
             if artist == const.UNKNOWN_ARTIST or album_title == const.UNKNOWN_ALBUM:
                 if artist == const.UNKNOWN_ARTIST:
-                    logging.warn("\tSong is missing artist metadata.")
+                    logging.warning("\tSong is missing artist metadata.")
                 if album_title == const.UNKNOWN_ALBUM:
-                    logging.warn("\tSong is missing album metadata.")
-                logging.warn("\tSkipping match search and will not delete.")
+                    logging.warning("\tSong is missing album metadata.")
+                logging.warning("\tSkipping match search and will not delete.")
                 update_progress(progress_bar)
                 continue
             elif not add_album_to_library(artist, album_title):
-                logging.warn(
+                logging.warning(
                     f"\tNo album was added to library for '{artist} - {album_title}'. Will not delete from uploads."
                 )
                 update_progress(progress_bar)
@@ -74,18 +74,20 @@ def maybe_delete_uploaded_albums() -> tuple[int, int]:
     return (albums_deleted, len(album_unique_songs))
 
 
-def add_album_to_library(upload_artist, upload_title) -> bool:
+def add_album_to_library(upload_artist, upload_title, yt_auth: YTMusic = None, score_cutoff: int = None) -> dict | None:
     """
     Search for "<artist> <album title>" in the YTM online catalog.
 
-    `Return`: `True` if an album was added to library, `False` otherwise
+    `Return`: match dict if an album was added to library, `None` otherwise
     """
+    # Allow passing in yt_auth from pytest
+    if not yt_auth:
+        yt_auth: YTMusic = get_current_context().obj["YT_AUTH"]
     logging.info(f"\tSearching YT Music for albums like: '{upload_artist} - {upload_title}'")
-    yt_auth: YTMusic = get_current_context().obj["YT_AUTH"]
     search_results = yt_auth.search(f"{upload_artist} {upload_title}", filter="albums")
     if not search_results:
-        logging.info("No search results were found. It's possible Google is limiting your requests. Try again later.")
-        return False
+        logging.info("\tNo search results were found.")
+        return None
     logging.info(f"\tThere were {len(search_results)} album results.")
 
     # collect all search results into a simplified list
@@ -98,62 +100,47 @@ def add_album_to_library(upload_artist, upload_title) -> bool:
     search_results = list(filter(artist_is_correct, search_results))
     if not search_results:
         logging.info("\tNone of the search results had the correct artist name.")
-        return False
+        return None
 
-    if get_current_context().params["fuzzy"]:
+    def scorer(query, choice):
+        return fuzz.ratio(query, choice)
 
-        def scorer(query, choice):
-            return fuzz.partial_ratio(query, choice)
+    # ###### This is just to print the top matches and their scores ######
+    # tuple_list = process.extractBests(
+    #     upload_title, search_results, processor=lambda x: x["title"] if isinstance(x, dict) else x, scorer=scorer
+    # )
+    # for tuple in tuple_list:
+    #     match, score = tuple
+    #     print(f"match: {match}\nscore: {score}")
+    # ######
 
-        # Find the best match for the album title among the search results
-        match, score = process.extractOne(
-            upload_title, search_results, processor=lambda x: x["title"] if isinstance(x, dict) else x, scorer=scorer
-        )
+    # Find the best match for the album title among the search results
+    match, score = process.extractOne(
+        upload_title, search_results, processor=lambda x: x["title"] if isinstance(x, dict) else x, scorer=scorer
+    )
 
-        # Make sure this result at least passes the score cutoff
-        if score < get_current_context().params["score_cutoff"]:
-            logging.info(
-                f"\tThe best search result '{match['artist']} - {match['title']}' had a match score of {score} which does not pass the score cutoff of {get_current_context().params['score_cutoff']}."  # noqa: B950
-            )
-            return False
-
-        # Add the match to the library
+    # Make sure this result at least passes the score cutoff
+    if score_cutoff is None:
+        score_cutoff = get_current_context().params["score_cutoff"]
+    if score < score_cutoff:
         logging.info(
-            f"\tFound match: '{match['artist']} - {match['title']}' with a matching score of {score}. Adding to library..."
+            f"\tThe best search result '{match['artist']} - {match['title']}' had a match score of {score} which does not pass the score cutoff of {score_cutoff}."  # noqa: B950
         )
-    else:
-        # TODO fix up fuzzy matching algorithms enough to the point where we don't need this anymore
-        match = None
-        for search_result in search_results:
-            search_result_artist = search_result["artist"]
-            search_result_title = search_result["title"]
-            if upload_title in search_result_title:
-                match = search_result
-                logging.info(f"\tFound match: '{match['artist']} - {match['title']}'. Adding to library...")
-                break
-            else:
-                # Try again but strip out parenthetical expressions at the end of the title, and all symbols
-                upload_title = const.strip_parentheticals(upload_title)
-                search_result_title = const.strip_parentheticals(search_result_title)
-                logging.info(f"\t\tSanitized upload is: {upload_artist} - {upload_title}")
-                logging.info(f"\t\tSanitized match is:  {search_result_artist} - {search_result_title}")
-                if upload_title in search_result_title:
-                    match = search_result
-                    logging.info(f"\tFound match: '{match['artist']} - {match['title']}'. Adding to library...")
-                    break
-            logging.info(f"\t\tThis {'IS' if match else 'is NOT'} a match")
-        if not match:
-            logging.info(f"No matches were found in YTM for `{upload_artist} - {upload_title}`")
-            return False
+        return None
+
+    # Add the match to the library
+    logging.info(
+        f"\tFound match: '{match['artist']} - {match['title']}' with a matching score of {score}. Adding to library..."
+    )
 
     catalog_album = yt_auth.get_album(match["browseId"])
     success = yt_auth.rate_playlist(catalog_album["audioPlaylistId"], const.LIKE)
     if success:
         logging.info("\tAdded album to library.")
-        return True
+        return match
     else:
         logging.error("\tFailed to add album to library")
-        return False
+        return None
 
 
 class SearchResult(TypedDict):
