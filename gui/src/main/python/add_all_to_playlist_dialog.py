@@ -14,7 +14,6 @@ class AddAllToPlaylistDialog(QDialog, Ui_PlaylistSelectionDialog):
         self.setWindowTitle("Select Playlist to Add All Songs To")
         self.enable_ok_button()
         self.playlistList.itemSelectionChanged.connect(self.enable_ok_button)
-        self.shuffleCheckBox.hide()
 
         try:
             self.all_playlists = parent.ytmusic.get_library_playlists(limit=None)

@@ -15,6 +15,7 @@ import requests
 import ytmusicapi.exceptions
 from add_all_to_playlist_dialog import AddAllToPlaylistDialog
 from browser_auth_dialog import BrowserAuthDialog
+from delete_uploads_dialog import DeleteUploadsDialog
 from fbs_runtime import PUBLIC_SETTINGS
 from fbs_runtime.application_context import cached_property
 from fbs_runtime.application_context import is_frozen
@@ -32,7 +33,6 @@ from PySide6.QtCore import Slot
 from PySide6.QtGui import QIcon
 from PySide6.QtGui import QImage
 from PySide6.QtGui import QPixmap
-from PySide6.QtWidgets import QCheckBox
 from PySide6.QtWidgets import QLabel
 from PySide6.QtWidgets import QMainWindow
 from PySide6.QtWidgets import QMessageBox
@@ -310,7 +310,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def show_dialog(self, args: List[str]):
         if self.p is None and self.is_signed_in():
-            if args[0] == "sort-playlist":
+            if args[0] == "delete-uploads":
+                self.delete_uploads_dialog = DeleteUploadsDialog(self)
+                self.delete_uploads_dialog.show()
+
+            elif args[0] == "sort-playlist":
                 self.sort_playlists_dialog = SortPlaylistsDialog(self)
                 self.sort_playlists_dialog.show()
 
@@ -335,11 +339,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         confirmation_dialog.setIcon(QMessageBox.Warning)
         if args[0] == "remove-library":
             text = 'This is the same as clicking "Remove from library" on all albums that you have added to your library by clicking "Add to library" within YT Music. This will not delete your uploads.'  # noqa
-        elif args[0] == "delete-uploads":
-            text = "This will delete all your uploaded music. "
-            checkbox = QCheckBox("Add uploads to library first")
-            checkbox.toggled.connect(self.add_to_library_checked)
-            confirmation_dialog.setCheckBox(checkbox)
+        # elif args[0] == "delete-uploads":
+        #     text = "This will delete all your uploaded music. "
+        #     checkbox = QCheckBox("Add uploads to library first")
+        #     checkbox.toggled.connect(self.add_to_library_checked)
+        #     confirmation_dialog.setCheckBox(checkbox)
         elif args[0] == "delete-playlists":
             text = "This will delete all your playlists, which may also include playlists in regular YouTube.com that have music."
         elif args[0] == "unlike-all":

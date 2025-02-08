@@ -48,22 +48,6 @@
     <bool>true</bool>
    </property>
   </widget>
-  <widget class="QCheckBox" name="shuffleCheckBox">
-   <property name="geometry">
-    <rect>
-     <x>90</x>
-     <y>260</y>
-     <width>70</width>
-     <height>17</height>
-    </rect>
-   </property>
-   <property name="toolTip">
-    <string>Shuffle the playlist(s) instead of sorting.</string>
-   </property>
-   <property name="text">
-    <string>Shuffle</string>
-   </property>
-  </widget>
   <widget class="QRadioButton" name="radioButtonLibrary">
    <property name="enabled">
     <bool>true</bool>
