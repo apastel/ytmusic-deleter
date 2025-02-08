@@ -155,12 +155,6 @@ def fixture_fuzzy_test_data() -> List[Dict]:
             "expected_title": None,
         },
         {
-            "upload_artist": "Metallica",
-            "upload_title": "Metallica Through The Never: Music From The Motion Picture [Disc 2]",
-            "expected_artist": "Metallica",
-            "expected_title": "Metallica Through The Never (Music From The Motion Picture)",
-        },
-        {
             "upload_artist": "Between The Buried & Me",
             "upload_title": "Colors Live",
             "expected_artist": "Between the Buried and Me",

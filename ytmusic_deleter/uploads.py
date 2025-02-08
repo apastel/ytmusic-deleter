@@ -105,15 +105,6 @@ def add_album_to_library(upload_artist, upload_title, yt_auth: YTMusic = None, s
     def scorer(query, choice):
         return fuzz.ratio(query, choice)
 
-    # ###### This is just to print the top matches and their scores ######
-    # tuple_list = process.extractBests(
-    #     upload_title, search_results, processor=lambda x: x["title"] if isinstance(x, dict) else x, scorer=scorer
-    # )
-    # for tuple in tuple_list:
-    #     match, score = tuple
-    #     print(f"match: {match}\nscore: {score}")
-    # ######
-
     # Find the best match for the album title among the search results
     match, score = process.extractOne(
         upload_title, search_results, processor=lambda x: x["title"] if isinstance(x, dict) else x, scorer=scorer
