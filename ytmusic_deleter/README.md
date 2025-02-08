@@ -44,8 +44,7 @@ When you run `ytmusic-deleter` with no parameters, you will see see the usage in
 `delete-uploads`:&nbsp;&nbsp;&nbsp;&nbsp;Delete all tracks that you have uploaded to your YT Music library.
 
 >Use the `--add-to-library` or `-a` option to add each album or song to your library from YouTube Music's online catalog before deleting it from your uploads. If a match could not be found, the album or song will remain in your uploads.
-When using the `-a` option, you can also enable fuzzy matching with `--fuzzy` or `-f`. This is a less strict matching algorithm that will find more matches,
-but may find inaccurrate matches in its current experimental state. Use the `--score-cutoff` or `-s` option to raise or lower the default matching score cutoff of 90. A value closer to 100 will be more strict, and a value closer to 0 will be less strict.
+When using the `-a` option, you can also use the `--score-cutoff` or `-s` option to raise or lower the default matching score cutoff of 85. A value closer to 100 will be more strict, and a value closer to 0 will be less strict.
 
 `remove-library`:&nbsp;&nbsp;&nbsp;&nbsp;Remove all tracks that you have added to your library from within YouTube Music.
 

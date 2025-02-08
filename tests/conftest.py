@@ -133,6 +133,96 @@ def fixture_expected_dupe_groups() -> List[List[Dict]]:
     ]
 
 
+@pytest.fixture(name="fuzzy_test_data")
+def fixture_fuzzy_test_data() -> List[Dict]:
+    return [
+        {
+            "upload_artist": "The Offspring",
+            "upload_title": "The Offspring",
+            "expected_artist": "The Offspring",
+            "expected_title": "The Offspring",
+        },
+        {
+            "upload_artist": "Metallica",
+            "upload_title": "Metallica Through The Never: Music From The Motion Picture [Disc 2]",
+            "expected_artist": "Metallica",
+            "expected_title": "Metallica Through The Never (Music From The Motion Picture)",
+        },
+        {
+            "upload_artist": "Newsted",
+            "upload_title": "Heavy Metal Music",
+            "expected_artist": None,
+            "expected_title": None,
+        },
+        {
+            "upload_artist": "Between The Buried & Me",
+            "upload_title": "Colors Live",
+            "expected_artist": "Between the Buried and Me",
+            "expected_title": "Colors_Live",
+        },
+        {
+            "upload_artist": "Billy Joel",
+            "upload_title": " Greatest Hits, Vol. 3",
+            "expected_artist": "Billy Joel",
+            "expected_title": "Greatest Hits Vol. III",
+        },
+        {
+            "upload_artist": "Eminem",
+            "upload_title": "The Marshall Mathers LP 2",
+            "expected_artist": "Eminem",
+            "expected_title": "The Marshall Mathers LP2",
+        },
+        {
+            "upload_artist": "Iron Maiden",
+            "upload_title": "A Real Live One",
+            "expected_artist": None,
+            "expected_title": None,
+        },
+        {
+            "upload_artist": "The Beatles",
+            "upload_title": "Meet The Beatles!",
+            "expected_artist": None,
+            "expected_title": None,
+        },
+        {
+            "upload_artist": "Todd Snider",
+            "upload_title": "Last Songs For The Daily Planet",
+            "expected_artist": "Todd Snider",
+            "expected_title": "Songs for the Daily Planet",
+        },
+        {
+            "upload_artist": "John Prine",
+            "upload_title": "John Prine Live",
+            "expected_artist": "John Prine",
+            "expected_title": "John Prine (Live)",
+        },
+        {
+            "upload_artist": "Nightwish",
+            "upload_title": "Once Upon a Tour - Live In Buenos Aires",
+            "expected_artist": None,
+            "expected_title": None,
+        },
+        {
+            "upload_artist": "Eminem",
+            "upload_title": "Relapse: Refill [Disc 2]",
+            "expected_artist": None,
+            "expected_title": None,
+        },
+        {
+            "upload_artist": "Megadeth",
+            "upload_title": "Rust In Peace Live",
+            "expected_artist": None,
+            "expected_title": None,
+        },
+        {
+            "upload_artist": "The Beatles",
+            "upload_title": "The Beatles' Second Album",
+            "expected_artist": None,
+            "expected_title": None,
+        },
+    ]
+
+
 @pytest.fixture(name="sample_public_playlist")
 def fixture_sample_playlist() -> str:
     """'00s Metal"""

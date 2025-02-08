@@ -28,13 +28,6 @@ class TestCli:
 
         return self.verify_added_to_library(yt_browser, config, result)
 
-    def test_add_to_library_fuzzy(self, yt_browser: YTMusic, upload_song, config):
-        result = CliRunner().invoke(cli, ["delete-uploads", "-af"], standalone_mode=False, obj=yt_browser)
-        print(result.stdout)
-        assert result.exit_code == 0
-
-        return self.verify_added_to_library(yt_browser, config, result)
-
     def verify_added_to_library(self, yt_browser: YTMusic, config, result):
         albums_deleted, albums_total = result.return_value
         assert albums_deleted >= 1, f"No uploads were deleted. {albums_total} uploads were found."
