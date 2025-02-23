@@ -125,7 +125,12 @@ def add_album_to_library(upload_artist, upload_title, yt_auth: YTMusic = None, s
     )
 
     catalog_album = yt_auth.get_album(match["browseId"])
-    success = yt_auth.rate_playlist(catalog_album["audioPlaylistId"], const.LIKE)
+    audio_playlist_id = catalog_album["audioPlaylistId"]
+    if not audio_playlist_id:
+        # https://github.com/apastel/ytmusic-deleter/issues/109
+        logging.error("\tAlbum is missing 'audioPlaylistId'. Cannot add to library.")
+        return None
+    success = yt_auth.rate_playlist(audio_playlist_id, const.LIKE)
     if success:
         logging.info("\tAdded album to library.")
         return match

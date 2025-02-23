@@ -98,7 +98,7 @@ def delete_uploads(ctx: click.Context, **kwargs):
     remaining_count = albums_total - albums_deleted
     if (ctx.params["add_to_library"]) and remaining_count > 0:
         logging.info(
-            f"\tRemaining {remaining_count} albums (or songs) did not have a match in YouTube Music's online catalog."
+            f"\tRemaining {remaining_count} albums (or songs) could not be added to your library."
         )
         logging.info("\tRe-run without the 'Add to library' option to delete the rest.")
     return (albums_deleted, albums_total)
@@ -195,8 +195,10 @@ def remove_library_items(library_items):
             logging.debug(f"Removing album using id: {id}")
             response = yt_auth.rate_playlist(id, INDIFFERENT)
         elif item.get("feedbackTokens") and isinstance(item.get("feedbackTokens"), dict):
+            print(yt_auth.get_album(item["album"]["id"]))
             logging.debug("This is a song, removing item using feedbackTokens")
-            response = yt_auth.edit_song_library_status([item.get("feedbackTokens").get("remove")])
+            remove_token = item.get("feedbackTokens").get("remove")
+            response = yt_auth.edit_song_library_status([remove_token])
         else:
             logging.error(
                 f"""
