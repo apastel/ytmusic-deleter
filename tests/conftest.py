@@ -34,8 +34,8 @@ def fixture_sample_album() -> str:
 
 @pytest.fixture(name="sample_album_as_playlist")
 def fixture_sample_album_as_playlist() -> str:
-    """Eminem - Revival"""
-    return "OLAK5uy_nMr9h2VlS-2PULNz3M3XVXQj_P3C2bqaY"
+    """Metallica - Metallica (The Black Album)"""
+    return "OLAK5uy_mcL5K5E9IHM5GPQ-8AyzPM7JgQMMn1uhs"
 
 
 @pytest.fixture(name="sample_video")
@@ -319,12 +319,34 @@ def fixture_add_library_album(yt_browser: YTMusic, sample_album_as_playlist):
     while retries_remaining:
         albums = yt_browser.get_library_albums(limit=None)
         for album in albums:
-            if album.get("title") == "Revival":
+            if album.get("title") == "Metallica":
                 return album
         retries_remaining -= 1
         time.sleep(2)
 
     raise AssertionError("Failed to confirm that album was added to library")
+
+
+@pytest.fixture(name="add_library_song")
+def fixture_add_library_song(yt_browser: YTMusic, sample_album):
+    catalog_album = yt_browser.get_album(sample_album)
+    add_token = catalog_album.get("tracks")[0]["feedbackTokens"]["add"]
+    print(add_token)
+    response = yt_browser.edit_song_library_status([add_token])
+    print(response)
+    assert "actions" in response
+
+    # Wait for song to finish processing
+    retries_remaining = 5
+    while retries_remaining:
+        songs = yt_browser.get_library_songs(limit=None)
+        for song in songs:
+            if song.get("title") == "Walk On Water (feat. Beyoncé)":
+                return song
+        retries_remaining -= 1
+        time.sleep(2)
+
+    raise AssertionError("Failed to confirm that song was added to library")
 
 
 @pytest.fixture(name="add_podcast")
