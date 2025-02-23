@@ -58,6 +58,7 @@ def cli(ctx, log_dir, credential_dir, static_progress, no_logfile, verbose, oaut
         format="[%(asctime)s] %(message)s",
         datefmt="%Y-%m-%d %H:%M:%S",
         handlers=handlers,
+        encoding="utf-8",
     )
 
     if ctx.obj is not None:
