@@ -4,6 +4,7 @@ from pathlib import Path
 
 import ytmusicapi
 from ytmusicapi import YTMusic
+from ytmusicapi.exceptions import YTMusicUserError
 
 from . import common as const
 
@@ -23,7 +24,7 @@ def ensure_auth(credential_dir, oauth) -> YTMusic:
         logging.info(f"Attempting authentication with: {auth_file_path}")
         yt_auth = YTMusic(auth_file_path)
         logging.info(f'Authenticated with: {auth_file_path}"')
-    except JSONDecodeError:
+    except (JSONDecodeError, YTMusicUserError, FileNotFoundError):
         logging.info(f"Creating file: {auth_file_name}")
         if oauth:
             ytmusicapi.setup_oauth(filepath=auth_file_path, open_browser=True)
