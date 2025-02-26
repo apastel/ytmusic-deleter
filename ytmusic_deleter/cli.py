@@ -13,6 +13,7 @@ from ytmusic_deleter._version import __version__
 from ytmusic_deleter.auth import ensure_auth
 from ytmusic_deleter.common import can_edit_playlist
 from ytmusic_deleter.common import INDIFFERENT
+from ytmusic_deleter.common import search_string_in_dict
 from ytmusic_deleter.common import SORTABLE_ATTRIBUTES
 from ytmusic_deleter.common import UNKNOWN_ARTIST
 from ytmusic_deleter.duplicates import check_for_duplicates
@@ -97,9 +98,7 @@ def delete_uploads(ctx: click.Context, **kwargs):
     logging.info(f"Deleted {albums_deleted} out of {albums_total} uploaded albums (or songs).")
     remaining_count = albums_total - albums_deleted
     if (ctx.params["add_to_library"]) and remaining_count > 0:
-        logging.info(
-            f"\tRemaining {remaining_count} albums (or songs) could not be added to your library."
-        )
+        logging.info(f"\tRemaining {remaining_count} albums (or songs) could not be added to your library.")
         logging.info("\tRe-run without the 'Add to library' option to delete the rest.")
     return (albums_deleted, albums_total)
 
@@ -195,7 +194,6 @@ def remove_library_items(library_items):
             logging.debug(f"Removing album using id: {id}")
             response = yt_auth.rate_playlist(id, INDIFFERENT)
         elif item.get("feedbackTokens") and isinstance(item.get("feedbackTokens"), dict):
-            print(yt_auth.get_album(item["album"]["id"]))
             logging.debug("This is a song, removing item using feedbackTokens")
             remove_token = item.get("feedbackTokens").get("remove")
             response = yt_auth.edit_song_library_status([remove_token])
@@ -249,7 +247,15 @@ def unlike_all(ctx: click.Context):
         title = track["title"]
         logging.info(f"Processing track: {artist} - {title!r}")
         try:
-            yt_auth.rate_song(track["videoId"], INDIFFERENT)
+            response = yt_auth.rate_song(track["videoId"], INDIFFERENT)
+            num_retries = 100
+            while num_retries > 0 and (
+                not search_string_in_dict(response, "Removed from liked music")
+                or not search_string_in_dict(response, "consistencyTokenJar")
+            ):
+                logging.info("\tRetrying track...")
+                response = yt_auth.rate_song(track["videoId"], INDIFFERENT)
+                num_retries -= 1
             logging.info("\tRemoved track from Likes.")
             songs_unliked += 1
         except Exception as e:

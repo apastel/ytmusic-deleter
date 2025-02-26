@@ -66,17 +66,24 @@ class TestCli:
             time.sleep(2)
         assert len(podcasts_remaining) == 0, f"Not all podcasts were removed. {len(podcasts_remaining)} still remain."
 
-    def test_unlike_all_songs(self, yt_browser: YTMusic, like_song):
-        assert like_song
+    def test_unlike_all_songs(self, yt_browser: YTMusic, like_songs):
         runner = CliRunner()
         result = runner.invoke(cli, ["unlike-all"], standalone_mode=False, obj=yt_browser)
         print(result.stdout)
         assert result.exit_code == 0
         songs_unliked, songs_total = result.return_value
-        assert songs_unliked >= 1, f"No songs were unliked. {songs_total} liked songs were found in total."
+        assert songs_unliked == len(
+            like_songs
+        ), f"{songs_unliked} songs were unliked but there were {songs_total} liked songs."
         time.sleep(5)
         likes_remaining = yt_browser.get_liked_songs(limit=None)["tracks"]
         assert len(likes_remaining) == 0, f"There were still {len(likes_remaining)} liked songs remaining"
+
+        # Clear liked songs from the library as well
+        try:
+            runner.invoke(cli, ["remove-library"], standalone_mode=False, obj=yt_browser)
+        except Exception:
+            print("Encountered error clearing library at the end of the 'Unlike All' test")
 
     def test_delete_history(self, yt_browser: YTMusic, add_history_items):
         runner = CliRunner()

@@ -27,3 +27,26 @@ def can_edit_playlist(playlist: dict) -> bool:
     the ownership can't be determined
     """
     return playlist.get("owned", True) or playlist.get("id") == "LM"
+
+
+def search_string_in_dict(data: dict, search_string: str) -> bool:
+    """
+    Recursively searches for a string in the keys or values of a dictionary,
+    including nested dictionaries.
+
+    Args:
+        data (dict): The dictionary to search within.
+        search_string (str): The string to search for.
+
+    Returns:
+        bool: True if the string is found, False otherwise.
+    """
+    for key, value in data.items():
+        if search_string in str(key):
+            return True
+        if isinstance(value, dict):
+            if search_string_in_dict(value, search_string):
+                return True
+        elif search_string in str(value):
+            return True
+    return False

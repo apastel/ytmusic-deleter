@@ -6,7 +6,7 @@ from typing import Dict
 from typing import List
 
 import pytest
-from ytmusic_deleter import common as const
+from ytmusic_deleter import common
 from ytmusicapi import YTMusic
 
 
@@ -44,20 +44,20 @@ def fixture_sample_video() -> str:
     return "hpSrLjc5SMs"
 
 
-@pytest.fixture(name="sample_song_list")
+@pytest.fixture(name="medium_song_list")
 def fixture_sample_song_list() -> List[str]:
     return ["hpSrLjc5SMs", "PIuAFrLeXfY", "9gi4WwQcPW8", "beX-9wW5rL0", "8ay_BkRuv-o", "HGorCGszxZU", "t2rsf8SiMJY"]
 
 
-@pytest.fixture(name="sample_long_playlist")
+@pytest.fixture(name="long_playlist")
 def fixture_sample_long_playlist() -> str:
-    """The Millennial Mixtape"""
-    return "RDCLAK5uy_mplKe9BIYCO3ZuNWSHZr48bm9DUDzbWnE"
+    """Large Playlist, 1,547 songs"""
+    return "PLxxogMB1b7qNaDocA9LJb9BYlk4KFZWuv"
 
 
-@pytest.fixture(name="sample_long_song_list")
-def fixture_sample_long_song_list(yt_browser: YTMusic, sample_long_playlist: str) -> set[str]:
-    playlist_items = yt_browser.get_playlist(sample_long_playlist, limit=None)
+@pytest.fixture(name="long_song_list")
+def fixture_long_song_list(yt_browser: YTMusic, long_playlist: str) -> set[str]:
+    playlist_items = yt_browser.get_playlist(long_playlist, limit=None)
     return {track["videoId"] for track in playlist_items["tracks"]}
 
 
@@ -311,7 +311,7 @@ def fixture_upload_song(config, yt_browser: YTMusic) -> Dict | None:
 
 @pytest.fixture(name="add_library_album")
 def fixture_add_library_album(yt_browser: YTMusic, sample_album_as_playlist):
-    response = yt_browser.rate_playlist(sample_album_as_playlist, const.LIKE)
+    response = yt_browser.rate_playlist(sample_album_as_playlist, common.LIKE)
     assert "actions" in response
 
     # Wait for album to finish processing
@@ -351,7 +351,7 @@ def fixture_add_library_song(yt_browser: YTMusic, sample_album):
 
 @pytest.fixture(name="add_podcast")
 def fixture_add_podcast(yt_browser: YTMusic, sample_podcast):
-    response = yt_browser.rate_playlist(sample_podcast, const.LIKE)
+    response = yt_browser.rate_playlist(sample_podcast, common.LIKE)
     assert "actions" in response
 
     # Wait for podcast to be in library
@@ -369,7 +369,7 @@ def fixture_add_podcast(yt_browser: YTMusic, sample_podcast):
 
 @pytest.fixture(name="like_song")
 def fixture_like_song(yt_browser: YTMusic, sample_video):
-    response = yt_browser.rate_song(sample_video, const.LIKE)
+    response = yt_browser.rate_song(sample_video, common.LIKE)
     assert "actions" in response
 
     # Wait for song to finish processing
@@ -386,7 +386,37 @@ def fixture_like_song(yt_browser: YTMusic, sample_video):
         time.sleep(2)
 
     # Remove song from library to clean up
-    yt_browser.rate_playlist("OLAK5uy_lZ90LvUqQdKrByCbk99v54d8XpUOmFavo", const.INDIFFERENT)
+    yt_browser.rate_playlist("OLAK5uy_lZ90LvUqQdKrByCbk99v54d8XpUOmFavo", common.INDIFFERENT)
+
+
+@pytest.fixture(name="like_songs")
+def fixture_like_songs(yt_browser: YTMusic, medium_song_list):
+    for song in medium_song_list:
+        response = yt_browser.rate_song(song, common.LIKE)
+        num_retries = 100
+        while num_retries > 0 and (
+            not common.search_string_in_dict(response, "Removed from liked music")
+            or not common.search_string_in_dict(response, "consistencyTokenJar")
+        ):
+            response = yt_browser.rate_song(song, common.LIKE)
+            num_retries -= 1
+    time.sleep(5)
+    liked_songs = yt_browser.get_liked_songs(limit=None)["tracks"]
+    assert len(liked_songs) >= len(medium_song_list)
+    return liked_songs
+
+
+@pytest.fixture(name="like_many_songs")
+def fixture_like_many_songs(yt_browser: YTMusic, long_song_list):
+    for song in long_song_list:
+        response = yt_browser.rate_song(song, common.LIKE)
+        num_retries = 100
+        while num_retries > 0 and (
+            not common.search_string_in_dict(response, "Removed from liked music")
+            or not common.search_string_in_dict(response, "consistencyTokenJar")
+        ):
+            response = yt_browser.rate_song(song, common.LIKE)
+            num_retries -= 1
 
 
 @pytest.fixture(name="create_playlist")
