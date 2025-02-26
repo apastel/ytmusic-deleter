@@ -8,6 +8,7 @@ from random import shuffle as unsort
 from time import strftime
 
 import click
+import ytmusicapi.exceptions
 from click import get_current_context
 from ytmusic_deleter._version import __version__
 from ytmusic_deleter.auth import ensure_auth
@@ -196,7 +197,14 @@ def remove_library_items(library_items):
         elif item.get("feedbackTokens") and isinstance(item.get("feedbackTokens"), dict):
             logging.debug("This is a song, removing item using feedbackTokens")
             remove_token = item.get("feedbackTokens").get("remove")
-            response = yt_auth.edit_song_library_status([remove_token])
+            try:
+                response = yt_auth.edit_song_library_status([remove_token])
+            except ytmusicapi.exceptions.YTMusicServerError:
+                response = None
+                logging.error(
+                    "Error: There is currently an issue with removing individual songs that are not part of an album. "
+                    "See https://github.com/apastel/ytmusic-deleter/issues/108"
+                )
         else:
             logging.error(
                 f"""
