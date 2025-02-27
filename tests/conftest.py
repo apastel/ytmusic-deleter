@@ -51,7 +51,7 @@ def fixture_sample_song_list() -> List[str]:
 
 @pytest.fixture(name="long_playlist")
 def fixture_sample_long_playlist() -> str:
-    """Large Playlist, 1,547 songs"""
+    """Large Playlist, 1,546 songs"""
     return "PLxxogMB1b7qNaDocA9LJb9BYlk4KFZWuv"
 
 
@@ -474,9 +474,9 @@ def fixture_get_playlist_with_dupes(yt_browser: YTMusic, sample_song_list_dupes)
 
 
 @pytest.fixture(name="add_history_items")
-def fixture_add_history_items(yt_browser: YTMusic, sample_long_song_list):
+def fixture_add_history_items(yt_browser: YTMusic, long_song_list):
     num_songs_added = 0
-    for song in sample_long_song_list:
+    for song in long_song_list:
         song = yt_browser.get_song(song, yt_browser.get_signatureTimestamp())
         try:
             response = yt_browser.add_history_item(song)
