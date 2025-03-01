@@ -26,10 +26,10 @@ def fixture_config() -> configparser.RawConfigParser:
     return get_config()
 
 
-@pytest.fixture(name="sample_album")
-def fixture_sample_album() -> str:
-    """Eminem - Revival"""
-    return "MPREb_4pL8gzRtw1p"
+@pytest.fixture(name="sample_album_browse_id")
+def fixture_sample_album_browse_id(yt_browser: YTMusic) -> str:
+    """Eminem - The Marshall Mathers LP2"""
+    return yt_browser.get_album_browse_id("OLAK5uy_m7SR1Tcnj6GBV0Nq1sZko2Wct11MUGrNE")
 
 
 @pytest.fixture(name="sample_album_as_playlist")
@@ -328,8 +328,9 @@ def fixture_add_library_album(yt_browser: YTMusic, sample_album_as_playlist):
 
 
 @pytest.fixture(name="add_library_song")
-def fixture_add_library_song(yt_browser: YTMusic, sample_album):
-    catalog_album = yt_browser.get_album(sample_album)
+def fixture_add_library_song(yt_browser: YTMusic, sample_album_browse_id):
+    # Currently can't work due to `edit_song_library_status` not working
+    catalog_album = yt_browser.get_album(sample_album_browse_id)
     add_token = catalog_album.get("tracks")[0]["feedbackTokens"]["add"]
     print(add_token)
     response = yt_browser.edit_song_library_status([add_token])
@@ -474,9 +475,9 @@ def fixture_get_playlist_with_dupes(yt_browser: YTMusic, sample_song_list_dupes)
 
 
 @pytest.fixture(name="add_history_items")
-def fixture_add_history_items(yt_browser: YTMusic, long_song_list):
+def fixture_add_history_items(yt_browser: YTMusic, medium_song_list):
     num_songs_added = 0
-    for song in long_song_list:
+    for song in medium_song_list:
         song = yt_browser.get_song(song, yt_browser.get_signatureTimestamp())
         try:
             response = yt_browser.add_history_item(song)

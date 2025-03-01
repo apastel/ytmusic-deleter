@@ -40,7 +40,7 @@ class TestCli:
                 return True
         raise AssertionError("Uploaded song was not added to library before deleting")
 
-    def test_remove_library(self, yt_browser: YTMusic, add_library_album, add_podcast, add_library_song):
+    def test_remove_library(self, yt_browser: YTMusic, add_library_album, add_podcast):
         runner = CliRunner()
         result = runner.invoke(cli, ["remove-library"], standalone_mode=False, obj=yt_browser)
         print(result.stdout)

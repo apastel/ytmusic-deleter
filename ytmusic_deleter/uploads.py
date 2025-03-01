@@ -6,7 +6,7 @@ from typing import TypedDict
 from click import get_current_context
 from thefuzz import fuzz
 from thefuzz import process
-from ytmusic_deleter import common as const
+from ytmusic_deleter import common
 from ytmusic_deleter.progress import manager
 from ytmusic_deleter.progress import update_progress
 from ytmusicapi import YTMusic
@@ -45,15 +45,15 @@ def maybe_delete_uploaded_albums() -> tuple[int, int]:
         artist = (
             song["artists"][0]["name"]
             if song.get("artists")  # Using `get` ensures key exists and isn't []
-            else const.UNKNOWN_ARTIST
+            else common.UNKNOWN_ARTIST
         )
-        album_title = song["album"]["name"] if song.get("album") else const.UNKNOWN_ALBUM
+        album_title = song["album"]["name"] if song.get("album") else common.UNKNOWN_ALBUM
         logging.info(f"Processing album: {artist} - {album_title}")
         if get_current_context().params["add_to_library"]:
-            if artist == const.UNKNOWN_ARTIST or album_title == const.UNKNOWN_ALBUM:
-                if artist == const.UNKNOWN_ARTIST:
+            if artist == common.UNKNOWN_ARTIST or album_title == common.UNKNOWN_ALBUM:
+                if artist == common.UNKNOWN_ARTIST:
                     logging.warning("\tSong is missing artist metadata.")
-                if album_title == const.UNKNOWN_ALBUM:
+                if album_title == common.UNKNOWN_ALBUM:
                     logging.warning("\tSong is missing album metadata.")
                 logging.warning("\tSkipping match search and will not delete.")
                 update_progress(progress_bar)
@@ -94,7 +94,7 @@ def add_album_to_library(upload_artist, upload_title, yt_auth: YTMusic = None, s
     search_results = simplify_album_results(search_results)
 
     def artist_is_correct(search_result):
-        return fuzz.partial_ratio(upload_artist, search_result["artist"]) >= const.ARTIST_NAME_SCORE_CUTOFF
+        return fuzz.partial_ratio(upload_artist, search_result["artist"]) >= common.ARTIST_NAME_SCORE_CUTOFF
 
     # filter out results where the artist name is not a good match
     search_results = list(filter(artist_is_correct, search_results))
@@ -124,16 +124,15 @@ def add_album_to_library(upload_artist, upload_title, yt_auth: YTMusic = None, s
         f"\tFound match: '{match['artist']} - {match['title']}' with a matching score of {score}. Adding to library..."
     )
 
-    catalog_album = yt_auth.get_album(match["browseId"])
-    audio_playlist_id = catalog_album["audioPlaylistId"]
-    if not audio_playlist_id:
-        # https://github.com/apastel/ytmusic-deleter/issues/109
-        logging.error("\tAlbum is missing 'audioPlaylistId'. Cannot add to library.")
-        return None
-    success = yt_auth.rate_playlist(audio_playlist_id, const.LIKE)
-    if success:
-        logging.info("\tAdded album to library.")
-        return match
+    audio_playlist_id = common.get_album_audio_playlist_id(match["browseId"], yt_auth)
+    if audio_playlist_id:
+        success = yt_auth.rate_playlist(audio_playlist_id, common.LIKE)
+        if success:
+            logging.info("\tAdded album to library.")
+            return match
+        else :
+            logging.error("\tFailed to add album to library")
+            return None
     else:
         logging.error("\tFailed to add album to library")
         return None
