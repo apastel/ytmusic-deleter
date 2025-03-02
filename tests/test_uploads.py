@@ -1,9 +1,12 @@
 import ytmusicapi
 from ytmusic_deleter import uploads
+import click.testing
+from ytmusic_deleter.cli import cli
 
 
 class TestUploads:
     def test_fuzzy_matching(self, yt_browser: ytmusicapi.YTMusic, fuzzy_test_data):
+        self.yt_browser = yt_browser
         score_cutoff = 85
         num_correct = 0
         for group in fuzzy_test_data:
@@ -31,3 +34,8 @@ class TestUploads:
                 print(f"\tExpected: {group['expected_artist']} - {group['expected_title']}")
                 print(f"\tActual: {match['artist']} - {match['title']}")
         assert num_correct == len(fuzzy_test_data), f"Only {num_correct} out of {len(fuzzy_test_data)} were correct"
+
+    def teardown_method(self, method):
+        print(f"Cleaning up after {method.__name__}")
+        click.testing.CliRunner().invoke(cli, ["remove-library"], standalone_mode=False, obj=self.yt_browser)
+        print("Cleanup complete")

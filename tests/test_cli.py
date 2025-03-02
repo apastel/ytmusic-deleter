@@ -3,6 +3,7 @@ from pathlib import Path
 
 import pytest
 from click.testing import CliRunner
+from click.testing import Result
 from ytmusic_deleter.auth import ensure_auth
 from ytmusic_deleter.cli import cli
 from ytmusic_deleter.duplicates import check_for_duplicates
@@ -11,7 +12,7 @@ from ytmusicapi.exceptions import YTMusicServerError
 
 
 class TestCli:
-    def test_delete_uploads(self, yt_browser: YTMusic, upload_song):
+    def test_delete_uploads(self, yt_browser: YTMusic, upload_song, cleanup_uploads):
         result = CliRunner().invoke(cli, ["delete-uploads"], standalone_mode=False, obj=yt_browser)
         print(result.stdout)
         assert result.exit_code == 0
@@ -21,14 +22,14 @@ class TestCli:
         uploads_remaining = yt_browser.get_library_upload_songs(limit=None)
         assert len(uploads_remaining) == 0
 
-    def test_add_to_library(self, yt_browser: YTMusic, upload_song, config):
-        result = CliRunner().invoke(cli, ["delete-uploads", "-a"], standalone_mode=False, obj=yt_browser)
+    def test_add_to_library(self, yt_browser: YTMusic, upload_song, config, cleanup_uploads):
+        result: Result = CliRunner().invoke(cli, ["delete-uploads", "-a"], standalone_mode=False, obj=yt_browser)
         print(result.stdout)
         assert result.exit_code == 0
 
         return self.verify_added_to_library(yt_browser, config, result)
 
-    def verify_added_to_library(self, yt_browser: YTMusic, config, result):
+    def verify_added_to_library(self, yt_browser: YTMusic, config, result: Result):
         albums_deleted, albums_total = result.return_value
         assert albums_deleted >= 1, f"No uploads were deleted. {albums_total} uploads were found."
         uploads_remaining = yt_browser.get_library_upload_songs(limit=None)

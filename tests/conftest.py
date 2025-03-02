@@ -4,7 +4,8 @@ from pathlib import Path
 from random import shuffle
 from typing import Dict
 from typing import List
-
+import click.testing
+from ytmusic_deleter.cli import cli
 import pytest
 from ytmusic_deleter import common
 from ytmusicapi import YTMusic
@@ -307,6 +308,12 @@ def fixture_upload_song(config, yt_browser: YTMusic) -> Dict | None:
         retries_remaining -= 1
 
     raise AssertionError("Failed to verify uploaded song exists in library.")
+
+
+@pytest.fixture
+def cleanup_uploads(yt_browser: YTMusic):
+    yield
+    click.testing.CliRunner().invoke(cli, ["delete-uploads"], standalone_mode=False, obj=yt_browser)
 
 
 @pytest.fixture(name="add_library_album")
