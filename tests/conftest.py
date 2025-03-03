@@ -4,10 +4,11 @@ from pathlib import Path
 from random import shuffle
 from typing import Dict
 from typing import List
+
 import click.testing
-from ytmusic_deleter.cli import cli
 import pytest
 from ytmusic_deleter import common
+from ytmusic_deleter.cli import cli
 from ytmusicapi import YTMusic
 
 
@@ -400,14 +401,17 @@ def fixture_like_song(yt_browser: YTMusic, sample_video):
 @pytest.fixture(name="like_songs")
 def fixture_like_songs(yt_browser: YTMusic, medium_song_list):
     for song in medium_song_list:
+        num_retries = 300
+        existing_likes = yt_browser.get_liked_songs(limit=None)["tracks"]
+        if any(common.string_exists_in_dict(existing_like, song) for existing_like in existing_likes):
+            print(f"Song {song!r} was already in likes...")
+            continue
         response = yt_browser.rate_song(song, common.LIKE)
-        num_retries = 100
-        while num_retries > 0 and (
-            not common.search_string_in_dict(response, "Removed from liked music")
-            or not common.search_string_in_dict(response, "consistencyTokenJar")
-        ):
+        while num_retries > 0 and (not common.string_exists_in_dict(response, "consistencyTokenJar")):
             response = yt_browser.rate_song(song, common.LIKE)
             num_retries -= 1
+        if num_retries == 0:
+            pytest.fail(f"Ran out of tries to add song {song!r} to likes.")
     time.sleep(5)
     liked_songs = yt_browser.get_liked_songs(limit=None)["tracks"]
     assert len(liked_songs) >= len(medium_song_list)
@@ -418,10 +422,10 @@ def fixture_like_songs(yt_browser: YTMusic, medium_song_list):
 def fixture_like_many_songs(yt_browser: YTMusic, long_song_list):
     for song in long_song_list:
         response = yt_browser.rate_song(song, common.LIKE)
-        num_retries = 100
+        num_retries = 300
         while num_retries > 0 and (
-            not common.search_string_in_dict(response, "Removed from liked music")
-            or not common.search_string_in_dict(response, "consistencyTokenJar")
+            not common.string_exists_in_dict(response, "Removed from liked music")
+            or not common.string_exists_in_dict(response, "consistencyTokenJar")
         ):
             response = yt_browser.rate_song(song, common.LIKE)
             num_retries -= 1

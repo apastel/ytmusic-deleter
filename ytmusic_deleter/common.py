@@ -1,7 +1,8 @@
-import re
-from ytmusicapi import YTMusic
 import logging
+import re
+
 import click
+from ytmusicapi import YTMusic
 
 LIKE = "LIKE"
 INDIFFERENT = "INDIFFERENT"
@@ -32,7 +33,7 @@ def can_edit_playlist(playlist: dict) -> bool:
     return playlist.get("owned", True) or playlist.get("id") == "LM"
 
 
-def search_string_in_dict(data: dict, search_string: str) -> bool:
+def string_exists_in_dict(data: dict, search_string: str) -> bool:
     """
     Recursively searches for a string in the keys or values of a dictionary,
     including nested dictionaries.
@@ -48,7 +49,7 @@ def search_string_in_dict(data: dict, search_string: str) -> bool:
         if search_string in str(key):
             return True
         if isinstance(value, dict):
-            if search_string_in_dict(value, search_string):
+            if string_exists_in_dict(value, search_string):
                 return True
         elif search_string in str(value):
             return True
@@ -81,7 +82,7 @@ def get_album_audio_playlist_id(browse_id: str, yt_auth: YTMusic = None) -> str 
         if not audio_playlist_id:
             logging.error(f"Could not get audio playlist ID for album {browse_id}")
     return audio_playlist_id
-    
+
 
 from ytmusicapi.parsers._utils import *
 

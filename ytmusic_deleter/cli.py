@@ -249,8 +249,8 @@ def unlike_all(ctx: click.Context):
             response = yt_auth.rate_song(track["videoId"], common.INDIFFERENT)
             num_retries = 100
             while num_retries > 0 and (
-                not common.search_string_in_dict(response, "Removed from liked music")
-                or not common.search_string_in_dict(response, "consistencyTokenJar")
+                not common.string_exists_in_dict(response, "Removed from liked music")
+                or not common.string_exists_in_dict(response, "consistencyTokenJar")
             ):
                 logging.info("\tRetrying track...")
                 response = yt_auth.rate_song(track["videoId"], common.INDIFFERENT)
