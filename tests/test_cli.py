@@ -27,7 +27,7 @@ class TestCli:
         print(result.stdout)
         assert result.exit_code == 0
 
-        return self.verify_added_to_library(yt_browser, config, result)
+        assert self.verify_added_to_library(yt_browser, config, result)
 
     def verify_added_to_library(self, yt_browser: YTMusic, config, result: Result):
         albums_deleted, albums_total = result.return_value
