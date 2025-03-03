@@ -317,6 +317,12 @@ def cleanup_uploads(yt_browser: YTMusic):
     click.testing.CliRunner().invoke(cli, ["delete-uploads"], standalone_mode=False, obj=yt_browser)
 
 
+@pytest.fixture
+def cleanup_library(yt_browser: YTMusic):
+    yield
+    click.testing.CliRunner().invoke(cli, ["remove-library"], standalone_mode=False, obj=yt_browser)
+
+
 @pytest.fixture(name="add_library_album")
 def fixture_add_library_album(yt_browser: YTMusic, sample_album_as_playlist):
     response = yt_browser.rate_playlist(sample_album_as_playlist, common.LIKE)

@@ -4,6 +4,7 @@ from pathlib import Path
 import pytest
 from click.testing import CliRunner
 from click.testing import Result
+from retry import retry
 from ytmusic_deleter.auth import ensure_auth
 from ytmusic_deleter.cli import cli
 from ytmusic_deleter.duplicates import check_for_duplicates
@@ -52,8 +53,12 @@ class TestCli:
         assert albums_deleted >= 1, f"No library albums were removed. {albums_total} albums were found."
 
         # Verify there are no songs remaining in the library
-        songs_remaining = yt_browser.get_library_songs(limit=None)
-        assert len(songs_remaining) == 0, f"Not all songs were removed. {len(songs_remaining)} still remain."
+        @retry(AssertionError, tries=5, delay=3.0)
+        def _verify_no_songs_remaining():
+            songs_remaining = yt_browser.get_library_songs(limit=None)
+            assert len(songs_remaining) == 0, f"Not all songs were removed. {len(songs_remaining)} still remain."
+
+        _verify_no_songs_remaining()
 
         # Verify there are no podcasts remaining in the library
         # For some reason podcasts are taking longer to register that they've been deleted, so try it a few times
@@ -67,7 +72,7 @@ class TestCli:
             time.sleep(2)
         assert len(podcasts_remaining) == 0, f"Not all podcasts were removed. {len(podcasts_remaining)} still remain."
 
-    def test_unlike_all_songs(self, yt_browser: YTMusic, like_songs):
+    def test_unlike_all_songs(self, yt_browser: YTMusic, like_songs, cleanup_library):
         runner = CliRunner()
         result = runner.invoke(cli, ["unlike-all"], standalone_mode=False, obj=yt_browser)
         print(result.stdout)
@@ -76,15 +81,13 @@ class TestCli:
         assert songs_unliked == len(
             like_songs
         ), f"{songs_unliked} songs were unliked but there were {songs_total} liked songs."
-        time.sleep(5)
-        likes_remaining = yt_browser.get_liked_songs(limit=None)["tracks"]
-        assert len(likes_remaining) == 0, f"There were still {len(likes_remaining)} liked songs remaining"
 
-        # Clear liked songs from the library as well
-        try:
-            runner.invoke(cli, ["remove-library"], standalone_mode=False, obj=yt_browser)
-        except Exception:
-            print("Encountered error clearing library at the end of the 'Unlike All' test")
+        @retry(AssertionError, tries=5, delay=3.0)
+        def _verify_no_likes_remaining():
+            likes_remaining = yt_browser.get_liked_songs(limit=None)["tracks"]
+            assert len(likes_remaining) == 0, f"There were still {len(likes_remaining)} liked songs remaining"
+
+        _verify_no_likes_remaining()
 
     def test_delete_history(self, yt_browser: YTMusic, add_history_items):
         runner = CliRunner()

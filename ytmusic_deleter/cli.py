@@ -247,7 +247,7 @@ def unlike_all(ctx: click.Context):
         logging.info(f"Processing track: {artist} - {title!r}")
         try:
             response = yt_auth.rate_song(track["videoId"], common.INDIFFERENT)
-            num_retries = 100
+            num_retries = 300
             while num_retries > 0 and (
                 not common.string_exists_in_dict(response, "Removed from liked music")
                 or not common.string_exists_in_dict(response, "consistencyTokenJar")
@@ -255,8 +255,11 @@ def unlike_all(ctx: click.Context):
                 logging.info("\tRetrying track...")
                 response = yt_auth.rate_song(track["videoId"], common.INDIFFERENT)
                 num_retries -= 1
-            logging.info("\tRemoved track from Likes.")
-            songs_unliked += 1
+            if num_retries == 0:
+                logging.error("\tRan out of retries to remove track from Likes. Try running 'Unlike All' again.")
+            else:
+                logging.info("\tRemoved track from Likes.")
+                songs_unliked += 1
         except Exception as e:
             logging.exception(e)
             logging.error(f"\tFailed to unlike {artist} - {title!r}")
