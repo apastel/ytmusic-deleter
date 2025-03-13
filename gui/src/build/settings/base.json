@@ -1,5 +1,6 @@
 {
     "app_name": "YTMusic_Deleter",
+    "display_name": "YTMusic Deleter",
     "author": "Alex Pastel",
     "main_module": "src/main/python/main.py",
     "version": "2.13.1",

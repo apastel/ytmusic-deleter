@@ -7,11 +7,11 @@
 !define VERSION "${ver1}.${ver2}.${ver3}.${ver4}"
 
 VIProductVersion "${VERSION}"
-VIAddVersionKey "ProductName" "${app_name}"
+VIAddVersionKey "ProductName" "${display_name}"
 VIAddVersionKey "FileVersion" "${VERSION}"
 VIAddVersionKey "ProductVersion" "${VERSION}"
 VIAddVersionKey "LegalCopyright" "(C) ${author}"
-VIAddVersionKey "FileDescription" "${app_name}"
+VIAddVersionKey "FileDescription" "${display_name}"
 
 ;--------------------------------
 ;Perform Machine-level install, if possible
@@ -32,7 +32,7 @@ FunctionEnd
 ;--------------------------------
 ;General
 
-  Name "${app_name}"
+  Name "${display_name}"
   OutFile "..\${installer}"
 
 ;--------------------------------
@@ -43,14 +43,14 @@ FunctionEnd
 ;--------------------------------
 ;Pages
 
-  !define MUI_WELCOMEPAGE_TEXT "This wizard will guide you through the installation of ${app_name}.$\r$\n$\r$\n$\r$\nClick Next to continue."
+  !define MUI_WELCOMEPAGE_TEXT "This wizard will guide you through the installation of ${display_name}.$\r$\n$\r$\n$\r$\nClick Next to continue."
   !insertmacro MUI_PAGE_WELCOME
   !insertmacro MUI_PAGE_DIRECTORY
   !insertmacro MUI_PAGE_INSTFILES
     !define MUI_FINISHPAGE_NOAUTOCLOSE
     !define MUI_FINISHPAGE_RUN
     !define MUI_FINISHPAGE_RUN_CHECKED
-    !define MUI_FINISHPAGE_RUN_TEXT "Run ${app_name}"
+    !define MUI_FINISHPAGE_RUN_TEXT "Run ${display_name}"
     !define MUI_FINISHPAGE_RUN_FUNCTION "LaunchAsNonAdmin"
   !insertmacro MUI_PAGE_FINISH
 
@@ -72,8 +72,8 @@ Section
   File /r "..\${app_name}\*"
   WriteRegStr SHCTX "Software\${app_name}" "" $InstDir
   WriteUninstaller "$InstDir\uninstall.exe"
-  CreateShortCut "$SMPROGRAMS\${app_name}.lnk" "$InstDir\${app_name}.exe"
-  WriteRegStr SHCTX "${UNINST_KEY}" "DisplayName" "${app_name}"
+  CreateShortCut "$SMPROGRAMS\${display_name}.lnk" "$InstDir\${app_name}.exe"
+  WriteRegStr SHCTX "${UNINST_KEY}" "DisplayName" "${display_name}"
   WriteRegStr SHCTX "${UNINST_KEY}" "UninstallString" \
     "$\"$InstDir\uninstall.exe$\" /$MultiUser.InstallMode"
   WriteRegStr SHCTX "${UNINST_KEY}" "QuietUninstallString" \
