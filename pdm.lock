@@ -370,7 +370,7 @@ files = [
 
 [[package]]
 name = "enlighten"
-version = "1.13.0"
+version = "1.14.1"
 summary = "Enlighten Progress Bar"
 groups = ["default"]
 dependencies = [
@@ -379,8 +379,8 @@ dependencies = [
     "prefixed>=0.3.2",
 ]
 files = [
-    {file = "enlighten-1.13.0-py2.py3-none-any.whl", hash = "sha256:b320fd92003baa35f1a309f73a71ef695936c8e0cca5c9107faeb7eaf5ef206a"},
-    {file = "enlighten-1.13.0.tar.gz", hash = "sha256:ee718daac6873c83fd3706bce77da472c776a51e0d6f5f86f7e61e27f9ad166a"},
+    {file = "enlighten-1.14.1-py2.py3-none-any.whl", hash = "sha256:5fbd0c959ca1644034c41bb0ace5db19c9852cf9d721b6103f5f130663c57be8"},
+    {file = "enlighten-1.14.1.tar.gz", hash = "sha256:85c35412a9a4f3886b3337d41f813441fab9a30d9f5b5f0c015bd078a4411473"},
 ]
 
 [[package]]
