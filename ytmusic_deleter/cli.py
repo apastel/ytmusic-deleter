@@ -464,7 +464,7 @@ def make_sort_key(track, sort_attributes):
     album = track["album"]
     album_title = album["name"].lower() if album else "z"
     album_title = re.sub(r"^(the |a )", "", album_title)
-    track_title = track["title"]
+    track_title = track["title"].lower()
     duration = track.get("duration_seconds", 0)  # noqa: F841
 
     if sort_attributes:
