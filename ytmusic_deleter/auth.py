@@ -22,12 +22,23 @@ def ensure_auth(credential_dir, oauth) -> YTMusic:
     yt_auth = None
     try:
         logging.info(f"Attempting authentication with: {auth_file_path}")
-        yt_auth = YTMusic(auth_file_path)
+        yt_auth = YTMusic(
+            auth_file_path,
+            oauth_credentials=ytmusicapi.OAuthCredentials(
+                client_id="",
+                client_secret="",
+            ),
+        )
         logging.info(f'Authenticated with: {auth_file_path}"')
     except (JSONDecodeError, YTMusicUserError, FileNotFoundError):
         logging.info(f"Creating file: {auth_file_name}")
         if oauth:
-            ytmusicapi.setup_oauth(filepath=auth_file_path, open_browser=True)
+            ytmusicapi.setup_oauth(
+                client_id="",
+                client_secret="",
+                filepath=auth_file_path,
+                open_browser=True,
+            )
         else:
             ytmusicapi.setup(filepath=auth_file_path)
         yt_auth = YTMusic(auth_file_path)

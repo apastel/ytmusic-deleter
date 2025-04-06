@@ -19,7 +19,7 @@ class SettingsDialog(QDialog, Ui_SettingsDialog):
 
         self.verboseCheckBox.setChecked(parent.settings.value("verbose_logging", False, type=bool))
         self.oauthCheckbox.setChecked(parent.settings.value("oauth_enabled", False, type=bool))
-        self.dataDirPathDisplay.setText(common.APP_DATA_DIR)
+        self.dataDirPathDisplay.setText(str(common.APP_DATA_PATH))
         self.openDataDirButton.clicked.connect(self.open_data_dir)
 
     def accept(self) -> None:
@@ -31,7 +31,7 @@ class SettingsDialog(QDialog, Ui_SettingsDialog):
 
     @Slot()
     def open_data_dir(self) -> None:
-        path = common.APP_DATA_DIR
+        path = str(common.APP_DATA_PATH)
         open_file_browser(path)
 
 
