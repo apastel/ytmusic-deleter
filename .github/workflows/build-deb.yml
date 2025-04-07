@@ -147,7 +147,7 @@ jobs:
 
           # Makes app run headless
           export QT_QPA_PLATFORM=offscreen
-          logfile="$HOME/YTMusic_Deleter/ytmusic-deleter-gui*.log"
+          logfile="$HOME/YTMusic_Deleter/logs/ytmusic-deleter-gui*.log"
           timeout 10s /opt/YTMusic_Deleter/YTMusic_Deleter || true
           version_str="${{ needs.build.outputs.cli-version }}"
           if grep -q "$version_str" $logfile; then
