@@ -76,14 +76,14 @@
     <string>Enables user-friendly authentication using OAuth (may not work)</string>
    </property>
    <property name="text">
-    <string>Enable OAuth login (may not work)</string>
+    <string>Enable OAuth login</string>
    </property>
   </widget>
   <widget class="QPushButton" name="openDataDirButton">
    <property name="geometry">
     <rect>
-     <x>390</x>
-     <y>240</y>
+     <x>400</x>
+     <y>200</y>
      <width>91</width>
      <height>23</height>
     </rect>
@@ -98,8 +98,8 @@
    </property>
    <property name="geometry">
     <rect>
-     <x>40</x>
-     <y>240</y>
+     <x>50</x>
+     <y>200</y>
      <width>341</width>
      <height>20</height>
     </rect>
@@ -111,8 +111,8 @@
   <widget class="QLabel" name="dataDirLabel">
    <property name="geometry">
     <rect>
-     <x>40</x>
-     <y>220</y>
+     <x>50</x>
+     <y>180</y>
      <width>331</width>
      <height>16</height>
     </rect>
@@ -120,6 +120,32 @@
    <property name="text">
     <string>App data directory: (logs and auth files are saved here)</string>
    </property>
+  </widget>
+  <widget class="QWidget" name="verticalLayoutWidget">
+   <property name="geometry">
+    <rect>
+     <x>50</x>
+     <y>100</y>
+     <width>331</width>
+     <height>51</height>
+    </rect>
+   </property>
+   <layout class="QVBoxLayout" name="verticalLayoutOauth">
+    <item>
+     <widget class="QLineEdit" name="clientIdInput">
+      <property name="placeholderText">
+       <string>client_id</string>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QLineEdit" name="clientSecretInput">
+      <property name="placeholderText">
+       <string>client_secret</string>
+      </property>
+     </widget>
+    </item>
+   </layout>
   </widget>
  </widget>
  <resources/>
