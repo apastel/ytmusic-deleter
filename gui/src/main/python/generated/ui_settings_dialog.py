@@ -17,20 +17,20 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QPalette, QPixmap, QRadialGradient, QTransform)
 from PySide6.QtWidgets import (QAbstractButton, QApplication, QCheckBox, QDialog,
     QDialogButtonBox, QLabel, QLineEdit, QPushButton,
-    QSizePolicy, QWidget)
+    QSizePolicy, QVBoxLayout, QWidget)
 
 class Ui_SettingsDialog(object):
     def setupUi(self, SettingsDialog):
         if not SettingsDialog.objectName():
             SettingsDialog.setObjectName(u"SettingsDialog")
-        SettingsDialog.setWindowModality(Qt.ApplicationModal)
+        SettingsDialog.setWindowModality(Qt.WindowModality.ApplicationModal)
         SettingsDialog.resize(497, 300)
         SettingsDialog.setModal(True)
         self.buttonBox = QDialogButtonBox(SettingsDialog)
         self.buttonBox.setObjectName(u"buttonBox")
-        self.buttonBox.setGeometry(QRect(390, 20, 81, 241))
-        self.buttonBox.setOrientation(Qt.Vertical)
-        self.buttonBox.setStandardButtons(QDialogButtonBox.Cancel|QDialogButtonBox.Ok)
+        self.buttonBox.setGeometry(QRect(390, 20, 81, 71))
+        self.buttonBox.setOrientation(Qt.Orientation.Vertical)
+        self.buttonBox.setStandardButtons(QDialogButtonBox.StandardButton.Cancel|QDialogButtonBox.StandardButton.Ok)
         self.verboseCheckBox = QCheckBox(SettingsDialog)
         self.verboseCheckBox.setObjectName(u"verboseCheckBox")
         self.verboseCheckBox.setGeometry(QRect(30, 20, 241, 41))
@@ -39,15 +39,31 @@ class Ui_SettingsDialog(object):
         self.oauthCheckbox.setGeometry(QRect(30, 60, 351, 41))
         self.openDataDirButton = QPushButton(SettingsDialog)
         self.openDataDirButton.setObjectName(u"openDataDirButton")
-        self.openDataDirButton.setGeometry(QRect(380, 130, 81, 23))
+        self.openDataDirButton.setGeometry(QRect(400, 200, 91, 23))
         self.dataDirPathDisplay = QLineEdit(SettingsDialog)
         self.dataDirPathDisplay.setObjectName(u"dataDirPathDisplay")
         self.dataDirPathDisplay.setEnabled(False)
-        self.dataDirPathDisplay.setGeometry(QRect(30, 130, 341, 20))
+        self.dataDirPathDisplay.setGeometry(QRect(50, 200, 341, 20))
         self.dataDirPathDisplay.setReadOnly(True)
         self.dataDirLabel = QLabel(SettingsDialog)
         self.dataDirLabel.setObjectName(u"dataDirLabel")
-        self.dataDirLabel.setGeometry(QRect(30, 110, 331, 16))
+        self.dataDirLabel.setGeometry(QRect(50, 180, 331, 16))
+        self.verticalLayoutWidget = QWidget(SettingsDialog)
+        self.verticalLayoutWidget.setObjectName(u"verticalLayoutWidget")
+        self.verticalLayoutWidget.setGeometry(QRect(50, 100, 331, 51))
+        self.verticalLayoutOauth = QVBoxLayout(self.verticalLayoutWidget)
+        self.verticalLayoutOauth.setObjectName(u"verticalLayoutOauth")
+        self.verticalLayoutOauth.setContentsMargins(0, 0, 0, 0)
+        self.clientIdInput = QLineEdit(self.verticalLayoutWidget)
+        self.clientIdInput.setObjectName(u"clientIdInput")
+
+        self.verticalLayoutOauth.addWidget(self.clientIdInput)
+
+        self.clientSecretInput = QLineEdit(self.verticalLayoutWidget)
+        self.clientSecretInput.setObjectName(u"clientSecretInput")
+
+        self.verticalLayoutOauth.addWidget(self.clientSecretInput)
+
 
         self.retranslateUi(SettingsDialog)
         self.buttonBox.accepted.connect(SettingsDialog.accept)
@@ -77,8 +93,10 @@ class Ui_SettingsDialog(object):
 #if QT_CONFIG(whatsthis)
         self.oauthCheckbox.setWhatsThis(QCoreApplication.translate("SettingsDialog", u"Enables user-friendly authentication using OAuth (may not work)", None))
 #endif // QT_CONFIG(whatsthis)
-        self.oauthCheckbox.setText(QCoreApplication.translate("SettingsDialog", u"Enable OAuth login (may not work)", None))
+        self.oauthCheckbox.setText(QCoreApplication.translate("SettingsDialog", u"Enable OAuth login", None))
         self.openDataDirButton.setText(QCoreApplication.translate("SettingsDialog", u"Open Folder", None))
         self.dataDirLabel.setText(QCoreApplication.translate("SettingsDialog", u"App data directory: (logs and auth files are saved here)", None))
+        self.clientIdInput.setPlaceholderText(QCoreApplication.translate("SettingsDialog", u"client_id", None))
+        self.clientSecretInput.setPlaceholderText(QCoreApplication.translate("SettingsDialog", u"client_secret", None))
     # retranslateUi
 
