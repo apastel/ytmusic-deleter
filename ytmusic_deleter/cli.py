@@ -41,9 +41,11 @@ from ytmusicapi import YTMusic
 )
 @click.option("--no-logfile", "-n", is_flag=True, help="Only log to stdout, no file logging")
 @click.option("--verbose", "-v", is_flag=True, help="Enable verbose (debug) logging")
-@click.option("--oauth", "-o", is_flag=True, help="Enable OAuth authentication (may not work)")
+@click.option("--oauth", "-o", is_flag=True, help="Enable OAuth authentication")
+@click.option("--client-id", "-y", help="Client ID (for OAuth)")
+@click.option("--client-secret", "-z", help="Client secret (for OAuth)")
 @click.pass_context
-def cli(ctx, log_dir, credential_dir, static_progress, no_logfile, verbose, oauth):
+def cli(ctx, log_dir, credential_dir, static_progress, no_logfile, verbose, oauth, client_id, client_secret):
     """Perform batch delete operations on your YouTube Music library."""
 
     handlers = [logging.StreamHandler(sys.stdout)]
@@ -62,7 +64,7 @@ def cli(ctx, log_dir, credential_dir, static_progress, no_logfile, verbose, oaut
         # Allows yt_auth to be provided by pytest
         yt_auth: YTMusic = ctx.obj
     else:
-        yt_auth: YTMusic = ensure_auth(credential_dir, oauth)
+        yt_auth: YTMusic = ensure_auth(credential_dir, oauth, client_id, client_secret)
     ctx.ensure_object(dict)
     ctx.obj["STATIC_PROGRESS"] = static_progress
     ctx.obj["YT_AUTH"] = yt_auth

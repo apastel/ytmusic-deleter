@@ -186,8 +186,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.ytmusic = ytmusicapi.YTMusic(
                 str(self.auth_file_path),
                 oauth_credentials=ytmusicapi.OAuthCredentials(
-                    client_id="",
-                    client_secret="",
+                    client_id=self.client_id,
+                    client_secret=self.client_secret,
                 ),
             )
         except ytmusicapi.exceptions.YTMusicUserError:
@@ -226,7 +226,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.accountPhotoButton.setStyleSheet(self.photo_button_stylesheet + background_photo_style)
 
             if display_message:
-                self.message(f"Signed in as {account_name!r}")
+                self.message(f"Signed in using OAuth as {account_name!r}")
         else:
             pixmap = QPixmap(AppContext._instance.get_resource("person.png"))
             pixmap = pixmap.scaled(self.accountPhotoButton.size(), Qt.KeepAspectRatio, Qt.SmoothTransformation)
@@ -279,8 +279,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.message("Showing login prompt.")
         if self.oauth_enabled:
             oauth = ytmusicapi.OAuthCredentials(
-                client_id="",
-                client_secret="",
+                client_id=self.client_id,
+                client_secret=self.client_secret,
             )
             try:
                 code = oauth.get_code()
@@ -302,8 +302,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             )
             url_prompt.exec()
 
-            raw_token = oauth.token_from_code(code["device_code"])
             try:
+                raw_token = oauth.token_from_code(code["device_code"])
                 ref_token = RefreshingToken(credentials=oauth, **raw_token)
                 # store the token in oauth.json
                 ref_token.store_token(self.auth_file_path)
@@ -475,6 +475,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def save_settings(self):
         self.settings.setValue("verbose_logging", self.settings_dialog.verboseCheckBox.isChecked())
         self.settings.setValue("oauth_enabled", self.settings_dialog.oauthCheckbox.isChecked())
+        self.settings.setValue("client_id", self.settings_dialog.clientIdInput.text().strip())
+        self.settings.setValue("client_secret", self.settings_dialog.clientSecretInput.text().strip())
         self.load_settings()
         self.update_buttons()
 
@@ -484,6 +486,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.account_photo_dir = APP_DATA_PATH / "resources"
         self.verbose_logging = self.settings.value("verbose_logging", False, type=bool)
         self.oauth_enabled = self.settings.value("oauth_enabled", False, type=bool)
+        self.client_id = self.settings.value("client_id", "", type=str)
+        self.client_secret = self.settings.value("client_secret", "", type=str)
 
         logging.getLogger().setLevel(logging.DEBUG if self.verbose_logging else logging.INFO)
         self.auth_file_path = Path(

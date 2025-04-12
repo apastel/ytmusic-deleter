@@ -19,6 +19,8 @@ class SettingsDialog(QDialog, Ui_SettingsDialog):
 
         self.verboseCheckBox.setChecked(parent.settings.value("verbose_logging", False, type=bool))
         self.oauthCheckbox.setChecked(parent.settings.value("oauth_enabled", False, type=bool))
+        self.clientIdInput.setText(parent.settings.value("client_id", "", type=str))
+        self.clientSecretInput.setText(parent.settings.value("client_secret", "", type=str))
         self.oauthCheckbox.checkStateChanged.connect(self.oauth_check_state_changed)
         self.oauth_check_state_changed()
         self.dataDirPathDisplay.setText(str(common.APP_DATA_PATH))
