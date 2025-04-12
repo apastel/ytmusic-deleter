@@ -146,7 +146,7 @@ def remove_library(ctx: click.Context):
 
 def remove_library_podcasts():
     yt_auth: YTMusic = get_current_context().obj["YT_AUTH"]
-    logging.info("Retreiving all podcasts...")
+    logging.info("Retrieving all podcasts...")
     library_podcasts = yt_auth.get_library_podcasts(limit=None)
     # Filter out the "New Episodes" auto-playlist that can't be deleted
     library_podcasts = list(filter(lambda podcast: podcast["channel"]["id"], library_podcasts))

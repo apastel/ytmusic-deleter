@@ -36,7 +36,7 @@ jobs:
   build:
     strategy:
       matrix:
-        os: [macos-13, macos-14]
+        os: [macos-13, macos-15]
     runs-on: ${{ matrix.os }}
     outputs:
       installer-version: ${{ steps.json-properties.outputs.version }}
@@ -148,7 +148,7 @@ jobs:
   verify:
     strategy:
       matrix:
-        os: [macos-13, macos-14]
+        os: [macos-13, macos-15]
     runs-on: ${{ matrix.os }}
     needs: build
     steps:
