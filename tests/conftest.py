@@ -248,6 +248,16 @@ def fixture_oauth_filepath(config) -> str:
     return get_resource(config["auth"]["oauth_file"])
 
 
+@pytest.fixture(name="client_id")
+def fixture_client_id(config) -> str:
+    return config["auth"]["client_id"]
+
+
+@pytest.fixture(name="client_secret")
+def fixture_client_secret(config) -> str:
+    return config["auth"]["client_secret"]
+
+
 @pytest.fixture(name="yt")
 def fixture_yt() -> YTMusic:
     return YTMusic()
@@ -260,18 +270,8 @@ def fixture_yt_auth(browser_filepath) -> YTMusic:
 
 
 @pytest.fixture(name="yt_oauth")
-def fixture_yt_oauth(oauth_filepath) -> YTMusic:
-    return auth.do_auth(Path(oauth_filepath).parent, True)
-
-
-@pytest.fixture(name="yt_brand")
-def fixture_yt_brand(config) -> YTMusic:
-    return YTMusic(config["auth"]["headers"], config["auth"]["brand_account"])
-
-
-@pytest.fixture(name="yt_empty")
-def fixture_yt_empty(config) -> YTMusic:
-    return YTMusic(config["auth"]["headers_empty"], config["auth"]["brand_account_empty"])
+def fixture_yt_oauth(oauth_filepath, client_id, client_secret) -> YTMusic:
+    return auth.do_auth(Path(oauth_filepath).parent, True, client_id, client_secret)
 
 
 @pytest.fixture(name="upload_song")
