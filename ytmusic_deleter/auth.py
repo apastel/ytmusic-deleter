@@ -9,27 +9,29 @@ from ytmusicapi.exceptions import YTMusicUserError
 from . import common as const
 
 
-def ensure_auth(
+def do_auth(
     credential_dir: str, oauth: bool, client_id: str = "", client_secret: str = ""
 ) -> ytmusicapi.YTMusic | None:
     """
-    Checks for an existing browser.json / oauth.json file to authenticate with.
-    If one does not exist, prompt the user on the console to authenticate to
-    generate one.
+    Attempt to authenticate with existing browser.json in `credential_dir` (or
+    oauth.json if) `oauth` is True.
+
+    If authentication fails, run through the setup process, then authenticate
+    again.
 
     See https://ytmusicapi.readthedocs.io/en/stable/setup/index.html
     """
     auth_file_name = const.OAUTH_FILENAME if oauth else const.BROWSER_FILENAME
     auth_file_path: str = str(Path(credential_dir) / auth_file_name)
-    yt_auth = None
+    yt_auth: ytmusicapi.YTMusic = None
     try:
         logging.info(f"Attempting authentication with: {auth_file_path}")
-        yt_auth = authenticate(oauth, auth_file_path)
+        yt_auth = _authenticate(auth_file_path, oauth, client_id, client_secret)
     except (JSONDecodeError, YTMusicUserError, FileNotFoundError):
         logging.info(f"Creating file: {auth_file_name}")
-        setup_auth(oauth, client_id, client_secret, auth_file_path)
+        _setup_auth(oauth, client_id, client_secret, auth_file_path)
         # Authenticate after creating auth file
-        yt_auth = authenticate(oauth, auth_file_path)
+        yt_auth = _authenticate(auth_file_path, oauth, client_id, client_secret)
     finally:
         if not yt_auth:
             raise RuntimeError("Authentication failed")
@@ -39,7 +41,7 @@ def ensure_auth(
     return yt_auth
 
 
-def setup_auth(oauth: bool, client_id: str, client_secret: str, auth_file_path: str) -> None:
+def _setup_auth(oauth: bool, client_id: str, client_secret: str, auth_file_path: str) -> None:
     if oauth:
         if not (client_id and client_secret):
             raise click.MissingParameter(
@@ -57,14 +59,13 @@ def setup_auth(oauth: bool, client_id: str, client_secret: str, auth_file_path: 
         ytmusicapi.setup(filepath=auth_file_path)
 
 
-def authenticate(oauth: bool, auth_file_path: str) -> ytmusicapi.YTMusic:
+def _authenticate(auth_file_path: str, oauth: bool, client_id: str, client_secret: str) -> ytmusicapi.YTMusic:
     if oauth:
         yt_auth = ytmusicapi.YTMusic(
             auth_file_path,
-            # oauth_credentials are required by ytmusicapi but not necessary when oauth.json already exists
             oauth_credentials=ytmusicapi.OAuthCredentials(
-                client_id="",
-                client_secret="",
+                client_id=client_id,
+                client_secret=client_secret,
             ),
         )
     else:

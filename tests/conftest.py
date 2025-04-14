@@ -7,8 +7,9 @@ from typing import List
 
 import click.testing
 import pytest
+from ytmusic_deleter import auth
+from ytmusic_deleter import cli
 from ytmusic_deleter import common
-from ytmusic_deleter.cli import cli
 from ytmusicapi import YTMusic
 
 
@@ -255,12 +256,12 @@ def fixture_yt() -> YTMusic:
 @pytest.fixture(name="yt_browser")
 def fixture_yt_auth(browser_filepath) -> YTMusic:
     """a non-brand account that is able to create uploads"""
-    return YTMusic(browser_filepath)
+    return auth.do_auth(Path(browser_filepath).parent, False)
 
 
 @pytest.fixture(name="yt_oauth")
 def fixture_yt_oauth(oauth_filepath) -> YTMusic:
-    return YTMusic(oauth_filepath)
+    return auth.do_auth(Path(oauth_filepath).parent, True)
 
 
 @pytest.fixture(name="yt_brand")
@@ -314,13 +315,13 @@ def fixture_upload_song(config, yt_browser: YTMusic) -> Dict | None:
 @pytest.fixture
 def cleanup_uploads(yt_browser: YTMusic):
     yield
-    click.testing.CliRunner().invoke(cli, ["delete-uploads"], standalone_mode=False, obj=yt_browser)
+    click.testing.CliRunner().invoke(cli.cli, ["delete-uploads"], standalone_mode=False, obj=yt_browser)
 
 
 @pytest.fixture
 def cleanup_library(yt_browser: YTMusic):
     yield
-    click.testing.CliRunner().invoke(cli, ["remove-library"], standalone_mode=False, obj=yt_browser)
+    click.testing.CliRunner().invoke(cli.cli, ["remove-library"], standalone_mode=False, obj=yt_browser)
 
 
 @pytest.fixture(name="add_library_album")

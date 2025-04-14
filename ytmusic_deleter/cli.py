@@ -11,7 +11,7 @@ import click
 from click import get_current_context
 from ytmusic_deleter import common
 from ytmusic_deleter._version import __version__
-from ytmusic_deleter.auth import ensure_auth
+from ytmusic_deleter.auth import do_auth
 from ytmusic_deleter.duplicates import check_for_duplicates
 from ytmusic_deleter.duplicates import determine_tracks_to_remove
 from ytmusic_deleter.progress import manager
@@ -45,7 +45,9 @@ from ytmusicapi import YTMusic
 @click.option("--client-id", "-y", help="Client ID (for OAuth)")
 @click.option("--client-secret", "-z", help="Client secret (for OAuth)")
 @click.pass_context
-def cli(ctx, log_dir, credential_dir, static_progress, no_logfile, verbose, oauth, client_id, client_secret):
+def cli(
+    ctx: click.Context, log_dir, credential_dir, static_progress, no_logfile, verbose, oauth, client_id, client_secret
+):
     """Perform batch delete operations on your YouTube Music library."""
 
     handlers = [logging.StreamHandler(sys.stdout)]
@@ -64,7 +66,7 @@ def cli(ctx, log_dir, credential_dir, static_progress, no_logfile, verbose, oaut
         # Allows yt_auth to be provided by pytest
         yt_auth: YTMusic = ctx.obj
     else:
-        yt_auth: YTMusic = ensure_auth(credential_dir, oauth, client_id, client_secret)
+        yt_auth: YTMusic = do_auth(credential_dir, oauth, client_id, client_secret)
     ctx.ensure_object(dict)
     ctx.obj["STATIC_PROGRESS"] = static_progress
     ctx.obj["YT_AUTH"] = yt_auth

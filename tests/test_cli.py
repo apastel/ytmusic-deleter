@@ -1,11 +1,9 @@
 import time
-from pathlib import Path
 
 import pytest
 from click.testing import CliRunner
 from click.testing import Result
 from retry import retry
-from ytmusic_deleter.auth import ensure_auth
 from ytmusic_deleter.cli import cli
 from ytmusic_deleter.duplicates import check_for_duplicates
 from ytmusicapi import YTMusic
@@ -170,10 +168,13 @@ class TestCli:
         runner = CliRunner()
         result = runner.invoke(cli, ["whoami"], obj=yt_browser)
         assert result.exit_code == 0
+        assert yt_browser is not None
+        assert isinstance(yt_browser, YTMusic)
 
-    def test_oauth(self, oauth_filepath):
-        # using ensure_auth instead of CliRunner because the latter puts the exception in the return result instead
-        yt_auth = ensure_auth(Path(oauth_filepath).parent, True)
-        assert yt_auth is not None
-        assert isinstance(yt_auth, YTMusic)
-        assert yt_auth.get_account_info().get("accountName") == "Testy McTesterson"
+    def test_oauth(self, yt_oauth):
+        runner = CliRunner()
+        result = runner.invoke(cli, ["whoami"], obj=yt_oauth)
+        assert result.exit_code == 0
+        assert yt_oauth is not None
+        assert isinstance(yt_oauth, YTMusic)
+        assert yt_oauth.get_account_info().get("accountName") == "Testy McTesterson"
