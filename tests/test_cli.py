@@ -20,14 +20,14 @@ class TestCli:
         uploads_remaining = yt_browser.get_library_upload_songs(limit=None)
         assert len(uploads_remaining) == 0
 
-    def test_add_to_library(self, yt_browser: YTMusic, upload_song, config, cleanup_uploads):
+    def test_add_to_library(self, yt_browser: YTMusic, upload_song, config, cleanup_uploads, upload_file_path):
         result: Result = CliRunner().invoke(cli, ["delete-uploads", "-a"], standalone_mode=False, obj=yt_browser)
         print(result.stdout)
         assert result.exit_code == 0
 
-        assert self.verify_added_to_library(yt_browser, config, result)
+        assert self.verify_added_to_library(yt_browser, config, result, upload_file_path)
 
-    def verify_added_to_library(self, yt_browser: YTMusic, config, result: Result):
+    def verify_added_to_library(self, yt_browser: YTMusic, config, result: Result, upload_file_path):
         albums_deleted, albums_total = result.return_value
         assert albums_deleted >= 1, f"No uploads were deleted. {albums_total} uploads were found."
         uploads_remaining = yt_browser.get_library_upload_songs(limit=None)
@@ -35,7 +35,7 @@ class TestCli:
 
         library_songs = yt_browser.get_library_songs(limit=None)
         for song in library_songs:
-            if song.get("title").lower() in config["uploads"]["file"].lower():
+            if song.get("title").lower() in upload_file_path.lower():
                 return True
         raise AssertionError("Uploaded song was not added to library before deleting")
 

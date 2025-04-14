@@ -238,16 +238,6 @@ def fixture_sample_podcast() -> str:
     return "PLk1Sqn_f33KuU_aJDvMPPAy_SoxXTt_ub"
 
 
-@pytest.fixture(name="browser_filepath")
-def fixture_browser_filepath(config) -> str:
-    return get_resource(config["auth"]["browser_file"])
-
-
-@pytest.fixture(name="oauth_filepath")
-def fixture_oauth_filepath(config) -> str:
-    return get_resource(config["auth"]["oauth_file"])
-
-
 @pytest.fixture(name="client_id")
 def fixture_client_id(config) -> str:
     return config["auth"]["client_id"]
@@ -258,28 +248,33 @@ def fixture_client_secret(config) -> str:
     return config["auth"]["client_secret"]
 
 
-@pytest.fixture(name="yt")
-def fixture_yt() -> YTMusic:
-    return YTMusic()
+@pytest.fixture(name="credential_dir")
+def fixture_credential_dir(config) -> str:
+    return get_resource(config["auth"]["credential_dir"])
 
 
 @pytest.fixture(name="yt_browser")
-def fixture_yt_auth(browser_filepath) -> YTMusic:
+def fixture_yt_browser(credential_dir) -> YTMusic:
     """a non-brand account that is able to create uploads"""
-    return auth.do_auth(Path(browser_filepath).parent, False)
+    return auth.do_auth(credential_dir, False)
 
 
 @pytest.fixture(name="yt_oauth")
-def fixture_yt_oauth(oauth_filepath, client_id, client_secret) -> YTMusic:
-    return auth.do_auth(Path(oauth_filepath).parent, True, client_id, client_secret)
+def fixture_yt_oauth(credential_dir, client_id, client_secret) -> YTMusic:
+    return auth.do_auth(credential_dir, True, client_id, client_secret)
+
+
+@pytest.fixture(name="upload_file_path")
+def fixture_upload_file_path(config) -> str:
+    return get_resource(config["uploads"]["file_path"])
 
 
 @pytest.fixture(name="upload_song")
-def fixture_upload_song(config, yt_browser: YTMusic) -> Dict | None:
+def fixture_upload_song(config, yt_browser: YTMusic, upload_file_path) -> Dict | None:
     """
     Upload a song and wait for it to finish processing.
     """
-    upload_response = yt_browser.upload_song(get_resource(config["uploads"]["file"]))
+    upload_response = yt_browser.upload_song(upload_file_path)
     if not isinstance(upload_response, str) and upload_response.status_code == 409:
         # Song is already in uploads. Delete it and re-upload.
         # Although this app is not responsible for verifying that upload works properly,
@@ -289,13 +284,13 @@ def fixture_upload_song(config, yt_browser: YTMusic) -> Dict | None:
         if songs:
             delete_response = None
             for song in songs:
-                if song.get("title") in config["uploads"]["file"]:
+                if song.get("title") in upload_file_path:
                     delete_response = yt_browser.delete_upload_entity(song["entityId"])
             assert delete_response == "STATUS_SUCCEEDED"
         # Need to wait for song to be fully deleted
         time.sleep(10)
         # Now re-upload
-        upload_response = yt_browser.upload_song(get_resource(config["uploads"]["file"]))
+        upload_response = yt_browser.upload_song(upload_file_path)
 
     assert upload_response == "STATUS_SUCCEEDED" or upload_response.status_code == 200
 
@@ -305,7 +300,7 @@ def fixture_upload_song(config, yt_browser: YTMusic) -> Dict | None:
         time.sleep(5)
         songs = yt_browser.get_library_upload_songs(limit=None)
         for song in songs:
-            if song.get("title") in config["uploads"]["file"]:
+            if song.get("title") in upload_file_path:
                 return song
         retries_remaining -= 1
 
