@@ -130,7 +130,7 @@ def add_album_to_library(upload_artist, upload_title, yt_auth: YTMusic = None, s
         if success:
             logging.info("\tAdded album to library.")
             return match
-        else :
+        else:
             logging.error("\tFailed to add album to library")
             return None
     else:

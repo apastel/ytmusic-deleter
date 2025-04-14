@@ -9,7 +9,6 @@ from ytmusic_deleter.auth import ensure_auth
 from ytmusic_deleter.cli import cli
 from ytmusic_deleter.duplicates import check_for_duplicates
 from ytmusicapi import YTMusic
-from ytmusicapi.exceptions import YTMusicServerError
 
 
 class TestCli:

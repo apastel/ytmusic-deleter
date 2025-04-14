@@ -9,7 +9,9 @@ from ytmusicapi.exceptions import YTMusicUserError
 from . import common as const
 
 
-def ensure_auth(credential_dir: str, oauth: bool, client_id: str = "", client_secret: str = "") -> ytmusicapi.YTMusic | None:
+def ensure_auth(
+    credential_dir: str, oauth: bool, client_id: str = "", client_secret: str = ""
+) -> ytmusicapi.YTMusic | None:
     """
     Checks for an existing browser.json / oauth.json file to authenticate with.
     If one does not exist, prompt the user on the console to authenticate to

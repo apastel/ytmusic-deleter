@@ -1,6 +1,6 @@
+import click.testing
 import ytmusicapi
 from ytmusic_deleter import uploads
-import click.testing
 from ytmusic_deleter.cli import cli
 
 
