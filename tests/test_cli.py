@@ -172,8 +172,9 @@ class TestCli:
         result = runner.invoke(cli, ["whoami"], obj=yt_browser)
         assert result.exit_code == 0
 
-    @pytest.mark.skip(reason="OAuth was just updated in ytmusicapi@1.9.0, need to fix this")
-    def test_oauth(self, browser_filepath):
-        with pytest.raises(YTMusicServerError, match="Server returned HTTP 400: Bad Request"):
-            # using ensure_auth instead of CliRunner because the latter puts the exception in the return result instead
-            ensure_auth(Path(browser_filepath).parent, True)
+    def test_oauth(self, oauth_filepath):
+        # using ensure_auth instead of CliRunner because the latter puts the exception in the return result instead
+        yt_auth = ensure_auth(Path(oauth_filepath).parent, True)
+        assert yt_auth is not None
+        assert isinstance(yt_auth, YTMusic)
+        assert yt_auth.get_account_info().get("accountName") == "Testy McTesterson"

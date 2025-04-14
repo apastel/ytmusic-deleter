@@ -9,7 +9,7 @@ from ytmusicapi.exceptions import YTMusicUserError
 from . import common as const
 
 
-def ensure_auth(credential_dir, oauth, client_id, client_secret) -> ytmusicapi.YTMusic | None:
+def ensure_auth(credential_dir: str, oauth: bool, client_id: str = "", client_secret: str = "") -> ytmusicapi.YTMusic | None:
     """
     Checks for an existing browser.json / oauth.json file to authenticate with.
     If one does not exist, prompt the user on the console to authenticate to
@@ -37,7 +37,7 @@ def ensure_auth(credential_dir, oauth, client_id, client_secret) -> ytmusicapi.Y
     return yt_auth
 
 
-def setup_auth(oauth, client_id, client_secret, auth_file_path):
+def setup_auth(oauth: bool, client_id: str, client_secret: str, auth_file_path: str) -> None:
     if oauth:
         if not (client_id and client_secret):
             raise click.MissingParameter(
@@ -55,7 +55,7 @@ def setup_auth(oauth, client_id, client_secret, auth_file_path):
         ytmusicapi.setup(filepath=auth_file_path)
 
 
-def authenticate(oauth, auth_file_path):
+def authenticate(oauth: bool, auth_file_path: str) -> ytmusicapi.YTMusic:
     if oauth:
         yt_auth = ytmusicapi.YTMusic(
             auth_file_path,
