@@ -12,6 +12,7 @@ from time import strftime
 from typing import List
 
 import requests
+import ytmusicapi.auth.oauth.exceptions
 import ytmusicapi.exceptions
 from add_all_to_playlist_dialog import AddAllToPlaylistDialog
 from browser_auth_dialog import BrowserAuthDialog
@@ -40,11 +41,10 @@ from remove_duplicates_dialog import RemoveDuplicatesDialog
 from settings_dialog import SettingsDialog
 from sort_playlists_dialog import SortPlaylistsDialog
 from ytmusic_deleter import common as const
-from ytmusicapi import OAuthCredentials
 from ytmusicapi.auth.oauth import RefreshingToken
 from ytmusicapi.auth.types import AuthType
 
-from common import APP_DATA_DIR
+from common import APP_DATA_PATH
 
 
 internal_directory = os.path.dirname(os.path.abspath(__file__))
@@ -58,7 +58,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         super().__init__()
 
         # Initialize settings
-        self.settings = QSettings("apastel", PUBLIC_SETTINGS["app_name"])
+        self.settings = QSettings(PUBLIC_SETTINGS["app_name"], PUBLIC_SETTINGS["app_name"])
         try:
             self.resize(self.settings.value("mainwindow/size"))
             self.move(self.settings.value("mainwindow/pos"))
@@ -69,6 +69,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         # Ensure directory exists where we're storing logs and writing creds
         Path(self.log_dir).mkdir(parents=True, exist_ok=True)
         Path(self.credential_dir).mkdir(parents=True, exist_ok=True)
+        self.account_photo_dir.mkdir(parents=True, exist_ok=True)
 
         # Initialize a logger
         logging.basicConfig(
@@ -76,7 +77,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             format="[%(asctime)s] %(message)s",
             datefmt="%Y-%m-%d %H:%M:%S",
             handlers=[
-                logging.FileHandler(Path(APP_DATA_DIR) / f"ytmusic-deleter-gui_{strftime('%Y-%m-%d')}.log"),
+                logging.FileHandler(Path(self.log_dir) / f"ytmusic-deleter-gui_{strftime('%Y-%m-%d')}.log"),
                 logging.StreamHandler(sys.stdout),
             ],
         )
@@ -100,9 +101,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.accountPhotoButton.clicked.connect(self.account_button_clicked)
         self.signOutButton.clicked.connect(self.sign_out)
         self.accountWidgetCloseButton.clicked.connect(self.accountWidget.close)
-        self.settings_dialog = SettingsDialog(self)
-        self.settings_dialog.save_settings_signal.connect(self.save_settings)
-        self.actionSettings.triggered.connect(self.settings_dialog.exec)
+        self.actionSettings.triggered.connect(self.on_open_settings_clicked)
         self.actionExit.triggered.connect(QCoreApplication.quit)
         self.removeLibraryButton.clicked.connect(self.prepare_to_invoke)
         self.deleteUploadsButton.clicked.connect(self.prepare_to_invoke)
@@ -183,7 +182,14 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         """Check if user is signed in. If true, display their account info."""
         try:
             # Check for browser.json / oauth.json
-            self.ytmusic = ytmusicapi.YTMusic(str(Path(self.credential_dir) / self.auth_file_name))
+            self.message(f"Checking auth file at: {self.auth_file_path}")
+            self.ytmusic = ytmusicapi.YTMusic(
+                str(self.auth_file_path),
+                oauth_credentials=ytmusicapi.OAuthCredentials(
+                    client_id=self.client_id,
+                    client_secret=self.client_secret,
+                ),
+            )
         except ytmusicapi.exceptions.YTMusicUserError:
             # User is not signed in
             if display_message:
@@ -213,17 +219,19 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             pixmap = QPixmap()
             pixmap.loadFromData(response.content)
             pixmap = pixmap.scaled(self.accountPhotoButton.size(), Qt.KeepAspectRatio, Qt.SmoothTransformation)
-            photo_path = str(Path(Path(APP_DATA_DIR) / "account_photo.jpg"))
-            pixmap.save(photo_path)
-            background_photo_style = f"\nQPushButton {{ background-image: url({Path(photo_path).as_posix()}); }}"
+            photo_path: Path = self.account_photo_dir / "account_photo.jpg"
+            pixmap.save(str(photo_path))
+            background_photo_style = f"\nQPushButton {{ background-image: url({photo_path.as_posix()}); }}"
+            self.accountPhotoButton.setIcon(QIcon())
             self.accountPhotoButton.setStyleSheet(self.photo_button_stylesheet + background_photo_style)
 
             if display_message:
-                self.message(f"Signed in as {account_name!r}")
+                self.message(f"Signed in using OAuth as {account_name!r}")
         else:
             pixmap = QPixmap(AppContext._instance.get_resource("person.png"))
             pixmap = pixmap.scaled(self.accountPhotoButton.size(), Qt.KeepAspectRatio, Qt.SmoothTransformation)
             icon = QIcon(pixmap)
+            self.accountPhotoButton.setStyleSheet(self.photo_button_stylesheet)
             self.accountPhotoButton.setIcon(icon)
             self.accountPhotoButton.setIconSize(pixmap.size())
             self.accountNameLabel.setText("Signed in")
@@ -258,7 +266,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     @Slot()
     def sign_out(self):
-        Path.unlink(Path(Path(self.credential_dir) / self.auth_file_name))
+        self.message(f"Deleting auth file at: {self.auth_file_path}")
+        Path.unlink(self.auth_file_path)
         self.message("Signed out of YTMusic Deleter.")
         self.accountWidget.hide()
         self.accountPhotoButton.hide()
@@ -269,25 +278,33 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def prompt_for_auth(self):
         self.message("Showing login prompt.")
         if self.oauth_enabled:
-            oauth = OAuthCredentials()
-            code = oauth.get_code()
+            oauth = ytmusicapi.OAuthCredentials(
+                client_id=self.client_id,
+                client_secret=self.client_secret,
+            )
+            try:
+                code = oauth.get_code()
+            except (
+                ytmusicapi.auth.oauth.exceptions.BadOAuthClient,
+                ytmusicapi.auth.oauth.exceptions.UnauthorizedOAuthClient,
+            ) as e:
+                self.message(str(e))
+                raise
 
-            url_prompt = QMessageBox()
-            url_prompt.setIcon(QMessageBox.Information)
+            url_prompt = QMessageBox(self)
+            url_prompt.setWindowTitle("Link Your Google Account")
+            url_prompt.setIcon(QMessageBox.Icon.Information)
             url = f"{code['verification_url']}?user_code={code['user_code']}"
             url_prompt.setText(
-                f"<html>Go to <a href={url!r}>{url}</a>, follow the instructions, and click OK in this window when done.</html>"
-            )
-            url_prompt.setInformativeText(
-                "<html>This OAuth flow uses the <a href='https://developers.google.com/youtube/v3/guides/auth/devices'>Google API flow for TV devices</a>.</html>"  # noqa
+                f"Go to <a href={url!r}>{url}</a>, follow the instructions, and click OK in this window when done."
             )
             url_prompt.exec()
 
-            raw_token = oauth.token_from_code(code["device_code"])
             try:
+                raw_token = oauth.token_from_code(code["device_code"])
                 ref_token = RefreshingToken(credentials=oauth, **raw_token)
                 # store the token in oauth.json
-                ref_token.store_token(Path(Path(self.credential_dir) / const.OAUTH_FILENAME))
+                ref_token.store_token(self.auth_file_path)
                 if self.is_signed_in():
                     self.message("Successfully signed in.")
                 else:
@@ -300,6 +317,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         else:
             self.auth_dialog = BrowserAuthDialog(self)
             self.auth_dialog.show()
+
+    @Slot()
+    def on_open_settings_clicked(self):
+        self.settings_dialog = SettingsDialog(self)
+        self.settings_dialog.save_settings_signal.connect(self.save_settings)
+        self.settings_dialog.exec()
 
     @Slot()
     def prepare_to_invoke(self):
@@ -339,11 +362,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         confirmation_dialog.setIcon(QMessageBox.Warning)
         if args[0] == "remove-library":
             text = 'This is the same as clicking "Remove from library" on all albums that you have added to your library by clicking "Add to library" within YT Music. This will not delete your uploads.'  # noqa
-        # elif args[0] == "delete-uploads":
-        #     text = "This will delete all your uploaded music. "
-        #     checkbox = QCheckBox("Add uploads to library first")
-        #     checkbox.toggled.connect(self.add_to_library_checked)
-        #     confirmation_dialog.setCheckBox(checkbox)
         elif args[0] == "delete-playlists":
             text = "This will delete all your playlists, which may also include playlists in regular YouTube.com that have music."
         elif args[0] == "unlike-all":
@@ -374,9 +392,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         cli_args: List[str] = (
             [
                 "-l",
-                self.log_dir,
+                str(self.log_dir),
                 "-c",
-                self.credential_dir,
+                str(self.credential_dir),
                 "-p",
                 "-n",
             ]
@@ -455,16 +473,24 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def save_settings(self):
         self.settings.setValue("verbose_logging", self.settings_dialog.verboseCheckBox.isChecked())
         self.settings.setValue("oauth_enabled", self.settings_dialog.oauthCheckbox.isChecked())
+        self.settings.setValue("client_id", self.settings_dialog.clientIdInput.text().strip())
+        self.settings.setValue("client_secret", self.settings_dialog.clientSecretInput.text().strip())
         self.load_settings()
+        self.update_buttons()
 
     def load_settings(self):
-        self.log_dir = self.settings.value("log_dir", APP_DATA_DIR)
-        self.credential_dir = self.settings.value("credential_dir", APP_DATA_DIR)
+        self.log_dir = APP_DATA_PATH / "logs"
+        self.credential_dir = APP_DATA_PATH / "credentials"
+        self.account_photo_dir = APP_DATA_PATH / "resources"
         self.verbose_logging = self.settings.value("verbose_logging", False, type=bool)
         self.oauth_enabled = self.settings.value("oauth_enabled", False, type=bool)
+        self.client_id = self.settings.value("client_id", "", type=str)
+        self.client_secret = self.settings.value("client_secret", "", type=str)
 
         logging.getLogger().setLevel(logging.DEBUG if self.verbose_logging else logging.INFO)
-        self.auth_file_name = const.OAUTH_FILENAME if self.oauth_enabled else const.BROWSER_FILENAME
+        self.auth_file_path = Path(
+            self.credential_dir / (const.OAUTH_FILENAME if self.oauth_enabled else const.BROWSER_FILENAME)
+        )
 
     def log_unhandled_exception(self, exc_type, exc_value, exc_traceback):
         logging.exception("Unhandled exception occurred", exc_info=(exc_type, exc_value, exc_traceback))

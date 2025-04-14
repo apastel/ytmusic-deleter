@@ -149,7 +149,7 @@ jobs:
           command: |
             # Makes app run headless
             export QT_QPA_PLATFORM=offscreen
-            logfile="$APPDATA\YTMusic_Deleter\ytmusic-deleter-gui_$(date +%Y-%m-%d).log"
+            logfile="$APPDATA\YTMusic_Deleter\logs\ytmusic-deleter-gui_$(date +%Y-%m-%d).log"
             timeout 10s "$LOCALAPPDATA/YTMusic_Deleter/YTMusic_Deleter.exe" || true
             version_str="${{ needs.build.outputs.cli-version }}"
             if grep -q "$version_str" $logfile; then

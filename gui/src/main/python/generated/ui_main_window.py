@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'main_window.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.8.2
+## Created by: Qt User Interface Compiler version 6.9.0
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -96,9 +96,9 @@ class Ui_MainWindow(object):
         self.accountNameLabel = QLabel(self.accountWidget)
         self.accountNameLabel.setObjectName(u"accountNameLabel")
         self.accountNameLabel.setGeometry(QRect(10, 10, 151, 31))
-        self.accountNameLabel.setTextFormat(Qt.AutoText)
+        self.accountNameLabel.setTextFormat(Qt.TextFormat.AutoText)
         self.accountNameLabel.setScaledContents(False)
-        self.accountNameLabel.setAlignment(Qt.AlignCenter)
+        self.accountNameLabel.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.signOutButton = QPushButton(self.accountWidget)
         self.signOutButton.setObjectName(u"signOutButton")
         self.signOutButton.setGeometry(QRect(50, 80, 75, 23))
@@ -116,25 +116,25 @@ class Ui_MainWindow(object):
         self.channelHandleLabel = QLabel(self.accountWidget)
         self.channelHandleLabel.setObjectName(u"channelHandleLabel")
         self.channelHandleLabel.setGeometry(QRect(10, 40, 151, 31))
-        self.channelHandleLabel.setTextFormat(Qt.AutoText)
+        self.channelHandleLabel.setTextFormat(Qt.TextFormat.AutoText)
         self.channelHandleLabel.setScaledContents(False)
-        self.channelHandleLabel.setAlignment(Qt.AlignCenter)
+        self.channelHandleLabel.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.removeDupesButton = QPushButton(self.centralWidget)
         self.removeDupesButton.setObjectName(u"removeDupesButton")
         self.removeDupesButton.setEnabled(True)
-        self.removeDupesButton.setGeometry(QRect(160, 240, 101, 41))
+        self.removeDupesButton.setGeometry(QRect(160, 240, 111, 41))
         font3 = QFont()
         font3.setPointSize(8)
         self.removeDupesButton.setFont(font3)
         self.addAllToPlaylistButton = QPushButton(self.centralWidget)
         self.addAllToPlaylistButton.setObjectName(u"addAllToPlaylistButton")
         self.addAllToPlaylistButton.setEnabled(True)
-        self.addAllToPlaylistButton.setGeometry(QRect(280, 240, 101, 41))
+        self.addAllToPlaylistButton.setGeometry(QRect(290, 240, 101, 41))
         self.addAllToPlaylistButton.setFont(font3)
         MainWindow.setCentralWidget(self.centralWidget)
         self.menubar = QMenuBar(MainWindow)
         self.menubar.setObjectName(u"menubar")
-        self.menubar.setGeometry(QRect(0, 0, 900, 21))
+        self.menubar.setGeometry(QRect(0, 0, 900, 19))
         self.menuSettings = QMenu(self.menubar)
         self.menuSettings.setObjectName(u"menuSettings")
         MainWindow.setMenuBar(self.menubar)

@@ -1,6 +1,6 @@
 from generated import ui_delete_uploads_dialog
-from PySide6 import QtWidgets
 from PySide6 import QtCore
+from PySide6 import QtWidgets
 
 
 class DeleteUploadsDialog(QtWidgets.QDialog, ui_delete_uploads_dialog.Ui_DeleteUploadsDialog):

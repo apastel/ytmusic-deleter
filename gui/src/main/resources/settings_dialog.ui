@@ -3,7 +3,7 @@
  <class>SettingsDialog</class>
  <widget class="QDialog" name="SettingsDialog">
   <property name="windowModality">
-   <enum>Qt::ApplicationModal</enum>
+   <enum>Qt::WindowModality::ApplicationModal</enum>
   </property>
   <property name="geometry">
    <rect>
@@ -25,14 +25,14 @@
      <x>390</x>
      <y>20</y>
      <width>81</width>
-     <height>241</height>
+     <height>71</height>
     </rect>
    </property>
    <property name="orientation">
-    <enum>Qt::Vertical</enum>
+    <enum>Qt::Orientation::Vertical</enum>
    </property>
    <property name="standardButtons">
-    <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+    <set>QDialogButtonBox::StandardButton::Cancel|QDialogButtonBox::StandardButton::Ok</set>
    </property>
   </widget>
   <widget class="QCheckBox" name="verboseCheckBox">
@@ -62,29 +62,29 @@
     <rect>
      <x>30</x>
      <y>60</y>
-     <width>351</width>
+     <width>151</width>
      <height>41</height>
     </rect>
    </property>
    <property name="toolTip">
-    <string>Enables user-friendly authentication using OAuth (may not work)</string>
+    <string>Changes authentication method from browser to OAuth</string>
    </property>
    <property name="statusTip">
-    <string>Enables user-friendly authentication using OAuth (may not work)</string>
+    <string>Changes authentication method from browser to OAuth</string>
    </property>
    <property name="whatsThis">
-    <string>Enables user-friendly authentication using OAuth (may not work)</string>
+    <string>Changes authentication method from browser to OAuth</string>
    </property>
    <property name="text">
-    <string>Enable OAuth login (may not work)</string>
+    <string>Enable OAuth login</string>
    </property>
   </widget>
   <widget class="QPushButton" name="openDataDirButton">
    <property name="geometry">
     <rect>
-     <x>380</x>
-     <y>130</y>
-     <width>81</width>
+     <x>400</x>
+     <y>200</y>
+     <width>91</width>
      <height>23</height>
     </rect>
    </property>
@@ -98,8 +98,8 @@
    </property>
    <property name="geometry">
     <rect>
-     <x>30</x>
-     <y>130</y>
+     <x>50</x>
+     <y>200</y>
      <width>341</width>
      <height>20</height>
     </rect>
@@ -111,14 +111,60 @@
   <widget class="QLabel" name="dataDirLabel">
    <property name="geometry">
     <rect>
-     <x>30</x>
-     <y>110</y>
+     <x>50</x>
+     <y>180</y>
      <width>331</width>
      <height>16</height>
     </rect>
    </property>
    <property name="text">
     <string>App data directory: (logs and auth files are saved here)</string>
+   </property>
+  </widget>
+  <widget class="QWidget" name="verticalLayoutWidget">
+   <property name="geometry">
+    <rect>
+     <x>50</x>
+     <y>100</y>
+     <width>331</width>
+     <height>52</height>
+    </rect>
+   </property>
+   <layout class="QVBoxLayout" name="verticalLayoutOauth">
+    <item>
+     <widget class="QLineEdit" name="clientIdInput">
+      <property name="placeholderText">
+       <string>client_id</string>
+      </property>
+     </widget>
+    </item>
+    <item>
+     <widget class="QLineEdit" name="clientSecretInput">
+      <property name="placeholderText">
+       <string>client_secret</string>
+      </property>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QPushButton" name="oauthInfoButton">
+   <property name="geometry">
+    <rect>
+     <x>180</x>
+     <y>70</y>
+     <width>21</width>
+     <height>22</height>
+    </rect>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">QPushButton {
+    background-position: center;
+    background-repeat: no-repeat;
+    border-radius: 5px;
+}</string>
+   </property>
+   <property name="text">
+    <string/>
    </property>
   </widget>
  </widget>
