@@ -95,7 +95,6 @@
     </property>
     <property name="font">
      <font>
-      <weight>75</weight>
       <bold>true</bold>
      </font>
     </property>
@@ -280,13 +279,13 @@
       <string>Account Name</string>
      </property>
      <property name="textFormat">
-      <enum>Qt::AutoText</enum>
+      <enum>Qt::TextFormat::AutoText</enum>
      </property>
      <property name="scaledContents">
       <bool>false</bool>
      </property>
      <property name="alignment">
-      <set>Qt::AlignCenter</set>
+      <set>Qt::AlignmentFlag::AlignCenter</set>
      </property>
     </widget>
     <widget class="QPushButton" name="signOutButton">
@@ -318,7 +317,6 @@
       <font>
        <family>Courier</family>
        <pointsize>8</pointsize>
-       <weight>50</weight>
        <bold>false</bold>
        <strikeout>false</strikeout>
        <kerning>true</kerning>
@@ -341,13 +339,13 @@
       <string>ChannelHandle</string>
      </property>
      <property name="textFormat">
-      <enum>Qt::AutoText</enum>
+      <enum>Qt::TextFormat::AutoText</enum>
      </property>
      <property name="scaledContents">
       <bool>false</bool>
      </property>
      <property name="alignment">
-      <set>Qt::AlignCenter</set>
+      <set>Qt::AlignmentFlag::AlignCenter</set>
      </property>
     </widget>
    </widget>
@@ -359,7 +357,7 @@
      <rect>
       <x>160</x>
       <y>240</y>
-      <width>101</width>
+      <width>111</width>
       <height>41</height>
      </rect>
     </property>
@@ -384,7 +382,7 @@
     </property>
     <property name="geometry">
      <rect>
-      <x>280</x>
+      <x>290</x>
       <y>240</y>
       <width>101</width>
       <height>41</height>
@@ -412,7 +410,7 @@
      <x>0</x>
      <y>0</y>
      <width>900</width>
-     <height>21</height>
+     <height>19</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuSettings">

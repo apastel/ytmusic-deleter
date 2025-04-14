@@ -291,14 +291,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 self.message(str(e))
                 raise
 
-            url_prompt = QMessageBox()
-            url_prompt.setIcon(QMessageBox.Information)
+            url_prompt = QMessageBox(self)
+            url_prompt.setWindowTitle("Link Your Google Account")
+            url_prompt.setIcon(QMessageBox.Icon.Information)
             url = f"{code['verification_url']}?user_code={code['user_code']}"
             url_prompt.setText(
-                f"<html>Go to <a href={url!r}>{url}</a>, follow the instructions, and click OK in this window when done.</html>"
-            )
-            url_prompt.setInformativeText(
-                "<html>This OAuth flow uses the <a href='https://developers.google.com/youtube/v3/guides/auth/devices'>Google API flow for TV devices</a>.</html>"  # noqa
+                f"Go to <a href={url!r}>{url}</a>, follow the instructions, and click OK in this window when done."
             )
             url_prompt.exec()
 
