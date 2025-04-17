@@ -144,10 +144,10 @@ jobs:
       uses: actions/download-artifact@v4
       with:
         name: installer-dmg-macos-13
-    - name: Download macOS 14 installer (Apple)
+    - name: Download macOS 15 installer (Apple)
       uses: actions/download-artifact@v4
       with:
-        name: installer-dmg-macos-14
+        name: installer-dmg-macos-15
         path:
     - name: Upload executable installers to Github Release
       env:
