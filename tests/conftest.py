@@ -484,6 +484,7 @@ def fixture_get_playlist_with_dupes(yt_browser: YTMusic, sample_song_list_dupes)
     # Add songs to playlist
     shuffle(sample_song_list_dupes)
     yt_browser.add_playlist_items(playlist_id, sample_song_list_dupes, duplicates=True)
+    time.sleep(1)  # fixes issue where playlist is shown to have 0 tracks in it
     return playlist_id
 
 
