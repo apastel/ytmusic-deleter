@@ -32,7 +32,7 @@ Features
 * Delete your play history
 ### Playlist Utilities
 * Sort your playlists using any combination of: Artist, Album, Track Title, and Duration
-* Shuffle your playlist
+* Shuffle your playlists
 * Remove duplicates from your playlists (either exact duplicates or similiar duplicates)
 * Add all of your uploads or library songs to a particular playlist
 
