@@ -32,7 +32,8 @@ Features
 * Delete your play history
 ### Playlist Utilities
 * Sort your playlists using any combination of: Artist, Album, Track Title, and Duration
-* Remove duplicates from your playlists
+* Shuffle your playlist
+* Remove duplicates from your playlists (either exact duplicates or similiar duplicates)
 * Add all of your uploads or library songs to a particular playlist
 
 ![YTMusic Deleter screenshot](https://i.imgur.com/TVpB6xY.gif)  
