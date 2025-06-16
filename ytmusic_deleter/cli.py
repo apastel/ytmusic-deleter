@@ -185,7 +185,11 @@ def remove_library_items(library_items):
     items_removed = 0
     for item in library_items:
         logging.debug(f"Full album or song item: {item}")
-        artist = item["artists"][0]["name"] if "artists" in item else common.UNKNOWN_ARTIST
+        artist = (
+            item["artists"][0]["name"]
+            if item.get("artists")  # Using `get` ensures key exists and isn't []
+            else common.UNKNOWN_ARTIST
+        )
         title = item.get("title")
         logging.info(f"Processing item: {artist} - {title!r}")
 
@@ -411,8 +415,12 @@ def sort_playlist(ctx: click.Context, shuffle, playlist_titles, custom_sort, rev
             cur_idx = desired_tracklist.index(cur_track)
             track_after = current_tracklist[cur_idx]
 
-            cur_artist = cur_track["artists"][0]["name"] if cur_track["artists"] else common.UNKNOWN_ARTIST
-            track_after_artist = track_after["artists"][0]["name"] if track_after["artists"] else common.UNKNOWN_ARTIST
+            cur_artist = cur_track["artists"][0]["name"] if cur_track.get("artists") else common.UNKNOWN_ARTIST
+            track_after_artist = (
+                track_after["artists"][0]["name"]
+                if track_after.get("artists")  # Using `get` ensures key exists and isn't []
+                else common.UNKNOWN_ARTIST
+            )
             if cur_track != track_after:
                 logging.debug(
                     f"Moving {cur_artist} - {cur_track['title']!r} before {track_after_artist} - {track_after['title']!r}"
