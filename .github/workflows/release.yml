@@ -86,20 +86,8 @@ jobs:
 
     permissions:
       contents: write  # IMPORTANT: mandatory for making GitHub Releases
-      id-token: write  # IMPORTANT: mandatory for sigstore
 
     steps:
-    - name: Download all the dists
-      uses: actions/download-artifact@v4
-      with:
-        name: python-package-distributions
-        path: dist/
-    - name: Sign the dists with Sigstore
-      uses: sigstore/gh-action-sigstore-python@main
-      with:
-        inputs: |
-          ./dist/*.tar.gz
-          ./dist/*.whl
     - name: Draft GitHub Release
       env:
         GITHUB_TOKEN: ${{ github.token }}
@@ -109,17 +97,6 @@ jobs:
         --repo '${{ github.repository }}' \
         --generate-notes \
         --draft
-    - name: Upload artifact signatures to GitHub Release
-      env:
-        GITHUB_TOKEN: ${{ github.token }}
-      # Upload to GitHub Release using the `gh` CLI.
-      # `dist/` contains the built packages, and the
-      # sigstore-produced signatures and certificates.
-      run: |
-        gh release upload \
-        '${{ github.ref_name }}' \
-        --repo '${{ github.repository }}' \
-        dist/**
 
       # Necessary for getting executable name, since it won't match the git ref
       # if we're releasing a branch build
