@@ -506,11 +506,15 @@ def remove_duplicates(ctx: click.Context, playlist_title, exact):
         return
     logging.info(f"Removing {len(items_to_remove)} tracks total.")
     playlist_id = playlist.get("id")
+    if not isinstance(playlist_id, str) or not playlist_id:
+        logging.error("Playlist ID is missing or invalid. Cannot remove duplicates.")
+        return
     if playlist_id == "LM":
         for song in items_to_remove:
             yt_auth.rate_song(song["videoId"], common.INDIFFERENT)
     else:
-        yt_auth.remove_playlist_items(playlist_id, items_to_remove)
+        for chunk in common.chunked(items_to_remove, 50):
+            yt_auth.remove_playlist_items(playlist_id, chunk)
     logging.info("Finished removing duplicate tracks.")
 
 

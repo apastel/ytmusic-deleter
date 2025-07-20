@@ -7,6 +7,7 @@ from PySide6.QtWidgets import QDialogButtonBox
 from PySide6.QtWidgets import QMessageBox
 from track_listing_dialog import TrackListingDialog
 from ytmusic_deleter.common import can_edit_playlist
+from ytmusic_deleter.common import chunked
 from ytmusic_deleter.common import INDIFFERENT
 from ytmusic_deleter.duplicates import check_for_duplicates
 from ytmusic_deleter.duplicates import determine_tracks_to_remove
@@ -116,7 +117,8 @@ class RemoveDuplicatesDialog(QDialog, Ui_PlaylistSelectionDialog):
             for song in items_to_remove:
                 yt_auth.rate_song(song["videoId"], INDIFFERENT)
         else:
-            yt_auth.remove_playlist_items(selected_playlist_id, items_to_remove)
+            for chunk in chunked(items_to_remove, 50):
+                yt_auth.remove_playlist_items(selected_playlist_id, chunk)
         self.parent().message("Finished: Tracks removed")
 
         QMessageBox.information(

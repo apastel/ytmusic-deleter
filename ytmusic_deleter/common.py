@@ -74,3 +74,18 @@ def get_album_audio_playlist_id(browse_id: str, yt_auth: YTMusic = None) -> str 
     if not audio_playlist_id:
         logging.error(f"Could not get audio playlist ID for album {browse_id}")
     return audio_playlist_id
+
+
+def chunked(iterable, size):
+    """
+    Yield successive chunks of a specified size from an iterable.
+
+    Args:
+        iterable (iterable): The iterable to chunk.
+        size (int): The size of each chunk.
+
+    Returns:
+        generator: A generator that yields chunks of the specified size.
+    """
+    for i in range(0, len(iterable), size):
+        yield iterable[i : i + size]
