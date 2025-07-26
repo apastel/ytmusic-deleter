@@ -1,10 +1,14 @@
 import ytmusicapi
 from checkbox_track_listing import CheckboxTrackListingDialog
 from generated.ui_playlist_selection_dialog import Ui_PlaylistSelectionDialog
+from PySide6.QtCore import Qt
+from PySide6.QtCore import QTimer
 from PySide6.QtCore import Slot
+from PySide6.QtWidgets import QApplication
 from PySide6.QtWidgets import QDialog
 from PySide6.QtWidgets import QDialogButtonBox
 from PySide6.QtWidgets import QMessageBox
+from PySide6.QtWidgets import QProgressDialog
 from track_listing_dialog import TrackListingDialog
 from ytmusic_deleter.common import can_edit_playlist
 from ytmusic_deleter.common import chunked
@@ -47,84 +51,106 @@ class RemoveDuplicatesDialog(QDialog, Ui_PlaylistSelectionDialog):
         self.buttonBox.button(QDialogButtonBox.Ok).setEnabled(len(self.playlistList.selectedItems()) > 0)
 
     def launch_remove_dupes(self, selected_playlist_title):
-        # Get playlist
-        selected_playlist_id = next(
-            (
-                playlist["playlistId"]
-                for playlist in self.all_playlists
-                if playlist.get("title").lower() == selected_playlist_title.lower()
-            ),
-            None,
-        )
-        if not selected_playlist_id:
-            # alert that playlist selection was invalid somehow
-            raise Exception
-        yt_auth: YTMusic = self.parent().ytmusic
-        playlist = yt_auth.get_playlist(selected_playlist_id, limit=None)
+        # Show "Please wait" dialog
+        please_wait_dialog = QProgressDialog("Checking for duplicates, please wait...", None, 0, 0, self)
+        please_wait_dialog.setWindowTitle("Please wait")
+        please_wait_dialog.setWindowModality(Qt.WindowModal)
+        please_wait_dialog.setCancelButton(None)
+        please_wait_dialog.show()
+        QApplication.processEvents()  # Ensure dialog appears immediately
 
-        # Ensure can edit playlist
-        if not can_edit_playlist(playlist):
-            warning_dialog = QMessageBox()
-            warning_dialog.setIcon(QMessageBox.Warning)
-            warning_dialog.setText(
-                f"Cannot modify playlist {selected_playlist_title!r}. You are not the owner of this playlist."
+        def do_work():
+            # Get playlist
+            selected_playlist_id = next(
+                (
+                    playlist["playlistId"]
+                    for playlist in self.all_playlists
+                    if playlist.get("title").lower() == selected_playlist_title.lower()
+                ),
+                None,
             )
-            return warning_dialog.exec()
+            if not selected_playlist_id:
+                please_wait_dialog.close()
+                raise Exception
+            yt_auth: YTMusic = self.parent().ytmusic
+            playlist = yt_auth.get_playlist(selected_playlist_id, limit=None)
 
-        # Get duplicates
-        duplicates = check_for_duplicates(playlist, yt_auth)
-        if not duplicates:
-            warning_dialog = QMessageBox()
-            warning_dialog.setIcon(QMessageBox.Warning)
-            warning_dialog.setText(
-                f"No duplicates found in playlist {selected_playlist_title!r}. If you think this is an error open an issue on GitHub or message on Discord"  # noqa: B950
-            )
-            return warning_dialog.exec()
+            # Ensure can edit playlist
+            if not can_edit_playlist(playlist):
+                please_wait_dialog.close()
+                warning_dialog = QMessageBox()
+                warning_dialog.setIcon(QMessageBox.Warning)
+                warning_dialog.setText(
+                    f"Cannot modify playlist {selected_playlist_title!r}. You are not the owner of this playlist."
+                )
+                return warning_dialog.exec()
 
-        # Check for exact dupes
-        items_to_remove, remaining_dupe_groups = determine_tracks_to_remove(duplicates)
-        if items_to_remove:
-            self.track_listing_dialog = TrackListingDialog(self, items_to_remove)
-            ok_clicked = self.track_listing_dialog.exec()
-            if not ok_clicked:
-                items_to_remove = []
+            # Get duplicates
+            duplicates = check_for_duplicates(playlist, yt_auth)
+            if not duplicates:
+                please_wait_dialog.close()
+                warning_dialog = QMessageBox()
+                warning_dialog.setIcon(QMessageBox.Warning)
+                warning_dialog.setText(
+                    f"No duplicates found in playlist {selected_playlist_title!r}. If you think this is an error open an issue on GitHub or message on Discord"  # noqa: B950
+                )
+                return warning_dialog.exec()
 
-        # Check for similar dupes
-        if remaining_dupe_groups:
-            self.checkbox_track_listing_dialog = CheckboxTrackListingDialog(self, remaining_dupe_groups)
-            ok_clicked = self.checkbox_track_listing_dialog.exec()
-            if not ok_clicked:
+            # Check for exact dupes
+            items_to_remove, remaining_dupe_groups = determine_tracks_to_remove(duplicates)
+
+            # Close "Please wait" dialog before showing TrackListingDialog
+            please_wait_dialog.close()
+
+            if items_to_remove:
+                self.track_listing_dialog = TrackListingDialog(self, items_to_remove, show_thumbnail=False)
+                ok_clicked = self.track_listing_dialog.exec()
+                if not ok_clicked:
+                    items_to_remove = []
+
+            # Check for similar dupes
+            if remaining_dupe_groups:
+                self.checkbox_track_listing_dialog = CheckboxTrackListingDialog(self, remaining_dupe_groups)
+                ok_clicked = self.checkbox_track_listing_dialog.exec()
+                if not ok_clicked:
+                    return
+                selected_tracks = [
+                    item
+                    for sublist in self.checkbox_track_listing_dialog.dupe_groups
+                    for item in sublist
+                    if item.get("checked", False)
+                ]
+                items_to_remove.extend(selected_tracks)
+
+            # Nothing was marked for deletion
+            if not items_to_remove:
+                self.parent().message("Finished: No duplicate tracks were marked for deletion.")
+                QMessageBox.information(
+                    self, "Finished!", "No duplicate tracks were marked for deletion.", QMessageBox.Ok
+                )
                 return
-            selected_tracks = [
-                item
-                for sublist in self.checkbox_track_listing_dialog.dupe_groups
-                for item in sublist
-                if item.get("checked", False)
-            ]
-            items_to_remove.extend(selected_tracks)
 
-        # Nothing was marked for deletion
-        if not items_to_remove:
-            self.parent().message("Finished: No duplicate tracks were marked for deletion.")
-            QMessageBox.information(self, "Finished!", "No duplicate tracks were marked for deletion.", QMessageBox.Ok)
+            # Proceed with deletion
+            self.parent().message(
+                f"Removing {len(items_to_remove)} tracks total from playlist {selected_playlist_title!r}"
+            )
+
+            if playlist.get("id") == "LM":
+                # This is the 'Liked Music' playlist, must use rate_song()
+                for song in items_to_remove:
+                    yt_auth.rate_song(song["videoId"], INDIFFERENT)
+            else:
+                for chunk in chunked(items_to_remove, 50):
+                    yt_auth.remove_playlist_items(selected_playlist_id, chunk)
+            self.parent().message("Finished: Tracks removed")
+
+            QMessageBox.information(
+                self,
+                "Finished!",
+                f"{len(items_to_remove)} tracks were removed from {selected_playlist_title!r}",
+                QMessageBox.Ok,
+            )
             return
 
-        # Proceed with deletion
-        self.parent().message(f"Removing {len(items_to_remove)} tracks total from playlist {selected_playlist_title!r}")
-
-        if playlist.get("id") == "LM":
-            # This is the 'Liked Music' playlist, must use rate_song()
-            for song in items_to_remove:
-                yt_auth.rate_song(song["videoId"], INDIFFERENT)
-        else:
-            for chunk in chunked(items_to_remove, 50):
-                yt_auth.remove_playlist_items(selected_playlist_id, chunk)
-        self.parent().message("Finished: Tracks removed")
-
-        QMessageBox.information(
-            self,
-            "Finished!",
-            f"{len(items_to_remove)} tracks were removed from {selected_playlist_title!r}",
-            QMessageBox.Ok,
-        )
-        return
+        # Schedule the work to run after the dialog is shown
+        QTimer.singleShot(100, do_work)
