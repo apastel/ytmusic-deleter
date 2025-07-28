@@ -5,10 +5,10 @@
 groups = ["default", "gui", "lint", "test"]
 strategy = ["inherit_metadata"]
 lock_version = "4.5.0"
-content_hash = "sha256:fd980e886826e524a88c1e319333bad64aa9daf1a65ad63e08b72671c217c928"
+content_hash = "sha256:88facdb1273fe48a0e60ca1c65af3e1852e1334b93dde64c39f244a7a62f395f"
 
 [[metadata.targets]]
-requires_python = ">=3.9,<3.13"
+requires_python = ">3.9,<3.13"
 
 [[package]]
 name = "altgraph"

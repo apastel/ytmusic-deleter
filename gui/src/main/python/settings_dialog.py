@@ -56,7 +56,7 @@ class SettingsDialog(QDialog, Ui_SettingsDialog):
         info_message = QMessageBox(self, icon=QMessageBox.Icon.Information)
         info_message.setWindowTitle("OAuth Instructions")
         info_message.setText(
-            "Visit this link for instructions on how to set up OAuth 2.0 credentials.<br>" f"<a href={url}>{url}</a>"
+            f"Visit this link for instructions on how to set up OAuth 2.0 credentials.<br> <a href={url}>{url}</a>"
         )
         info_message.setTextFormat(Qt.TextFormat.RichText)
         info_message.setTextInteractionFlags(Qt.TextInteractionFlag.TextBrowserInteraction)

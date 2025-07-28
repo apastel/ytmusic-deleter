@@ -24,6 +24,7 @@ from fbs_runtime.application_context.PySide6 import ApplicationContext
 from fbs_runtime.excepthook.sentry import SentryExceptionHandler
 from generated.ui_main_window import Ui_MainWindow
 from progress_dialog import ProgressDialog
+from progress_worker_dialog import ProgressWorkerDialog
 from PySide6.QtCore import QCoreApplication
 from PySide6.QtCore import QEvent
 from PySide6.QtCore import QProcess
@@ -342,8 +343,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 self.sort_playlists_dialog.show()
 
             elif args[0] == "remove-duplicates":
-                self.remove_duplicates_dialog = RemoveDuplicatesDialog(self)
-                self.remove_duplicates_dialog.show()
+                please_wait_dialog = ProgressWorkerDialog("Loading your playlists", self)
+
+                def load_window():
+                    self.remove_duplicates_dialog = RemoveDuplicatesDialog(self)
+                    self.remove_duplicates_dialog.show()
+
+                please_wait_dialog.run(load_window)
 
             elif args[0] == "add-all-to-playlist":
                 self.add_all_to_playlist_dialog = AddAllToPlaylistDialog(self)

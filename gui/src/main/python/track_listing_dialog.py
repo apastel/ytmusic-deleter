@@ -10,7 +10,7 @@ from PySide6.QtWidgets import QTableWidgetItem
 
 
 class TrackListingDialog(QDialog, Ui_TrackListingDialog):
-    def __init__(self, parent, tracklist):
+    def __init__(self, parent, tracklist, show_thumbnail: bool = True):
         super().__init__(parent)
         self.setupUi(self)
 
@@ -30,14 +30,14 @@ class TrackListingDialog(QDialog, Ui_TrackListingDialog):
             self.trackListTable.insertRow(row_idx)
             for col_idx, item in enumerate(row_items):
                 if col_idx == 4:
-                    r = requests.get(data_list[4])
-                    img = QImage()
-                    img.loadFromData(r.content)
-                    pixmap = QPixmap.fromImage(img)
-
-                    item.setIcon(pixmap)
                     item.setSizeHint(QSize(64, 64))
                     item.setText("")
+                    if show_thumbnail:
+                        r = requests.get(data_list[4])
+                        img = QImage()
+                        img.loadFromData(r.content)
+                        pixmap = QPixmap.fromImage(img)
+                        item.setIcon(pixmap)
                 # Set items in the new row
                 self.trackListTable.setItem(row_idx, col_idx, item)
 
