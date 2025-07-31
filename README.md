@@ -67,6 +67,9 @@ Follow the instructions in the [ytmusicapi](https://ytmusicapi.readthedocs.io/en
 to copy your request headers to your clipboard. Then paste them into the window in YTMusic Deleter.
 > It's recommended to use Firefox for copying the headers since Firefox conveniently has a "Copy Request Headers" button.
 
+> Chrome/Edge are currently not working for browser authentication. You must use
+Firefox. Apologies for the inconvenience. This is outside my control unfortunately.
+
 ### (Advanced) Command-line interface
 If you would prefer to use the command-line interface, see [CLI README](ytmusic_deleter/README.md) for instructions on running the CLI version of YTMusic Deleter. This is completely separate from the GUI version. There is no reason to download both -- use one or the other.
 

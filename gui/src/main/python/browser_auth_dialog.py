@@ -47,7 +47,7 @@ class BrowserAuthDialog(QDialog, Ui_AuthDialog):
         self.instructions_str = (
             "<html>See the <a href=https://ytmusicapi.readthedocs.io/en/stable/setup/browser.html#copy-authentication-headers>"
             "ytmusicapi docs</a> or this <a href=https://youtu.be/FZ7gaMTUYN4>YouTube video</a> for instructions on "
-            "obtaining your request headers.</html>"
+            "obtaining your request headers. You must use Firefox since Chrome/Edge are currently experiencing an issue.</html>"
         )
         self.helpLabel.setText(self.instructions_str)
 
