@@ -10,7 +10,7 @@ dependencies = [
     "ytmusicapi>=1.10.0",
     "inquirerpy>=0.3.4",
 ]
-requires-python = "<3.13,>3.9"
+requires-python = "<3.13,>=3.10"
 readme = "ytmusic_deleter/README.md"
 license = { text = "GPL-3.0" }
 
