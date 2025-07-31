@@ -6,6 +6,7 @@ from PySide6.QtCore import QSize
 from PySide6.QtGui import QImage
 from PySide6.QtGui import QPixmap
 from PySide6.QtWidgets import QDialog
+from PySide6.QtWidgets import QDialogButtonBox
 from PySide6.QtWidgets import QTableWidgetItem
 
 
@@ -13,6 +14,7 @@ class TrackListingDialog(QDialog, Ui_TrackListingDialog):
     def __init__(self, parent, tracklist, show_thumbnail: bool = True):
         super().__init__(parent)
         self.setupUi(self)
+        self.buttonBox.button(QDialogButtonBox.Cancel).setText("Skip")
 
         self.tracklist = tracklist
 
