@@ -38,6 +38,15 @@ class SortPlaylistsDialog(QDialog, Ui_SortPlaylistDialog):
             # Ensure we log an exception in the console (not just log file) if fetching playlists fails
             self.parentWidget().message(str(e))
             raise
+        if not playlists:
+            QMessageBox.critical(
+                self,
+                "Error",
+                "No playlists found in your library! Your credentials may be expired. Try signing out and signing back in.",
+            )
+            self.close()
+            self.deleteLater()
+            return
         self.playlistList.insertItems(0, [playlist["title"] for playlist in playlists])
 
     def accept(self):

@@ -21,6 +21,15 @@ class AddAllToPlaylistDialog(QDialog, Ui_PlaylistSelectionDialog):
             # Ensure we log an exception in the console (not just log file) if fetching playlists fails
             self.parentWidget().message(str(e))
             raise
+        if not self.all_playlists:
+            QMessageBox.critical(
+                self,
+                "Error",
+                "No playlists found in your library! Your credentials may be expired. Try signing out and signing back in.",
+            )
+            self.close()
+            self.deleteLater()
+            return
         self.playlistList.insertItems(0, [playlist["title"] for playlist in self.all_playlists])
 
     def accept(self):
