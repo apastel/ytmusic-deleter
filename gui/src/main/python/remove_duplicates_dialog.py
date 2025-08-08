@@ -30,7 +30,7 @@ class RemoveDuplicatesDialog(QDialog, Ui_PlaylistSelectionDialog):
 
         try:
             self.all_playlists = parent.ytmusic.get_library_playlists(limit=None)
-        except ytmusicapi.exceptions.YTMusicError as e:
+        except (ytmusicapi.exceptions.YTMusicError, TypeError) as e:
             # Ensure we log an exception in the console (not just log file) if fetching playlists fails
             self.parentWidget().message(str(e))
             raise
