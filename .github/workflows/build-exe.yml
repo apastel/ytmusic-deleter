@@ -55,11 +55,7 @@ jobs:
       id: run-cli
       run: |
         . .venv/Scripts/activate
-        which python
-        python --version
-        which ytmusic-deleter
-        ytmusic-deleter --help
-        ytmusic-deleter --version
+        ytmusic-deleter
         echo "version=$(ytmusic-deleter --version)" >> $GITHUB_OUTPUT
     - name: Run fbs app
       run: |
