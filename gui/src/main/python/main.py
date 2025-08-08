@@ -354,8 +354,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 self.delete_uploads_dialog.show()
 
             elif args[0] == "sort-playlist":
-                self.sort_playlists_dialog = SortPlaylistsDialog(self)
-                self.sort_playlists_dialog.show()
+                please_wait_dialog = ProgressWorkerDialog("Loading your playlists", self)
+
+                def load_window():
+                    self.remove_duplicates_dialog = SortPlaylistsDialog(self)
+                    self.remove_duplicates_dialog.show()
+
+                please_wait_dialog.run(load_window)
 
             elif args[0] == "remove-duplicates":
                 please_wait_dialog = ProgressWorkerDialog("Loading your playlists", self)
@@ -367,8 +372,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 please_wait_dialog.run(load_window)
 
             elif args[0] == "add-all-to-playlist":
-                self.add_all_to_playlist_dialog = AddAllToPlaylistDialog(self)
-                self.add_all_to_playlist_dialog.show()
+                please_wait_dialog = ProgressWorkerDialog("Loading your playlists", self)
+
+                def load_window():
+                    self.remove_duplicates_dialog = AddAllToPlaylistDialog(self)
+                    self.remove_duplicates_dialog.show()
+
+                please_wait_dialog.run(load_window)
 
             else:
                 self.message("Showing confirmation dialog")
