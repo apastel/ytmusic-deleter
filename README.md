@@ -16,9 +16,16 @@ It also has additional features for playlist management, like sorting and removi
 
 If this project helped you and you want to thank me, you can <a href="https://www.buymeacoffee.com/jewbix.cube">get me a beer!</a>
 
-<a href="https://www.buymeacoffee.com/jewbix.cube"><img src="https://img.buymeacoffee.com/button-api/?text=Buy me a beer&emoji=🍻&slug=jewbix.cube&button_colour=FFDD00&font_colour=000000&font_family=Arial&outline_colour=000000&coffee_colour=ffffff"></a>
+<a href="https://www.buymeacoffee.com/jewbix.cube" target="_blank">
+  <img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me a Beer" width="200">
+</a>
+<br><br>
 
-[![Get help on Discord!](https://invidget.switchblade.xyz/M9t5H8njrM)](https://discord.gg/M9t5H8njrM)
+Get help on Discord!
+
+<a href="https://discord.gg/M9t5H8njrM" target="_blank">
+  <img src="https://invidget.switchblade.xyz/M9t5H8njrM" alt="Get help on Discord!">
+</a>
 
 
 Features
