@@ -101,7 +101,6 @@ class YTAuthSetup(QObject):
             else:
                 user_input = self.textarea.toPlainText()
                 joined_headers = common.HeaderCleanup.cleanup_headers(user_input)
-                print(joined_headers)
                 YTMusic(ytmusicapi.setup(filepath=self.browser_file_path, headers_raw=joined_headers))
 
             self.auth_signal.emit("Success")

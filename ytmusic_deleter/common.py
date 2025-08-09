@@ -99,10 +99,12 @@ class HeaderCleanup:
         This is necessary when the headers were copied from Chrome/Edge, which do not format them correctly.
         If the headers are already formatted, it returns them unchanged.
         """
+        logging.debug("Raw headers:\n%s", header_lines)
         if HeaderCleanup.is_already_formatted(header_lines):
-            print("Headers are already formatted, returning as is.")
+            logging.debug("Headers are already formatted, returning as is.")
             return header_lines.strip()
         header_lines = HeaderCleanup.remove_client_variations_block(header_lines)
+        logging.debug("Headers after removing ClientVariations block:\n%s", header_lines)
         lines = header_lines.splitlines()
 
         # Remove empty lines
@@ -118,7 +120,9 @@ class HeaderCleanup:
         # Handle odd number of lines
         if i < len(lines):
             result.append(lines[i])
-        return "\n".join(result)
+        joined_result = "\n".join(result)
+        logging.debug("Formatted headers:\n%s", joined_result)
+        return joined_result
 
     @staticmethod
     def remove_client_variations_block(text: str) -> str:
@@ -160,16 +164,19 @@ class HeaderCleanup:
     @staticmethod
     def is_already_formatted(header_text: str) -> bool:
         """
-        Returns True if the first non-empty line contains a colon followed by at least one
+        Returns True if either of the first two non-empty lines contains a colon followed by at least one
         non-space character, indicating it's already formatted as 'Header: Value'.
         """
+        checked = 0
         for line in header_text.splitlines():
             line = line.strip()
             if not line:
                 continue
+            checked += 1
             if ":" in line:
                 parts = line.split(":", 1)
-                return bool(parts[1].strip())
-            else:
-                return False
+                if parts[1].strip():
+                    return True
+            if checked >= 2:
+                break
         return False
