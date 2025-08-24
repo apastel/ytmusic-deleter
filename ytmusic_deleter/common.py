@@ -3,6 +3,7 @@ import re
 
 import click
 from ytmusicapi import YTMusic
+from ytmusicapi.type_alias import JsonDict
 
 LIKE = "LIKE"
 INDIFFERENT = "INDIFFERENT"
@@ -89,6 +90,73 @@ def chunked(iterable, size):
     """
     for i in range(0, len(iterable), size):
         yield iterable[i : i + size]
+
+
+from ytmusicapi.parsers._utils import *
+
+
+# flake8: noqa
+# Monkey patching get_library_playlists to handle playlists with null titles
+def get_library_playlists(self, limit: int | None = 25) -> JsonList:
+    from ytmusicapi.continuations import get_continuations
+    from ytmusicapi.parsers.browsing import parse_content_list
+    from ytmusicapi.parsers.library import get_library_contents
+    from ytmusicapi.type_alias import ParseFuncType, RequestFuncType
+
+    """
+        Retrieves the playlists in the user's library.
+
+        :param limit: Number of playlists to retrieve. ``None`` retrieves them all.
+        :return: List of owned playlists.
+
+        Each item is in the following format::
+
+            {
+                'playlistId': 'PLQwVIlKxHM6rz0fDJVv_0UlXGEWf-bFys',
+                'title': 'Playlist title',
+                'thumbnails: [...],
+                'count': 5
+            }
+        """
+    self._check_auth()
+    body = {"browseId": "FEmusic_liked_playlists"}
+    endpoint = "browse"
+    response = self._send_request(endpoint, body)
+
+    results = get_library_contents(response, GRID)
+    if results is None:
+        return []
+    playlists = parse_content_list(results["items"][1:], parse_playlist_handle_null_title)
+
+    if "continuations" in results:
+        request_func: RequestFuncType = lambda additionalParams: self._send_request(endpoint, body, additionalParams)
+        parse_func: ParseFuncType = lambda contents: parse_content_list(contents, parse_playlist_handle_null_title)
+        remaining_limit = None if limit is None else (limit - len(playlists))
+        playlists.extend(get_continuations(results, "gridContinuation", remaining_limit, request_func, parse_func))
+
+    return playlists
+
+
+def parse_playlist_handle_null_title(data: JsonDict) -> JsonDict:
+    from ytmusicapi.navigation import nav
+    from ytmusicapi.parsers.songs import parse_song_artists_runs
+
+    if not nav(data, TITLE_TEXT, none_if_absent=True):
+        logging.debug(f"Encountered playlist with null title: \n{data}")
+        return {"title": "<broken playlist>", "playlistId": "Unknown ID"}
+    playlist = {
+        "title": nav(data, TITLE_TEXT),
+        "playlistId": nav(data, TITLE + NAVIGATION_BROWSE_ID)[2:],
+        "thumbnails": nav(data, THUMBNAIL_RENDERER, none_if_absent=True),
+    }
+    subtitle = data.get("subtitle")
+    if subtitle and "runs" in subtitle:
+        playlist["description"] = "".join([run["text"] for run in subtitle["runs"]])
+        if len(subtitle["runs"]) == 3 and re.search(r"\d+ ", nav(data, SUBTITLE2)):
+            playlist["count"] = nav(data, SUBTITLE2).split(" ")[0]
+            playlist["author"] = parse_song_artists_runs(subtitle["runs"][:1])
+
+    return playlist
 
 
 class HeaderCleanup:

@@ -41,7 +41,7 @@ from PySide6.QtWidgets import QMessageBox
 from remove_duplicates_dialog import RemoveDuplicatesDialog
 from settings_dialog import SettingsDialog
 from sort_playlists_dialog import SortPlaylistsDialog
-from ytmusic_deleter import common as const
+from ytmusic_deleter import common
 from ytmusicapi.auth.oauth import RefreshingToken
 from ytmusicapi.auth.types import AuthType
 
@@ -57,6 +57,12 @@ item_processing_re = re.compile(r"(Processing .+)")
 class MainWindow(QMainWindow, Ui_MainWindow):
     def __init__(self):
         super().__init__()
+
+        # Monkey patch get_library_playlists to use our custom version that handles null titles
+        import ytmusicapi.mixins.library
+
+        ytmusicapi.mixins.library.LibraryMixin.get_library_playlists = common.get_library_playlists
+        # End monkey patch
 
         # Initialize settings
         self.settings = QSettings(PUBLIC_SETTINGS["app_name"], PUBLIC_SETTINGS["app_name"])
@@ -520,7 +526,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         logging.getLogger().setLevel(logging.DEBUG if self.verbose_logging else logging.INFO)
         self.auth_file_path = Path(
-            self.credential_dir / (const.OAUTH_FILENAME if self.oauth_enabled else const.BROWSER_FILENAME)
+            self.credential_dir / (common.OAUTH_FILENAME if self.oauth_enabled else common.BROWSER_FILENAME)
         )
 
     def log_unhandled_exception(self, exc_type, exc_value, exc_traceback):

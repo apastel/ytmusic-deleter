@@ -50,6 +50,12 @@ def cli(
 ):
     """Perform batch delete operations on your YouTube Music library."""
 
+    # Monkey patch get_library_playlists to use our custom version that handles null titles
+    import ytmusicapi.mixins.library
+
+    ytmusicapi.mixins.library.LibraryMixin.get_library_playlists = common.get_library_playlists
+    # End monkey patch
+
     handlers = [logging.StreamHandler(sys.stdout)]
     if not no_logfile:
         handlers.append(logging.FileHandler(Path(log_dir) / f"ytmusic-deleter-cli_{strftime('%Y-%m-%d')}.log"))
