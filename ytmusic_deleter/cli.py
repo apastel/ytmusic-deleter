@@ -204,7 +204,7 @@ def remove_library_items(library_items):
         if id:
             logging.debug(f"Removing album using id: {id}")
             response = yt_auth.rate_playlist(id, common.INDIFFERENT)
-        elif item.get("feedbackTokens") and isinstance(item.get("feedbackTokens"), dict):
+        elif item.get("feedbackTokens") and isinstance(item.get("feedbackTokens"), dict) and item.get("album"):
             logging.debug("This is a song, removing item by removing containing album.")
             album_browse_id = item["album"]["id"]
             audio_playlist_id = common.get_album_audio_playlist_id(album_browse_id)
