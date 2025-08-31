@@ -58,12 +58,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def __init__(self):
         super().__init__()
 
-        # Monkey patch get_library_playlists to use our custom version that handles null titles
-        import ytmusicapi.mixins.library
-
-        ytmusicapi.mixins.library.LibraryMixin.get_library_playlists = common.get_library_playlists
-        # End monkey patch
-
         # Initialize settings
         self.settings = QSettings(PUBLIC_SETTINGS["app_name"], PUBLIC_SETTINGS["app_name"])
         try:
