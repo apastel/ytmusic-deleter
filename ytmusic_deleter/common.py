@@ -4,8 +4,6 @@ import re
 import click
 from ytmusicapi import YTMusic
 
-LIKE = "LIKE"
-INDIFFERENT = "INDIFFERENT"
 BROWSER_FILENAME = "browser.json"
 OAUTH_FILENAME = "oauth.json"
 UNKNOWN_ARTIST = "Unknown Artist"

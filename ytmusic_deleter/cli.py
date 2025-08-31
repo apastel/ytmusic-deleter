@@ -17,6 +17,7 @@ from ytmusic_deleter.duplicates import determine_tracks_to_remove
 from ytmusic_deleter.progress import manager
 from ytmusic_deleter.uploads import maybe_delete_uploaded_albums
 from ytmusicapi import YTMusic
+from ytmusicapi.models.content.enums import LikeStatus
 
 
 @click.group()
@@ -169,7 +170,7 @@ def remove_library_podcasts():
         if not id:
             logging.debug(f"\tCan't delete podcast {title!r} because it doesn't have an ID.")
             continue
-        response = yt_auth.rate_playlist(id, common.INDIFFERENT)
+        response = yt_auth.rate_playlist(id, LikeStatus.INDIFFERENT)
         if "actions" in response:
             logging.info(f"\tRemoved {title!r} from your library.")
             podcasts_removed += 1
@@ -197,14 +198,15 @@ def remove_library_items(library_items):
         response = None
         if id:
             logging.debug(f"Removing album using id: {id}")
-            response = yt_auth.rate_playlist(id, common.INDIFFERENT)
+            response = yt_auth.rate_playlist(id, LikeStatus.INDIFFERENT)
         elif item.get("feedbackTokens") and isinstance(item.get("feedbackTokens"), dict) and item.get("album"):
             logging.debug("This is a song, removing item by removing containing album.")
             album_browse_id = item["album"]["id"]
             audio_playlist_id = common.get_album_audio_playlist_id(album_browse_id)
             response = None
             if audio_playlist_id:
-                response = yt_auth.rate_playlist(audio_playlist_id, common.INDIFFERENT)
+                response = yt_auth.rate_playlist(audio_playlist_id, LikeStatus.INDIFFERENT)
+                yt_auth.edit_song_library_status
         else:
             logging.error(
                 f"""
@@ -254,14 +256,14 @@ def unlike_all(ctx: click.Context):
         title = track["title"]
         logging.info(f"Processing track: {artist} - {title!r}")
         try:
-            response = yt_auth.rate_song(track["videoId"], common.INDIFFERENT)
+            response = yt_auth.rate_song(track["videoId"], LikeStatus.INDIFFERENT)
             num_retries = 300
             while num_retries > 0 and (
                 not common.string_exists_in_dict(response, "Removed from liked music")
                 or not common.string_exists_in_dict(response, "consistencyTokenJar")
             ):
                 logging.info("\tRetrying track...")
-                response = yt_auth.rate_song(track["videoId"], common.INDIFFERENT)
+                response = yt_auth.rate_song(track["videoId"], LikeStatus.INDIFFERENT)
                 num_retries -= 1
             if num_retries == 0:
                 logging.error("\tRan out of retries to remove track from Likes. Try running 'Unlike All' again.")
@@ -511,7 +513,7 @@ def remove_duplicates(ctx: click.Context, playlist_title, exact):
         return
     if playlist_id == "LM":
         for song in items_to_remove:
-            yt_auth.rate_song(song["videoId"], common.INDIFFERENT)
+            yt_auth.rate_song(song["videoId"], LikeStatus.INDIFFERENT)
     else:
         for chunk in common.chunked(items_to_remove, 50):
             yt_auth.remove_playlist_items(playlist_id, chunk)

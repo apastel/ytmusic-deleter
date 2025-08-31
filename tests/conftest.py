@@ -11,6 +11,7 @@ from ytmusic_deleter import auth
 from ytmusic_deleter import cli
 from ytmusic_deleter import common
 from ytmusicapi import YTMusic
+from ytmusicapi.models.content.enums import LikeStatus
 
 
 def get_resource(file: str) -> str:
@@ -321,7 +322,7 @@ def cleanup_library(yt_browser: YTMusic):
 
 @pytest.fixture(name="add_library_album")
 def fixture_add_library_album(yt_browser: YTMusic, sample_album_as_playlist):
-    response = yt_browser.rate_playlist(sample_album_as_playlist, common.LIKE)
+    response = yt_browser.rate_playlist(sample_album_as_playlist, LikeStatus.LIKE)
     assert "actions" in response
 
     # Wait for album to finish processing
@@ -362,7 +363,7 @@ def fixture_add_library_song(yt_browser: YTMusic, sample_album_browse_id):
 
 @pytest.fixture(name="add_podcast")
 def fixture_add_podcast(yt_browser: YTMusic, sample_podcast):
-    response = yt_browser.rate_playlist(sample_podcast, common.LIKE)
+    response = yt_browser.rate_playlist(sample_podcast, LikeStatus.LIKE)
     assert "actions" in response
 
     # Wait for podcast to be in library
@@ -380,7 +381,7 @@ def fixture_add_podcast(yt_browser: YTMusic, sample_podcast):
 
 @pytest.fixture(name="like_song")
 def fixture_like_song(yt_browser: YTMusic, sample_video):
-    response = yt_browser.rate_song(sample_video, common.LIKE)
+    response = yt_browser.rate_song(sample_video, LikeStatus.LIKE)
     assert "actions" in response
 
     # Wait for song to finish processing
@@ -397,7 +398,7 @@ def fixture_like_song(yt_browser: YTMusic, sample_video):
         time.sleep(2)
 
     # Remove song from library to clean up
-    yt_browser.rate_playlist("OLAK5uy_lZ90LvUqQdKrByCbk99v54d8XpUOmFavo", common.INDIFFERENT)
+    yt_browser.rate_playlist("OLAK5uy_lZ90LvUqQdKrByCbk99v54d8XpUOmFavo", LikeStatus.INDIFFERENT)
 
 
 @pytest.fixture(name="like_songs")
@@ -408,9 +409,9 @@ def fixture_like_songs(yt_browser: YTMusic, medium_song_list):
         if any(common.string_exists_in_dict(existing_like, song) for existing_like in existing_likes):
             print(f"Song {song!r} was already in likes...")
             continue
-        response = yt_browser.rate_song(song, common.LIKE)
+        response = yt_browser.rate_song(song, LikeStatus.LIKE)
         while num_retries > 0 and (not common.string_exists_in_dict(response, "consistencyTokenJar")):
-            response = yt_browser.rate_song(song, common.LIKE)
+            response = yt_browser.rate_song(song, LikeStatus.LIKE)
             num_retries -= 1
         if num_retries == 0:
             pytest.fail(f"Ran out of tries to add song {song!r} to likes.")
@@ -423,13 +424,13 @@ def fixture_like_songs(yt_browser: YTMusic, medium_song_list):
 @pytest.fixture(name="like_many_songs")
 def fixture_like_many_songs(yt_browser: YTMusic, long_song_list):
     for song in long_song_list:
-        response = yt_browser.rate_song(song, common.LIKE)
+        response = yt_browser.rate_song(song, LikeStatus.LIKE)
         num_retries = 300
         while num_retries > 0 and (
             not common.string_exists_in_dict(response, "Removed from liked music")
             or not common.string_exists_in_dict(response, "consistencyTokenJar")
         ):
-            response = yt_browser.rate_song(song, common.LIKE)
+            response = yt_browser.rate_song(song, LikeStatus.LIKE)
             num_retries -= 1
 
 

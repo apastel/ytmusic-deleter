@@ -7,12 +7,11 @@ from PySide6.QtWidgets import QDialog
 from PySide6.QtWidgets import QDialogButtonBox
 from PySide6.QtWidgets import QMessageBox
 from track_listing_dialog import TrackListingDialog
-from ytmusic_deleter.common import can_edit_playlist
-from ytmusic_deleter.common import chunked
-from ytmusic_deleter.common import INDIFFERENT
+from ytmusic_deleter import common
 from ytmusic_deleter.duplicates import check_for_duplicates
 from ytmusic_deleter.duplicates import determine_tracks_to_remove
 from ytmusicapi import YTMusic
+from ytmusicapi.models.content.enums import LikeStatus
 
 
 class RemoveDuplicatesDialog(QDialog, Ui_PlaylistSelectionDialog):
@@ -73,7 +72,7 @@ class RemoveDuplicatesDialog(QDialog, Ui_PlaylistSelectionDialog):
             raise Exception("Playlist not found")
         yt_auth: YTMusic = self.parent().ytmusic
         playlist = yt_auth.get_playlist(selected_playlist_id, limit=None)
-        if not can_edit_playlist(playlist):
+        if not common.can_edit_playlist(playlist):
             raise Exception(
                 f"Cannot modify playlist {self.selected_playlist_title!r}. You are not the owner of this playlist."
             )
@@ -131,10 +130,10 @@ class RemoveDuplicatesDialog(QDialog, Ui_PlaylistSelectionDialog):
             removed = 0
             if self.playlist.get("id") == "LM":
                 for i, song in enumerate(items_to_remove, 1):
-                    self.yt_auth.rate_song(song["videoId"], INDIFFERENT)
+                    self.yt_auth.rate_song(song["videoId"], LikeStatus.INDIFFERENT)
                     dialog.set_progress(i, f"Removed {i} out of {total} duplicates...")
             else:
-                for i, chunk in enumerate(chunked(items_to_remove, 50), 1):
+                for i, chunk in enumerate(common.chunked(items_to_remove, 50), 1):
                     self.yt_auth.remove_playlist_items(self.selected_playlist_id, chunk)
                     removed = min(i * 50, total)
                     dialog.set_progress(removed, f"Removed {removed} out of {total} duplicates...")

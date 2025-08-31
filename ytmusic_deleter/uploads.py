@@ -10,6 +10,7 @@ from ytmusic_deleter import common
 from ytmusic_deleter.progress import manager
 from ytmusic_deleter.progress import update_progress
 from ytmusicapi import YTMusic
+from ytmusicapi.models.content.enums import LikeStatus
 
 
 def maybe_delete_uploaded_albums() -> tuple[int, int]:
@@ -126,7 +127,7 @@ def add_album_to_library(upload_artist, upload_title, yt_auth: YTMusic = None, s
 
     audio_playlist_id = common.get_album_audio_playlist_id(match["browseId"], yt_auth)
     if audio_playlist_id:
-        success = yt_auth.rate_playlist(audio_playlist_id, common.LIKE)
+        success = yt_auth.rate_playlist(audio_playlist_id, LikeStatus.LIKE)
         if success:
             logging.info("\tAdded album to library.")
             return match
