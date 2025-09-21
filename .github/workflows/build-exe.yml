@@ -114,6 +114,10 @@ jobs:
             echo $output
             exit 1
         fi
+    - name: Install NSIS
+      run: choco install nsis -y
+    - name: Add NSIS to PATH
+      run: echo "C:\Program Files (x86)\NSIS" >> $GITHUB_PATH
     - name: Create installer
       run: |
         pdm fbs installer
