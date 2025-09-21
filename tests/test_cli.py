@@ -171,6 +171,7 @@ class TestCli:
         assert yt_browser is not None
         assert isinstance(yt_browser, YTMusic)
 
+    @pytest.mark.xfail(reason="Google broke OAuth again: https://github.com/sigma67/ytmusicapi/issues/813")
     def test_oauth(self, yt_oauth):
         runner = CliRunner()
         result = runner.invoke(cli, ["whoami"], obj=yt_oauth)
