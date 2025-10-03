@@ -36,7 +36,7 @@ jobs:
   build:
     strategy:
       matrix:
-        os: [macos-13, macos-15]
+        os: [macos-14, macos-15]
     runs-on: ${{ matrix.os }}
     outputs:
       installer-version: ${{ steps.json-properties.outputs.version }}
@@ -127,27 +127,27 @@ jobs:
       id: rename-installer
       run: |
 
-        if [[ "${{ matrix.os }}" == "macos-13" ]]; then
-          ARCH=x86_64
+        if [[ "${{ matrix.os }}" == "macos-14" ]]; then
+          MAC_VERSION=14
         else
-          ARCH=arm
+          MAC_VERSION=15
         fi
         mv ./gui/target/mac-installer-to-be-renamed.dmg \
-           ./gui/target/YTMusic_Deleter-${{ steps.json-properties.outputs.version }}-MacOS-Installer_$ARCH.dmg
-        echo "ARCH=$ARCH" >> $GITHUB_ENV
+           ./gui/target/YTMusic_Deleter-${{ steps.json-properties.outputs.version }}-MacOS-$MAC_VERSION-Installer_arm.dmg
+        echo "MAC_VERSION=$MAC_VERSION" >> $GITHUB_ENV
     - name: Save .dmg as artifact
       id: upload_dmg
       uses: actions/upload-artifact@v4
       with:
         name: installer-dmg-${{ matrix.os }}
-        path: ./gui/target/YTMusic_Deleter-${{ steps.json-properties.outputs.version }}-MacOS-Installer_${{ env.ARCH }}.dmg
+        path: ./gui/target/YTMusic_Deleter-${{ steps.json-properties.outputs.version }}-MacOS-${{ env.MAC_VERSION }}-Installer_arm.dmg
       env:
-        ARCH: ${{ env.ARCH }}
+        MAC_VERSION: ${{ env.MAC_VERSION }}
 
   verify:
     strategy:
       matrix:
-        os: [macos-13, macos-15]
+        os: [macos-14, macos-15]
     runs-on: ${{ matrix.os }}
     needs: build
     steps:
@@ -158,13 +158,13 @@ jobs:
       - name: Attach app image
         run: |
 
-          # Have to redefine arch
-          if [[ "${{ matrix.os }}" == "macos-13" ]]; then
-            ARCH=x86_64
+          # Have to redefine MAC_VERSION
+          if [[ "${{ matrix.os }}" == "macos-14" ]]; then
+            MAC_VERSION=14
           else
-            ARCH=arm
+            MAC_VERSION=15
           fi
-          hdiutil attach ./YTMusic_Deleter-${{ needs.build.outputs.installer-version }}-MacOS-Installer_$ARCH.dmg
+          hdiutil attach ./YTMusic_Deleter-${{ needs.build.outputs.installer-version }}-MacOS-$MAC_VERSION-Installer_arm.dmg
       - name: Install dependencies
         run: |
 

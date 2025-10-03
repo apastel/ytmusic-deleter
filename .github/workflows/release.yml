@@ -117,11 +117,11 @@ jobs:
       uses: actions/download-artifact@v4
       with:
         name: installer-deb
-    - name: Download macOS 13 installer (Intel)
+    - name: Download macOS 14 installer
       uses: actions/download-artifact@v4
       with:
-        name: installer-dmg-macos-13
-    - name: Download macOS 15 installer (Apple)
+        name: installer-dmg-macos-14
+    - name: Download macOS 15 installer
       uses: actions/download-artifact@v4
       with:
         name: installer-dmg-macos-15
@@ -135,5 +135,5 @@ jobs:
         --repo '${{ github.repository }}' \
         YTMusic_Deleter-${{ steps.json-properties.outputs.version }}-Windows-Installer.exe \
         YTMusic_Deleter-${{ steps.json-properties.outputs.version }}-Linux-Installer.deb \
-        YTMusic_Deleter-${{ steps.json-properties.outputs.version }}-MacOS-Installer_x86_64.dmg \
-        YTMusic_Deleter-${{ steps.json-properties.outputs.version }}-MacOS-Installer_arm.dmg
+        YTMusic_Deleter-${{ steps.json-properties.outputs.version }}-MacOS-14-Installer_arm.dmg \
+        YTMusic_Deleter-${{ steps.json-properties.outputs.version }}-MacOS-15-Installer_arm.dmg

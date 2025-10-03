@@ -53,15 +53,13 @@ Find the executable file in the [Releases](https://github.com/apastel/ytmusic-de
 * Windows users: Download the Windows-Installer.exe
 * Linux users (Debian only): Download the Linux-Installer.deb
 > Please note you may get a browser warning when downloading the file, and a Windows warning for installing files from an unknown publisher. Click the "More Info" button, then the "Run Anyway" button to finish installing. This warning appears whenever you install something from an unsigned publisher.
-#### macOS users: Download the MacOS-Installer.dmg
-  * Choose the `x86_64` version if you have an Intel CPU (2020 and earlier Macs usually have this)
-  * Choose the `arm` version if you have a newer Mac with an Apple silicon chip.
-  * You will know if you chose the wrong version because you will get an error saying "You can't open the application 'YTMusic_Deleter' because this application is not supported on this Mac."
+#### macOS users: Download the MacOS-Installer_arm.dmg
+  * Choose either the 15 (Sequoia) or the 14 (Sonoma) version. Both are for Apple Silicon (ARM) computers; Intel chips (x86_64) are no longer supported.
   * You must open Terminal and run this command before using YTMusic Deleter on macOS:
     ```
-    xattr -d com.apple.quarantine ~/Downloads/YTMusic_Deleter-[x.y.z]-MacOS-Installer_[arch].dmg
+    xattr -d com.apple.quarantine ~/Downloads/YTMusic_Deleter-[x.y.z]-MacOS-[version]-Installer_arm.dmg
     ```
-    replacing `[x.y.z]` and `[arch]` with the actual values, and replacing `~/Downloads` with the correct folder (if your downloads go in some other folder).  
+    replacing `[x.y.z]` and `[version]` with the actual values, and replacing `~/Downloads` with the correct folder (if your downloads go in some other folder).  
     If you do not run this command, you will see the following error when running the program: "'YTMusic_Deleter' is damaged and can't be opened. You should eject the disk image."  
     This happens because macOS automatically blocks DMG files downloaded from the internet that it doesn't recognize, and running this command will remove it from quarantine.
 
