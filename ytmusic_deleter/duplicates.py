@@ -11,6 +11,7 @@ from ytmusic_deleter.common import strip_parentheticals
 from ytmusic_deleter.common import UNKNOWN_ALBUM
 from ytmusic_deleter.common import UNKNOWN_ARTIST
 from ytmusicapi import YTMusic
+from ytmusicapi.models.content.enums import VideoType
 
 
 def check_for_duplicates(playlist: dict, yt_auth: YTMusic = None):
@@ -20,8 +21,12 @@ def check_for_duplicates(playlist: dict, yt_auth: YTMusic = None):
     logging.info(f"Checking for duplicates in playlist {playlist.get('title')!r}")
     tracks = playlist.get("tracks")
 
-    # Trim the fat of the tracks object
     def get_artist_name(track):
+        if track.get("videoType") == VideoType.UGC:
+            parts = track.get("title").split("-")
+            if len(parts) > 1:
+                return parts[0].strip()
+
         artist = UNKNOWN_ARTIST
         if track.get("artists"):
             artist = track.get("artists")[0].get("name")
@@ -29,10 +34,18 @@ def check_for_duplicates(playlist: dict, yt_auth: YTMusic = None):
             artist = track.get("artist").get("name")
         return artist
 
+    def get_title_name(track):
+        if track.get("videoType") == VideoType.UGC:
+            parts = track.get("title").split("-")
+            if len(parts) > 1:
+                return parts[1].strip()
+        return track.get("title")
+
+    # Trim the fat of the tracks object
     tracks = [
         {
             "artist": get_artist_name(track),
-            "title": track.get("title"),
+            "title": get_title_name(track),
             "album": track.get("album").get("name") if track.get("album") else UNKNOWN_ALBUM,
             "duration": track.get("duration"),
             "thumbnail": track.get("thumbnails")[0].get("url"),
