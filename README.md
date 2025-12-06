@@ -54,7 +54,7 @@ Find the executable file in the [Releases](https://github.com/apastel/ytmusic-de
 * Linux users (Debian only): Download the Linux-Installer.deb
 > Please note you may get a browser warning when downloading the file, and a Windows warning for installing files from an unknown publisher. Click the "More Info" button, then the "Run Anyway" button to finish installing. This warning appears whenever you install something from an unsigned publisher.
 #### macOS users: Download the MacOS-Installer_arm.dmg
-  * Choose either the 15 (Sequoia) or the 14 (Sonoma) version. Both are for Apple Silicon (ARM) computers; Intel chips (x86_64) are no longer supported.
+  * Choose the one corresponding to your macOS version. All are for Apple Silicon (ARM) computers; Intel chips (x86_64) are no longer supported.
   * You must open Terminal and run this command before using YTMusic Deleter on macOS:
     ```
     xattr -d com.apple.quarantine ~/Downloads/YTMusic_Deleter-[x.y.z]-MacOS-[version]-Installer_arm.dmg
