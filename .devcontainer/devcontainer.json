@@ -1,6 +1,9 @@
 {
-  "image": "mcr.microsoft.com/devcontainers/universal:ubuntu-22.04",
+  "name": "Ubuntu 22.04 Codespace",
+  "image": "mcr.microsoft.com/devcontainers/base:jammy",
+
   "features": {
     "ghcr.io/devcontainers-extra/features/pdm:2": {}
-  }
+  },
+  "postCreateCommand": "uname -a"
 }
