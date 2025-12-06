@@ -1,0 +1,6 @@
+{
+  "image": "mcr.microsoft.com/devcontainers/universal:ubuntu-22.04",
+  "features": {
+    "ghcr.io/devcontainers-extra/features/pdm:2": {}
+  }
+}
