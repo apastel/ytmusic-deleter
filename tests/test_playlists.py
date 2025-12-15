@@ -2,8 +2,8 @@ from typing import Dict
 from typing import List
 
 from ytmusic_deleter.common import can_edit_playlist
+from ytmusic_deleter.duplicates import _remove_exact_dupes
 from ytmusic_deleter.duplicates import check_for_duplicates
-from ytmusic_deleter.duplicates import remove_exact_dupes
 from ytmusicapi import YTMusic
 
 
@@ -47,7 +47,7 @@ class TestPlaylists:
             ],
         ]
 
-        unique_groups, tracks_to_delete = remove_exact_dupes(expected_dupe_groups)
+        unique_groups, tracks_to_delete = _remove_exact_dupes(expected_dupe_groups)
 
         assert lists_of_dictlists_equal(expected_unique_groups, unique_groups)
         expected_tracks_to_delete = [
