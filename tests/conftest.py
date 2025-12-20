@@ -311,13 +311,27 @@ def fixture_upload_song(config, yt_browser: YTMusic, upload_file_path) -> Dict |
 @pytest.fixture
 def cleanup_uploads(yt_browser: YTMusic):
     yield
-    click.testing.CliRunner().invoke(cli.cli, ["delete-uploads"], standalone_mode=False, obj=yt_browser)
+    runner = click.testing.CliRunner()
+    with runner.isolation():
+        runner.invoke(
+            cli.cli,
+            ["delete-uploads"],
+            standalone_mode=False,
+            obj=yt_browser,
+        )
 
 
 @pytest.fixture
 def cleanup_library(yt_browser: YTMusic):
     yield
-    click.testing.CliRunner().invoke(cli.cli, ["remove-library"], standalone_mode=False, obj=yt_browser)
+    runner = click.testing.CliRunner()
+    with runner.isolation():
+        runner.invoke(
+            cli.cli,
+            ["remove-library"],
+            standalone_mode=False,
+            obj=yt_browser,
+        )
 
 
 @pytest.fixture(name="add_library_album")
