@@ -20,6 +20,19 @@ from ytmusicapi import YTMusic
 from ytmusicapi.models.content.enums import LikeStatus
 
 
+def configure_logging(log_dir, no_logfile, verbose):
+    handlers: list[logging.Handler] = [logging.StreamHandler(sys.__stdout__)]
+    if not no_logfile:
+        handlers.append(logging.FileHandler(Path(log_dir) / f"ytmusic-deleter-cli_{strftime('%Y-%m-%d')}.log"))
+    logging.basicConfig(
+        level=logging.DEBUG if verbose else logging.INFO,
+        format="[%(asctime)s] %(message)s",
+        datefmt="%Y-%m-%d %H:%M:%S",
+        handlers=handlers,
+        encoding="utf-8",
+    )
+
+
 @click.group()
 @click.version_option(__version__)
 @click.option(
@@ -50,19 +63,7 @@ def cli(
     ctx: click.Context, log_dir, credential_dir, static_progress, no_logfile, verbose, oauth, client_id, client_secret
 ):
     """Perform batch delete operations on your YouTube Music library."""
-
-    handlers = [logging.StreamHandler(sys.stdout)]
-    if not no_logfile:
-        handlers.append(logging.FileHandler(Path(log_dir) / f"ytmusic-deleter-cli_{strftime('%Y-%m-%d')}.log"))
-    logging.basicConfig(
-        force=True,
-        level=logging.DEBUG if verbose else logging.INFO,
-        format="[%(asctime)s] %(message)s",
-        datefmt="%Y-%m-%d %H:%M:%S",
-        handlers=handlers,
-        encoding="utf-8",
-    )
-
+    configure_logging(log_dir, no_logfile, verbose)
     if ctx.obj is not None:
         # Allows yt_auth to be provided by pytest
         yt_auth: YTMusic = ctx.obj
