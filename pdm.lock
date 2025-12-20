@@ -633,7 +633,7 @@ files = [
 
 [[package]]
 name = "pre-commit"
-version = "4.5.0"
+version = "4.5.1"
 requires_python = ">=3.10"
 summary = "A framework for managing and maintaining multi-language pre-commit hooks."
 groups = ["lint"]
@@ -645,8 +645,8 @@ dependencies = [
     "virtualenv>=20.10.0",
 ]
 files = [
-    {file = "pre_commit-4.5.0-py2.py3-none-any.whl", hash = "sha256:25e2ce09595174d9c97860a95609f9f852c0614ba602de3561e267547f2335e1"},
-    {file = "pre_commit-4.5.0.tar.gz", hash = "sha256:dc5a065e932b19fc1d4c653c6939068fe54325af8e741e74e88db4d28a4dd66b"},
+    {file = "pre_commit-4.5.1-py2.py3-none-any.whl", hash = "sha256:3b3afd891e97337708c1674210f8eba659b52a38ea5f822ff142d10786221f77"},
+    {file = "pre_commit-4.5.1.tar.gz", hash = "sha256:eb545fcff725875197837263e977ea257a402056661f09dae08e4b149b030a61"},
 ]
 
 [[package]]
@@ -1216,7 +1216,7 @@ files = [
 
 [[package]]
 name = "ytmusicapi"
-version = "1.11.3"
+version = "1.11.4"
 requires_python = ">=3.10"
 summary = "Unofficial API for YouTube Music"
 groups = ["default"]
@@ -1224,6 +1224,6 @@ dependencies = [
     "requests>=2.22",
 ]
 files = [
-    {file = "ytmusicapi-1.11.3-py3-none-any.whl", hash = "sha256:00ae5f5ae859955157369ba30c22ce99ebd925004d8613c820dd80a4b6891bd3"},
-    {file = "ytmusicapi-1.11.3.tar.gz", hash = "sha256:6924761f8b93c4eca009a65a4ecc66ef8c3f0355f7a67491a58f022c6a2865b1"},
+    {file = "ytmusicapi-1.11.4-py3-none-any.whl", hash = "sha256:5c2c0ecce6a8c2350688922f014b220459a73568e06a0cff90416070a3268fd9"},
+    {file = "ytmusicapi-1.11.4.tar.gz", hash = "sha256:ea0972d4dcaf8225ab95b6665b7c2a63d6a48d8828cf7d0ad6c76d12207ae86e"},
 ]
