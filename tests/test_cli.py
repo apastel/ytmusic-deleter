@@ -42,7 +42,6 @@ class TestCli:
     def test_remove_library(self, yt_browser: YTMusic, add_library_album, add_podcast):
         runner = CliRunner()
         result = runner.invoke(cli, ["remove-library"], standalone_mode=False, obj=yt_browser)
-        print(result.stdout)
         assert result.exit_code == 0
         albums_deleted, albums_total = result.return_value
 
@@ -72,7 +71,6 @@ class TestCli:
     def test_unlike_all_songs(self, yt_browser: YTMusic, like_songs, cleanup_library):
         runner = CliRunner()
         result = runner.invoke(cli, ["unlike-all"], standalone_mode=False, obj=yt_browser)
-        print(result.stdout)
         assert result.exit_code == 0
         songs_unliked, songs_total = result.return_value
         assert songs_unliked == len(
@@ -89,7 +87,6 @@ class TestCli:
     def test_delete_history(self, yt_browser: YTMusic, add_history_items):
         runner = CliRunner()
         result = runner.invoke(cli, ["delete-history"], standalone_mode=False, obj=yt_browser)
-        print(result.stdout)
         assert result.exit_code == 0
 
         items_deleted = result.return_value
@@ -100,7 +97,6 @@ class TestCli:
     def test_delete_playlists(self, yt_browser: YTMusic, create_playlist_and_delete_after):
         runner = CliRunner()
         result = runner.invoke(cli, ["delete-playlists"], standalone_mode=False, obj=yt_browser)
-        print(result.stdout)
         assert result.exit_code == 0
 
         playlists_deleted, playlists_total = result.return_value
@@ -111,14 +107,12 @@ class TestCli:
         result = runner.invoke(
             cli, ["sort-playlist", "Test Playlist (to be deleted)"], standalone_mode=False, obj=yt_browser
         )
-        print(result.stdout)
         assert result.exit_code == 0
 
     @pytest.mark.skip(reason="Not super necessary to test, takes a while, might exceed rate limit")
     def test_shuffle_playlist(self, yt_browser: YTMusic, create_playlist_and_delete_after):
         runner = CliRunner()
         result = runner.invoke(cli, ["sort-playlist", "-s", "Test Playlist"], standalone_mode=False, obj=yt_browser)
-        print(result.stdout)
         assert result.exit_code == 0
 
     def test_delete_playlist_duplicates(self, yt_browser: YTMusic, create_playlist_with_dupes):
@@ -131,7 +125,6 @@ class TestCli:
         result = runner.invoke(
             cli, ["remove-duplicates", "--exact", "Test Dupes (to be deleted)"], standalone_mode=False, obj=yt_browser
         )
-        print(result.stdout)
         assert result.exit_code == 0
 
         time.sleep(3)  # wait for tracks to have been deleted
@@ -148,7 +141,6 @@ class TestCli:
         result = runner.invoke(
             cli, ["add-all-to-playlist", "--library", "Test Dupes"], standalone_mode=False, obj=yt_browser
         )
-        print(result.stdout)
         time.sleep(3)
         assert len(yt_browser.get_playlist(get_playlist_with_dupes).get("tracks")) >= 25
         assert result.exit_code == 0
@@ -159,7 +151,6 @@ class TestCli:
         result = runner.invoke(
             cli, ["add-all-to-playlist", "--uploads", "Test Dupes"], standalone_mode=False, obj=yt_browser
         )
-        print(result.stdout)
         time.sleep(3)
         assert num_tracks_before_add + 1 == len(yt_browser.get_playlist(get_playlist_with_dupes).get("tracks"))
         assert result.exit_code == 0
