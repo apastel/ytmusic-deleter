@@ -23,8 +23,7 @@ ytmusic-deleter = "ytmusic_deleter.cli:cli"
 
 [tool.pytest.ini_options]
 addopts = "-rA --cov"
-log_cli = true
-log_cli_level = "INFO"
+log_cli = false
 
 [tool.coverage.run]
 source = ["ytmusic_deleter"]
