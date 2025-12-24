@@ -1,4 +1,5 @@
-import logging.handlers
+import io
+import logging
 import os
 import re
 import sys
@@ -29,7 +30,11 @@ def configure_logging(log_dir, no_logfile, verbose):
 
     root.setLevel(logging.DEBUG if verbose else logging.INFO)
 
-    stream_handler = logging.StreamHandler(sys.stderr)
+    if "PYTEST_CURRENT_TEST" in os.environ:
+        stream = io.StringIO()
+    else:
+        stream = sys.stderr
+    stream_handler = logging.StreamHandler(stream)
     root.addHandler(stream_handler)
 
     if not no_logfile:
