@@ -22,30 +22,29 @@ from ytmusicapi.models.content.enums import LikeStatus
 
 
 def configure_logging(log_dir, no_logfile, verbose):
-    root = logging.getLogger()
+    logger = logging.getLogger()
 
-    # ⛔ Prevent duplicate handlers across multiple CLI invocations
-    if getattr(root, "_configured", False):
+    if logger.hasHandlers():
         return
 
-    root.setLevel(logging.DEBUG if verbose else logging.INFO)
+    logger.setLevel(logging.DEBUG if verbose else logging.INFO)
+    formatter = logging.Formatter("[%(levelname)s] %(message)s")
 
     if "PYTEST_CURRENT_TEST" in os.environ:
         stream = io.StringIO()
     else:
         stream = sys.stderr
     stream_handler = logging.StreamHandler(stream)
-    root.addHandler(stream_handler)
+    stream_handler.setFormatter(formatter)
+    logger.addHandler(stream_handler)
 
     if not no_logfile:
-        root.addHandler(
+        logger.addHandler(
             logging.FileHandler(
                 Path(log_dir) / f"ytmusic-deleter-cli_{strftime('%Y-%m-%d')}.log",
                 encoding="utf-8",
             )
         )
-
-    root._configured = True
 
 
 def main():
