@@ -21,23 +21,30 @@ from ytmusicapi.models.content.enums import LikeStatus
 
 
 def configure_logging(log_dir, no_logfile, verbose):
-    logger = logging.getLogger()
-    logger.setLevel(logging.DEBUG if verbose else logging.INFO)
+    root = logging.getLogger()
 
-    # Remove ALL existing StreamHandlers (added during troubleshooting)
-    for h in list(logger.handlers):
-        if isinstance(h, logging.StreamHandler):
-            logger.removeHandler(h)
+    # ⛔ Prevent duplicate handlers across multiple CLI invocations
+    if getattr(root, "_configured", False):
+        return
 
-    logger.addHandler(logging.StreamHandler(sys.stderr))
+    root.setLevel(logging.DEBUG if verbose else logging.INFO)
+
+    stream_handler = logging.StreamHandler(sys.stderr)
+    root.addHandler(stream_handler)
 
     if not no_logfile:
-        logger.addHandler(
+        root.addHandler(
             logging.FileHandler(
                 Path(log_dir) / f"ytmusic-deleter-cli_{strftime('%Y-%m-%d')}.log",
                 encoding="utf-8",
             )
         )
+
+    root._configured = True
+
+
+def main():
+    cli()
 
 
 @click.group()
@@ -608,4 +615,4 @@ def update_progress():
 
 
 if __name__ == "__main__":
-    cli()
+    main()

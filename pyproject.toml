@@ -19,7 +19,7 @@ requires = ["pdm-backend"]
 build-backend = "pdm.backend"
 
 [project.scripts]
-ytmusic-deleter = "ytmusic_deleter.cli:cli"
+ytmusic-deleter = "ytmusic_deleter.cli:main"
 
 [tool.pytest.ini_options]
 addopts = "-rA --cov"
