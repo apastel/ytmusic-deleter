@@ -36,7 +36,7 @@ jobs:
   build:
     strategy:
       matrix:
-        os: [macos-14, macos-15]
+        os: [macos-14, macos-15, macos-26]
     runs-on: ${{ matrix.os }}
     outputs:
       installer-version: ${{ steps.json-properties.outputs.version }}
@@ -129,8 +129,10 @@ jobs:
 
         if [[ "${{ matrix.os }}" == "macos-14" ]]; then
           MAC_VERSION=14
-        else
+        elif [[ "${{ matrix.os }}" == "macos-15" ]]; then
           MAC_VERSION=15
+        elif [[ "${{ matrix.os }}" == "macos-26" ]]; then
+          MAC_VERSION=26
         fi
         mv ./gui/target/mac-installer-to-be-renamed.dmg \
            ./gui/target/YTMusic_Deleter-${{ steps.json-properties.outputs.version }}-MacOS-$MAC_VERSION-Installer_arm.dmg
@@ -147,7 +149,7 @@ jobs:
   verify:
     strategy:
       matrix:
-        os: [macos-14, macos-15]
+        os: [macos-14, macos-15, macos-26]
     runs-on: ${{ matrix.os }}
     needs: build
     steps:
@@ -161,8 +163,10 @@ jobs:
           # Have to redefine MAC_VERSION
           if [[ "${{ matrix.os }}" == "macos-14" ]]; then
             MAC_VERSION=14
-          else
+          elif [[ "${{ matrix.os }}" == "macos-15" ]]; then
             MAC_VERSION=15
+          elif [[ "${{ matrix.os }}" == "macos-26" ]]; then
+            MAC_VERSION=26
           fi
           hdiutil attach ./YTMusic_Deleter-${{ needs.build.outputs.installer-version }}-MacOS-$MAC_VERSION-Installer_arm.dmg
       - name: Install dependencies

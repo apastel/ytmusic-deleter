@@ -125,7 +125,10 @@ jobs:
       uses: actions/download-artifact@v4
       with:
         name: installer-dmg-macos-15
-        path:
+    - name: Download macOS 26 installer
+      uses: actions/download-artifact@v4
+      with:
+        name: installer-dmg-macos-26
     - name: Upload executable installers to Github Release
       env:
         GITHUB_TOKEN: ${{ github.token }}
@@ -136,4 +139,5 @@ jobs:
         YTMusic_Deleter-${{ steps.json-properties.outputs.version }}-Windows-Installer.exe \
         YTMusic_Deleter-${{ steps.json-properties.outputs.version }}-Linux-Installer.deb \
         YTMusic_Deleter-${{ steps.json-properties.outputs.version }}-MacOS-14-Installer_arm.dmg \
-        YTMusic_Deleter-${{ steps.json-properties.outputs.version }}-MacOS-15-Installer_arm.dmg
+        YTMusic_Deleter-${{ steps.json-properties.outputs.version }}-MacOS-15-Installer_arm.dmg \
+        YTMusic_Deleter-${{ steps.json-properties.outputs.version }}-MacOS-26-Installer_arm.dmg
