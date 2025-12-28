@@ -15,7 +15,7 @@ from ytmusicapi import YTMusic
 from ytmusicapi.models.content.enums import VideoType
 
 
-def check_for_duplicates(playlist: dict, yt_auth: YTMusic = None):
+def check_for_duplicates(playlist: dict, yt_auth: YTMusic = None, fuzzy: bool = False, score_cutoff: int = 80):
     # Allow passing in yt_auth from pytest
     if not yt_auth:
         yt_auth: YTMusic = get_current_context().obj["YT_AUTH"]
@@ -26,8 +26,7 @@ def check_for_duplicates(playlist: dict, yt_auth: YTMusic = None):
         # If this is user-generated content on YouTube, then the actual artist name is usually
         # the first part of the title, like "Avenged Sevenfold - Nobody"
         # Note: Fuzzy matching will do this separately
-        ctx = get_current_context(silent=True)
-        if ctx and not ctx.params["fuzzy"] and track.get("videoType") == VideoType.UGC:
+        if not fuzzy and track.get("videoType") == VideoType.UGC:
             parts = track.get("title").split("-")
             if len(parts) > 1:
                 return parts[0].strip()
@@ -40,10 +39,9 @@ def check_for_duplicates(playlist: dict, yt_auth: YTMusic = None):
         return artist
 
     def get_title_name(track):
-        ctx = get_current_context(silent=True)
-        if ctx and ctx.params["fuzzy"]:
+        if fuzzy:
             # strip parens otherwise everything with (Remix) will be considered same
-            return strip_parentheticals(track.get("title"))
+            return track.get("title")
 
         # If this is user-generated content on YouTube, then the actual title is usually the
         # second part of the title field, like "Avenged Sevenfold - Nobody"
@@ -67,12 +65,12 @@ def check_for_duplicates(playlist: dict, yt_auth: YTMusic = None):
         }
         for track in tracks
     ]
-    duplicate_groups = _group_duplicate_tracks(tracks)
+    duplicate_groups = _group_duplicate_tracks(tracks, fuzzy, score_cutoff)
 
     return duplicate_groups
 
 
-def _group_duplicate_tracks(tracks: List[Dict]) -> List[List[Dict]]:
+def _group_duplicate_tracks(tracks: List[Dict], fuzzy: bool, score_cutoff: int) -> List[List[Dict]]:
     """
     Groups tracks in a list considering both videoId and similar title with same artist.
 
@@ -86,7 +84,9 @@ def _group_duplicate_tracks(tracks: List[Dict]) -> List[List[Dict]]:
     for track in tracks:
         # Check for existing group with same videoId or similar title and artist
         for group in groups.values():
-            if any(t["videoId"] == track["videoId"] for t in group) or _get_matching_algorithm(track, group):
+            if any(t["videoId"] == track["videoId"] for t in group) or _get_matching_algorithm(
+                track, group, fuzzy, score_cutoff
+            ):
                 groups[group[0]["videoId"]].append(track)
                 break  # Exit loop after finding a matching group
 
@@ -98,12 +98,10 @@ def _group_duplicate_tracks(tracks: List[Dict]) -> List[List[Dict]]:
     return [group for group in groups.values() if len(group) > 1]
 
 
-def _get_matching_algorithm(track, group):
-    ctx = get_current_context(silent=True)
-    if ctx and ctx.params["fuzzy"]:
-        score_cutoff = ctx.params["score_cutoff"]
+def _get_matching_algorithm(track, group, fuzzy: bool, score_cutoff: int):
+    if fuzzy:
         return (_artists_match(track, group[0], score_cutoff)) and all(
-            _partial_match(t["title"], track["title"], score_cutoff) for t in group
+            _partial_match(strip_parentheticals(t["title"]), track["title"], score_cutoff) for t in group
         )
 
     similar_title_key = (track["artist"], strip_parentheticals(track["title"]).lower())

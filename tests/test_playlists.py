@@ -16,6 +16,14 @@ class TestPlaylists:
 
         assert lists_of_dictlists_equal(expected_dupe_groups, duplicate_groups)
 
+    def test_check_for_duplicates_fuzzy(
+        self, yt_browser: YTMusic, get_playlist_with_dupes, expected_dupe_groups: List[List[Dict]]
+    ):
+        playlist = yt_browser.get_playlist(get_playlist_with_dupes)
+        duplicate_groups = check_for_duplicates(playlist, yt_browser, True, 90)
+
+        assert lists_of_dictlists_equal(expected_dupe_groups, duplicate_groups)
+
     def test_remove_exact_dupes(self, expected_dupe_groups: List[List[Dict]]):
         expected_unique_groups = [
             [
