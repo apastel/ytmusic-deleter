@@ -91,6 +91,8 @@ def lists_of_dicts_equal(list1, list2):
 
 def dict_to_frozenset(d):
     filtered_dict = {
-        k: v for k, v in d.items() if k != "setVideoId" and k != "album" and k != "duration" and k != "thumbnail"
+        k: v
+        for k, v in d.items()
+        if k != "setVideoId" and k != "album" and k != "duration" and k != "thumbnail" and k != "videoType"
     }
     return frozenset(filtered_dict.items())
