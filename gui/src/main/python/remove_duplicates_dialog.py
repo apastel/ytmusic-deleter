@@ -2,10 +2,10 @@ import ytmusicapi
 from checkbox_track_listing import CheckboxTrackListingDialog
 from generated.ui_playlist_selection_dialog import Ui_PlaylistSelectionDialog
 from progress_worker_dialog import ProgressWorkerDialog
-from PySide6.QtCore import Slot
 from PySide6.QtWidgets import QDialog
 from PySide6.QtWidgets import QDialogButtonBox
 from PySide6.QtWidgets import QMessageBox
+from PySide6.QtWidgets import QStyle
 from track_listing_dialog import TrackListingDialog
 from ytmusic_deleter import common
 from ytmusic_deleter.duplicates import check_for_duplicates
@@ -22,10 +22,14 @@ class RemoveDuplicatesDialog(QDialog, Ui_PlaylistSelectionDialog):
         self.setWindowTitle("Select Playlist to De-dupe")
         self.buttonBox.button(QDialogButtonBox.Ok).setText("Next")
         self.enable_ok_button()
+        self.enable_score_cutoff()
+        self.fuzzyCheckbox.checkStateChanged.connect(self.enable_score_cutoff)
         self.playlistList.itemSelectionChanged.connect(self.enable_ok_button)
         self.radioButtonLabel.setVisible(False)
         self.radioButtonLibrary.setVisible(False)
         self.radioButtonUploads.setVisible(False)
+        self.infoButton.setIcon(self.style().standardIcon(QStyle.SP_MessageBoxInformation))
+        self.infoButton.clicked.connect(self.show_info_dialog)
 
         try:
             self.all_playlists = parent.ytmusic.get_library_playlists(limit=None)
@@ -51,9 +55,23 @@ class RemoveDuplicatesDialog(QDialog, Ui_PlaylistSelectionDialog):
             return
         self.launch_remove_dupes(selected_playlist[0].text())
 
-    @Slot()
     def enable_ok_button(self):
         self.buttonBox.button(QDialogButtonBox.Ok).setEnabled(len(self.playlistList.selectedItems()) > 0)
+
+    def enable_score_cutoff(self):
+        self.scoreCutoffInput.setValue(85)
+        self.scoreCutoffLabel.setEnabled(self.fuzzyCheckbox.isChecked())
+        self.scoreCutoffInput.setEnabled(self.fuzzyCheckbox.isChecked())
+
+    def show_info_dialog(self):
+        QMessageBox.information(
+            self,
+            "Matching Algorithm",
+            "Fuzzy matching will find more duplicates with similar (but not exact) names.\n\n"
+            "A higher score-cutoff will use stricter matching, while a lower value will use looser matching.\n\n"
+            "You may need to experiment with different score-cutoffs (or disable fuzzy matching altogether)"
+            " to find all your duplicates.",
+        )
 
     def launch_remove_dupes(self, selected_playlist_title):
         self.selected_playlist_title = selected_playlist_title
@@ -88,7 +106,9 @@ class RemoveDuplicatesDialog(QDialog, Ui_PlaylistSelectionDialog):
         )
 
     def _calculate_dupes(self):
-        duplicates = check_for_duplicates(self.playlist, self.yt_auth)
+        duplicates = check_for_duplicates(
+            self.playlist, self.yt_auth, self.fuzzyCheckbox.isChecked(), self.scoreCutoffInput.value()
+        )
         if not duplicates:
             raise Exception(
                 f"No duplicates found in playlist {self.selected_playlist_title!r}. "

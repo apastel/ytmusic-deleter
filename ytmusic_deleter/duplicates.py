@@ -7,6 +7,7 @@ from click import get_current_context
 from InquirerPy import get_style
 from InquirerPy import inquirer
 from InquirerPy.base.control import Choice
+from thefuzz import fuzz
 from ytmusic_deleter.common import strip_parentheticals
 from ytmusic_deleter.common import UNKNOWN_ALBUM
 from ytmusic_deleter.common import UNKNOWN_ARTIST
@@ -14,7 +15,7 @@ from ytmusicapi import YTMusic
 from ytmusicapi.models.content.enums import VideoType
 
 
-def check_for_duplicates(playlist: dict, yt_auth: YTMusic = None):
+def check_for_duplicates(playlist: dict, yt_auth: YTMusic = None, fuzzy: bool = False, score_cutoff: int = 80):
     # Allow passing in yt_auth from pytest
     if not yt_auth:
         yt_auth: YTMusic = get_current_context().obj["YT_AUTH"]
@@ -22,7 +23,10 @@ def check_for_duplicates(playlist: dict, yt_auth: YTMusic = None):
     tracks = playlist.get("tracks")
 
     def get_artist_name(track):
-        if track.get("videoType") == VideoType.UGC:
+        # If this is user-generated content on YouTube, then the actual artist name is usually
+        # the first part of the title, like "Avenged Sevenfold - Nobody"
+        # Note: Fuzzy matching will do this separately
+        if not fuzzy and track.get("videoType") == VideoType.UGC:
             parts = track.get("title").split("-")
             if len(parts) > 1:
                 return parts[0].strip()
@@ -35,6 +39,12 @@ def check_for_duplicates(playlist: dict, yt_auth: YTMusic = None):
         return artist
 
     def get_title_name(track):
+        if fuzzy:
+            # strip parens otherwise everything with (Remix) will be considered same
+            return track.get("title")
+
+        # If this is user-generated content on YouTube, then the actual title is usually the
+        # second part of the title field, like "Avenged Sevenfold - Nobody"
         if track.get("videoType") == VideoType.UGC:
             parts = track.get("title").split("-")
             if len(parts) > 1:
@@ -51,15 +61,16 @@ def check_for_duplicates(playlist: dict, yt_auth: YTMusic = None):
             "thumbnail": track.get("thumbnails")[0].get("url"),
             "videoId": track.get("videoId"),
             "setVideoId": track.get("setVideoId"),
+            "videoType": track.get("videoType"),
         }
         for track in tracks
     ]
-    duplicate_groups = group_duplicate_tracks(tracks)
+    duplicate_groups = _group_duplicate_tracks(tracks, fuzzy, score_cutoff)
 
     return duplicate_groups
 
 
-def group_duplicate_tracks(tracks: List[Dict]) -> List[List[Dict]]:
+def _group_duplicate_tracks(tracks: List[Dict], fuzzy: bool, score_cutoff: int) -> List[List[Dict]]:
     """
     Groups tracks in a list considering both videoId and similar title with same artist.
 
@@ -71,13 +82,10 @@ def group_duplicate_tracks(tracks: List[Dict]) -> List[List[Dict]]:
     """
     groups = defaultdict(list)
     for track in tracks:
-        similar_title_key = (track["artist"], fuzzy_title(track["title"]))
-
         # Check for existing group with same videoId or similar title and artist
         for group in groups.values():
-            if any(t["videoId"] == track["videoId"] for t in group) or (
-                group[0]["artist"] == similar_title_key[0]
-                and all(fuzzy_title(t["title"]) == similar_title_key[1] for t in group)
+            if any(t["videoId"] == track["videoId"] for t in group) or _get_matching_algorithm(
+                track, group, fuzzy, score_cutoff
             ):
                 groups[group[0]["videoId"]].append(track)
                 break  # Exit loop after finding a matching group
@@ -90,12 +98,24 @@ def group_duplicate_tracks(tracks: List[Dict]) -> List[List[Dict]]:
     return [group for group in groups.values() if len(group) > 1]
 
 
+def _get_matching_algorithm(track, group, fuzzy: bool, score_cutoff: int):
+    if fuzzy:
+        return (_artists_match(track, group[0], score_cutoff)) and all(
+            _partial_match(strip_parentheticals(t["title"]), track["title"], score_cutoff) for t in group
+        )
+
+    similar_title_key = (track["artist"], strip_parentheticals(track["title"]).lower())
+    return group[0]["artist"] == similar_title_key[0] and all(
+        strip_parentheticals(t["title"]).lower() == similar_title_key[1] for t in group
+    )
+
+
 def determine_tracks_to_remove(duplicate_groups: List[List[Dict]]) -> tuple[List[Dict], List[List[Dict]] | None]:
     logging.info(f"There are {len(duplicate_groups)} sets of duplicates in your playlist.")
 
     # Automatically mark exact dupes for deletion
     logging.info("Automatically deleting tracks that are exact duplicates of other tracks in the playlist.")
-    remaining_dupe_groups, tracks_to_remove = remove_exact_dupes(duplicate_groups)
+    remaining_dupe_groups, tracks_to_remove = _remove_exact_dupes(duplicate_groups)
 
     ctx = get_current_context(silent=True)
     if not ctx or ctx.params["exact"]:
@@ -124,7 +144,7 @@ def determine_tracks_to_remove(duplicate_groups: List[List[Dict]]) -> tuple[List
     return tracks_to_remove, None
 
 
-def remove_exact_dupes(duplicate_groups) -> tuple[List[List[Dict]], List[Dict]]:
+def _remove_exact_dupes(duplicate_groups) -> tuple[List[List[Dict]], List[Dict]]:
     """
     Removes tracks with duplicate videoIds from each group in duplicate_groups.
 
@@ -154,6 +174,23 @@ def remove_exact_dupes(duplicate_groups) -> tuple[List[List[Dict]], List[Dict]]:
     return unique_groups, tracks_to_remove
 
 
-def fuzzy_title(title):
-    """Normalize the title for comparison"""
-    return strip_parentheticals(title)
+def _partial_match(titleA, titleB, score_cutoff):
+    score = fuzz.partial_ratio(titleA, titleB)
+
+    # Make sure this result at least passes the score cutoff
+    is_match = score >= score_cutoff
+    if is_match:
+        logging.debug(
+            f"""
+            Token A: {titleA}
+            Token B: {titleB}
+            Score: {score} ✅
+        """
+        )
+        return is_match
+
+
+def _artists_match(trackA, trackB, score_cutoff):
+    if any(t.get("videoType") == VideoType.UGC for t in [trackA, trackB]):
+        return True
+    return _partial_match(trackA["artist"], trackB["artist"], score_cutoff)

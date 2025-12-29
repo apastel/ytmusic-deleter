@@ -115,7 +115,8 @@ class TestCli:
         result = runner.invoke(cli, ["sort-playlist", "-s", "Test Playlist"], standalone_mode=False, obj=yt_browser)
         assert result.exit_code == 0
 
-    def test_delete_playlist_duplicates(self, yt_browser: YTMusic, create_playlist_with_dupes):
+    def test_delete_playlist_exact_duplicates(self, yt_browser: YTMusic, create_playlist_with_dupes):
+        # We can only test deletion of exact dupes because anything else requires terminal interaction
         time.sleep(3)  # wait for playlist to be created
         playlist = yt_browser.get_playlist(create_playlist_with_dupes)
         assert 3 == len(

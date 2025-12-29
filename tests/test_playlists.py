@@ -2,8 +2,8 @@ from typing import Dict
 from typing import List
 
 from ytmusic_deleter.common import can_edit_playlist
+from ytmusic_deleter.duplicates import _remove_exact_dupes
 from ytmusic_deleter.duplicates import check_for_duplicates
-from ytmusic_deleter.duplicates import remove_exact_dupes
 from ytmusicapi import YTMusic
 
 
@@ -13,6 +13,14 @@ class TestPlaylists:
     ):
         playlist = yt_browser.get_playlist(get_playlist_with_dupes)
         duplicate_groups = check_for_duplicates(playlist, yt_browser)
+
+        assert lists_of_dictlists_equal(expected_dupe_groups, duplicate_groups)
+
+    def test_check_for_duplicates_fuzzy(
+        self, yt_browser: YTMusic, get_playlist_with_dupes, expected_dupe_groups: List[List[Dict]]
+    ):
+        playlist = yt_browser.get_playlist(get_playlist_with_dupes)
+        duplicate_groups = check_for_duplicates(playlist, yt_browser, True, 90)
 
         assert lists_of_dictlists_equal(expected_dupe_groups, duplicate_groups)
 
@@ -47,7 +55,7 @@ class TestPlaylists:
             ],
         ]
 
-        unique_groups, tracks_to_delete = remove_exact_dupes(expected_dupe_groups)
+        unique_groups, tracks_to_delete = _remove_exact_dupes(expected_dupe_groups)
 
         assert lists_of_dictlists_equal(expected_unique_groups, unique_groups)
         expected_tracks_to_delete = [
@@ -91,6 +99,8 @@ def lists_of_dicts_equal(list1, list2):
 
 def dict_to_frozenset(d):
     filtered_dict = {
-        k: v for k, v in d.items() if k != "setVideoId" and k != "album" and k != "duration" and k != "thumbnail"
+        k: v
+        for k, v in d.items()
+        if k != "setVideoId" and k != "album" and k != "duration" and k != "thumbnail" and k != "videoType"
     }
     return frozenset(filtered_dict.items())

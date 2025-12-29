@@ -17,7 +17,7 @@ SORTABLE_ATTRIBUTES = ["artist", "album_title", "track_title", "duration"]
 def strip_parentheticals(input_str: str) -> str:
     output_str = re.sub(PARENTHETICALS_REGEX, "", input_str).strip()
     output_str = re.sub(EXTRA_WHITESPACE_REGEX, " ", output_str)
-    return output_str.lower()
+    return output_str
 
 
 def can_edit_playlist(playlist: dict) -> bool:

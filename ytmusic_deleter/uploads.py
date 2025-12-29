@@ -75,7 +75,7 @@ def maybe_delete_uploaded_albums() -> tuple[int, int]:
     return (albums_deleted, len(album_unique_songs))
 
 
-def add_album_to_library(upload_artist, upload_title, yt_auth: YTMusic = None, score_cutoff: int = None) -> dict | None:
+def add_album_to_library(upload_artist, upload_title, yt_auth: YTMusic = None, score_cutoff: int = 0) -> dict | None:
     """
     Search for "<artist> <album title>" in the YTM online catalog.
 
@@ -112,7 +112,7 @@ def add_album_to_library(upload_artist, upload_title, yt_auth: YTMusic = None, s
     )
 
     # Make sure this result at least passes the score cutoff
-    if score_cutoff is None:
+    if not score_cutoff:
         score_cutoff = get_current_context().params["score_cutoff"]
     if score < score_cutoff:
         logging.info(

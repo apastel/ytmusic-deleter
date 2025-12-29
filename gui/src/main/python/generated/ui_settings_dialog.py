@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'settings_dialog.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.9.0
+## Created by: Qt User Interface Compiler version 6.10.1
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
@@ -17,20 +17,19 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QPalette, QPixmap, QRadialGradient, QTransform)
 from PySide6.QtWidgets import (QAbstractButton, QApplication, QCheckBox, QDialog,
     QDialogButtonBox, QLabel, QLineEdit, QPushButton,
-    QSizePolicy, QVBoxLayout, QWidget)
+    QSizePolicy, QToolButton, QVBoxLayout, QWidget)
 
 class Ui_SettingsDialog(object):
     def setupUi(self, SettingsDialog):
         if not SettingsDialog.objectName():
             SettingsDialog.setObjectName(u"SettingsDialog")
-        SettingsDialog.setWindowModality(Qt.WindowModality.ApplicationModal)
+        SettingsDialog.setWindowModality(Qt.NonModal)
         SettingsDialog.resize(497, 300)
         SettingsDialog.setModal(True)
         self.buttonBox = QDialogButtonBox(SettingsDialog)
         self.buttonBox.setObjectName(u"buttonBox")
         self.buttonBox.setGeometry(QRect(390, 20, 81, 71))
-        self.buttonBox.setOrientation(Qt.Orientation.Vertical)
-        self.buttonBox.setStandardButtons(QDialogButtonBox.StandardButton.Cancel|QDialogButtonBox.StandardButton.Ok)
+        self.buttonBox.setStandardButtons(QDialogButtonBox.NoButton)
         self.verboseCheckBox = QCheckBox(SettingsDialog)
         self.verboseCheckBox.setObjectName(u"verboseCheckBox")
         self.verboseCheckBox.setGeometry(QRect(30, 20, 241, 41))
@@ -64,14 +63,10 @@ class Ui_SettingsDialog(object):
 
         self.verticalLayoutOauth.addWidget(self.clientSecretInput)
 
-        self.oauthInfoButton = QPushButton(SettingsDialog)
+        self.oauthInfoButton = QToolButton(SettingsDialog)
         self.oauthInfoButton.setObjectName(u"oauthInfoButton")
-        self.oauthInfoButton.setGeometry(QRect(180, 70, 21, 22))
-        self.oauthInfoButton.setStyleSheet(u"QPushButton {\n"
-"    background-position: center;\n"
-"    background-repeat: no-repeat;\n"
-"    border-radius: 5px;\n"
-"}")
+        self.oauthInfoButton.setGeometry(QRect(180, 70, 24, 24))
+        self.oauthInfoButton.setAutoRaise(True)
 
         self.retranslateUi(SettingsDialog)
         self.buttonBox.accepted.connect(SettingsDialog.accept)
@@ -106,6 +101,6 @@ class Ui_SettingsDialog(object):
         self.dataDirLabel.setText(QCoreApplication.translate("SettingsDialog", u"App data directory: (logs and auth files are saved here)", None))
         self.clientIdInput.setPlaceholderText(QCoreApplication.translate("SettingsDialog", u"client_id", None))
         self.clientSecretInput.setPlaceholderText(QCoreApplication.translate("SettingsDialog", u"client_secret", None))
-        self.oauthInfoButton.setText("")
+        self.oauthInfoButton.setText(QCoreApplication.translate("SettingsDialog", u"...", None))
     # retranslateUi
 

@@ -109,7 +109,7 @@ def whoami():
     "--score-cutoff",
     "-s",
     default=90,
-    help="When combined with the --add-to-library flag, this optional integer argument between 0 and 100 is used when finding matches in the YTM online catalog. No matches with a score less than this number will be added to your library. Defaults to 85.",  # noqa: B950
+    help="When combined with the --add-to-library flag, this optional integer argument between 0 and 100 is used when finding matches in the YTM online catalog. No matches with a score less than this number will be added to your library. Defaults to 90.",  # noqa: B950
 )
 @click.pass_context
 def delete_uploads(ctx: click.Context, **kwargs):
@@ -509,14 +509,21 @@ def make_sort_key(track, sort_attributes):
 @cli.command()
 @click.argument("playlist_title")
 @click.option("--exact", "-e", is_flag=True, help="Only remove exact duplicates")
+@click.option("--fuzzy", "-f", is_flag=True, help="Use fuzzy matching")
+@click.option(
+    "--score-cutoff",
+    "-s",
+    default=80,
+    help="When combined with the --fuzzy flag, this optional integer argument between 0 and 100 is used when finding matches in the YTM online catalog. No matches with a score less than this number will be added to your library. Defaults to 90",  # noqa: B950
+)
 @click.pass_context
-def remove_duplicates(ctx: click.Context, playlist_title, exact):
+def remove_duplicates(ctx: click.Context, playlist_title, exact, fuzzy, score_cutoff):
     """Delete all duplicates in a given playlist"""
     yt_auth: YTMusic = ctx.obj["YT_AUTH"]
     playlist = get_playlist_from_title(yt_auth, playlist_title)
 
     # Get a list of all the sets of duplicates
-    duplicates = check_for_duplicates(playlist)
+    duplicates = check_for_duplicates(playlist, yt_auth, fuzzy, score_cutoff)
     if not duplicates:
         logging.info("No duplicates found. If you think this is an error open an issue on GitHub or message on Discord")
         return

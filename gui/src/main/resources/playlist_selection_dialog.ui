@@ -10,7 +10,7 @@
     <x>0</x>
     <y>0</y>
     <width>400</width>
-    <height>300</height>
+    <height>353</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -19,8 +19,8 @@
   <widget class="QDialogButtonBox" name="buttonBox">
    <property name="geometry">
     <rect>
-     <x>30</x>
-     <y>260</y>
+     <x>50</x>
+     <y>310</y>
      <width>341</width>
      <height>32</height>
     </rect>
@@ -55,7 +55,7 @@
    <property name="geometry">
     <rect>
      <x>50</x>
-     <y>270</y>
+     <y>280</y>
      <width>82</width>
      <height>17</height>
     </rect>
@@ -73,8 +73,8 @@
    </property>
    <property name="geometry">
     <rect>
-     <x>110</x>
-     <y>270</y>
+     <x>120</x>
+     <y>280</y>
      <width>82</width>
      <height>17</height>
     </rect>
@@ -95,14 +95,84 @@
    </property>
    <property name="geometry">
     <rect>
-     <x>60</x>
-     <y>250</y>
+     <x>55</x>
+     <y>260</y>
      <width>111</width>
      <height>20</height>
     </rect>
    </property>
    <property name="text">
     <string>Add all songs from...</string>
+   </property>
+  </widget>
+  <widget class="QCheckBox" name="fuzzyCheckbox">
+   <property name="geometry">
+    <rect>
+     <x>30</x>
+     <y>260</y>
+     <width>141</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Use fuzzy matching</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="scoreCutoffLabel">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="geometry">
+    <rect>
+     <x>30</x>
+     <y>290</y>
+     <width>131</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <property name="toolTip">
+    <string>A value closer to 100 will be more strict regarding matches when searching YTMusic for the song/album. A value of 100 will basically only add exact matches. If you find that not many matches are being found, try lowering this value, but you may end up with albums in your library that are not exact matches. 85 is recommended to start out with.</string>
+   </property>
+   <property name="text">
+    <string>Match score cutoff:</string>
+   </property>
+  </widget>
+  <widget class="QSpinBox" name="scoreCutoffInput">
+   <property name="enabled">
+    <bool>false</bool>
+   </property>
+   <property name="geometry">
+    <rect>
+     <x>160</x>
+     <y>290</y>
+     <width>42</width>
+     <height>22</height>
+    </rect>
+   </property>
+   <property name="toolTip">
+    <string>A value closer to 100 will be more strict regarding matches when searching YTMusic for the song/album. A value of 100 will basically only add exact matches. If you find that not many matches are being found, try lowering this value, but you may end up with albums in your library that are not exact matches. 85 is recommended to start out with.</string>
+   </property>
+   <property name="maximum">
+    <number>100</number>
+   </property>
+   <property name="value">
+    <number>85</number>
+   </property>
+  </widget>
+  <widget class="QToolButton" name="infoButton">
+   <property name="geometry">
+    <rect>
+     <x>170</x>
+     <y>260</y>
+     <width>24</width>
+     <height>24</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>...</string>
+   </property>
+   <property name="autoRaise">
+    <bool>true</bool>
    </property>
   </widget>
  </widget>
