@@ -3,7 +3,7 @@
  <class>SettingsDialog</class>
  <widget class="QDialog" name="SettingsDialog">
   <property name="windowModality">
-   <enum>Qt::WindowModality::ApplicationModal</enum>
+   <enum>Qt::NonModal</enum>
   </property>
   <property name="geometry">
    <rect>
@@ -28,11 +28,8 @@
      <height>71</height>
     </rect>
    </property>
-   <property name="orientation">
-    <enum>Qt::Orientation::Vertical</enum>
-   </property>
    <property name="standardButtons">
-    <set>QDialogButtonBox::StandardButton::Cancel|QDialogButtonBox::StandardButton::Ok</set>
+    <set>QDialogButtonBox::NoButton</set>
    </property>
   </widget>
   <widget class="QCheckBox" name="verboseCheckBox">
@@ -147,24 +144,20 @@
     </item>
    </layout>
   </widget>
-  <widget class="QPushButton" name="oauthInfoButton">
+  <widget class="QToolButton" name="oauthInfoButton">
    <property name="geometry">
     <rect>
      <x>180</x>
      <y>70</y>
-     <width>21</width>
-     <height>22</height>
+     <width>24</width>
+     <height>24</height>
     </rect>
    </property>
-   <property name="styleSheet">
-    <string notr="true">QPushButton {
-    background-position: center;
-    background-repeat: no-repeat;
-    border-radius: 5px;
-}</string>
-   </property>
    <property name="text">
-    <string/>
+    <string>...</string>
+   </property>
+   <property name="autoRaise">
+    <bool>true</bool>
    </property>
   </widget>
  </widget>

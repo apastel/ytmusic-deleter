@@ -60,8 +60,8 @@ class RemoveDuplicatesDialog(QDialog, Ui_PlaylistSelectionDialog):
 
     def enable_score_cutoff(self):
         self.scoreCutoffInput.setValue(85)
-        self.scoreCutoffLabel.setDisabled(not self.fuzzyCheckbox.isChecked())
-        self.scoreCutoffInput.setDisabled(not self.fuzzyCheckbox.isChecked())
+        self.scoreCutoffLabel.setEnabled(self.fuzzyCheckbox.isChecked())
+        self.scoreCutoffInput.setEnabled(self.fuzzyCheckbox.isChecked())
 
     def show_info_dialog(self):
         QMessageBox.information(

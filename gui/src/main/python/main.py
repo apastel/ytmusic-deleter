@@ -392,7 +392,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         confirmation_dialog = QMessageBox()
         confirmation_dialog.setIcon(QMessageBox.Warning)
         if args[0] == "remove-library":
-            text = 'This is the same as clicking "Remove from library" on all albums that you have added to your library by clicking "Add to library" within YT Music. This will not delete your uploads.'  # noqa
+            text = "This will remove all your library songs and albums. This will not delete your uploads."
         elif args[0] == "delete-playlists":
             text = "This will delete all your playlists, which may also include playlists in regular YouTube.com that have music."
         elif args[0] == "unlike-all":
