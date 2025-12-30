@@ -23,11 +23,11 @@ class RemoveDuplicatesDialog(QDialog, Ui_PlaylistSelectionDialog):
         self.buttonBox.button(QDialogButtonBox.StandardButton.Ok).setText("Next")
         self.enable_ok_button()
         self.enable_score_cutoff()
-        self.fuzzyCheckbox.checkStateChanged.connect(self.enable_score_cutoff)
+        self.radioButtonLabel.setText("Matching Algorithm:")
+        self.radioButtonA.setText("Strict")
+        self.radioButtonB.setText("Fuzzy")
+        self.radioButtonB.toggled.connect(self.enable_score_cutoff)
         self.playlistList.itemSelectionChanged.connect(self.enable_ok_button)
-        self.radioButtonLabel.setVisible(False)
-        self.radioButtonLibrary.setVisible(False)
-        self.radioButtonUploads.setVisible(False)
         self.infoButton.setIcon(self.style().standardIcon(QStyle.StandardPixmap.SP_MessageBoxInformation))
         self.infoButton.clicked.connect(self.show_info_dialog)
 
@@ -59,17 +59,28 @@ class RemoveDuplicatesDialog(QDialog, Ui_PlaylistSelectionDialog):
         self.buttonBox.button(QDialogButtonBox.StandardButton.Ok).setEnabled(len(self.playlistList.selectedItems()) > 0)
 
     def enable_score_cutoff(self):
-        self.scoreCutoffLabel.setEnabled(self.fuzzyCheckbox.isChecked())
-        self.scoreCutoffInput.setEnabled(self.fuzzyCheckbox.isChecked())
+        self.scoreCutoffLabel.setEnabled(self.radioButtonB.isChecked())
+        self.scoreCutoffInput.setEnabled(self.radioButtonB.isChecked())
 
     def show_info_dialog(self):
         QMessageBox.information(
             self,
             "Matching Algorithm",
-            "Fuzzy matching will find more duplicates with similar (but not exact) names.\n\n"
-            "A higher score-cutoff will use stricter matching, while a lower value will use looser matching.\n\n"
-            "You may need to experiment with different score-cutoffs (or disable fuzzy matching altogether)"
-            " to find all your duplicates.",
+            "Strict matching [default] will search for duplicates using string comparison "
+            "after normalizing the artist and title. It should find most of your duplicates.\n\n"
+            "For example, the following two tracks will be considered duplicates:\n"
+            "The Offspring - 'Come Out and Play'\n"
+            "The Offspring - 'Come out and play (2008 Remaster)'\n\n"
+            "Try fuzzy matching to find duplicates that may be named differently. The score cutoff value "
+            "determines how strict to be with the fuzzy matching. "
+            "The higher the score cutoff, the more likely a match will be thrown out.\n"
+            "For example, the following two track titles have a match score of 90:\n"
+            "'Toms Diner'\n"
+            "'Tom's Diner [Long Version] DNA feat. Suzanne Vega (1990)'\n\n"
+            "A score cutoff above 90 will throw this match away. Values below 85 will likely yield too many false matches.\n"
+            "The default score-cutoff is recommended but you may experiment with higher or lower values.\n"
+            "The score-cutoff value is used for both artist matching and title matching.\n\n"
+            "In both cases, tracks that are *exact* duplicates (same ID) will be de-duped.",
         )
 
     def launch_remove_dupes(self, selected_playlist_title):
@@ -106,7 +117,7 @@ class RemoveDuplicatesDialog(QDialog, Ui_PlaylistSelectionDialog):
 
     def _calculate_dupes(self):
         duplicates = check_for_duplicates(
-            self.playlist, self.yt_auth, self.fuzzyCheckbox.isChecked(), self.scoreCutoffInput.value()
+            self.playlist, self.yt_auth, self.radioButtonB.isChecked(), self.scoreCutoffInput.value()
         )
         if not duplicates:
             raise Exception(

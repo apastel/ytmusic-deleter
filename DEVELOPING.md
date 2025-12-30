@@ -38,3 +38,9 @@ pdm freeze-prep
 pdm fbs freeze
 pdm fbs installer
 ```
+
+### Run Qt Designer
+* Activate .venv
+* `pyside6-designer`
+* After updating .ui resource file...
+  * `pdm generate`

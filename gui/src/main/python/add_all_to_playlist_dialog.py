@@ -1,9 +1,9 @@
 import ytmusicapi
 from generated.ui_playlist_selection_dialog import Ui_PlaylistSelectionDialog
-from PySide6.QtCore import Slot
 from PySide6.QtWidgets import QDialog
 from PySide6.QtWidgets import QDialogButtonBox
 from PySide6.QtWidgets import QMessageBox
+from PySide6.QtWidgets import QStyle
 
 
 class AddAllToPlaylistDialog(QDialog, Ui_PlaylistSelectionDialog):
@@ -12,12 +12,15 @@ class AddAllToPlaylistDialog(QDialog, Ui_PlaylistSelectionDialog):
         self.setupUi(self)
 
         self.setWindowTitle("Select Playlist to Add All Songs To")
-        self.fuzzyCheckbox.setVisible(False)
+        self.radioButtonLabel.setText("Add all songs from...")
+        self.radioButtonA.setText("Uploads")
+        self.radioButtonB.setText("Library")
         self.scoreCutoffInput.setVisible(False)
         self.scoreCutoffLabel.setVisible(False)
-        self.infoButton.setVisible(False)
         self.enable_ok_button()
         self.playlistList.itemSelectionChanged.connect(self.enable_ok_button)
+        self.infoButton.setIcon(self.style().standardIcon(QStyle.StandardPixmap.SP_MessageBoxInformation))
+        self.infoButton.clicked.connect(self.show_info_dialog)
 
         try:
             self.all_playlists = parent.ytmusic.get_library_playlists(limit=None)
@@ -45,6 +48,13 @@ class AddAllToPlaylistDialog(QDialog, Ui_PlaylistSelectionDialog):
         add_all_args = ["add-all-to-playlist", selected_playlist[0].text()] + [f"--{library_or_uploads}"]
         self.parentWidget().launch_process(add_all_args)
 
-    @Slot()
+    def show_info_dialog(self):
+        QMessageBox.information(
+            self,
+            "Information",
+            "This will either add all of your uploads or all of your library songs to a particular playlist depending "
+            "on which option you select.",
+        )
+
     def enable_ok_button(self):
         self.buttonBox.button(QDialogButtonBox.StandardButton.Ok).setEnabled(len(self.playlistList.selectedItems()) > 0)

@@ -26,10 +26,69 @@ class TracklistTableWidget(QTableWidget):
         self._artwork_popup = None
         self._artwork_column_idx = artwork_column_idx
 
-    def resize_google_thumb(self, url: str, width: int, height: int) -> str:
+    def set_max_column_widths(self):
+        """Size columns to content, then cap at max 200px."""
+        self.resizeColumnsToContents()  # natural size first
+
+        for col in range(self.columnCount()):
+            col_width = self.columnWidth(col)
+            if col_width > 200:
+                self.setColumnWidth(col, 200)
+
+            # Make all columns resizable
+            self.horizontalHeader().setSectionResizeMode(col, QHeaderView.ResizeMode.Interactive)
+
+        # Optional: stretch last column
+        last_col = self.columnCount() - 1
+        self.horizontalHeader().setSectionResizeMode(last_col, QHeaderView.ResizeMode.Stretch)
+
+    def update_item(self, col_idx, item):
+        """
+        Update certain row items like Artwork or Type
+        """
+        header_item = self.horizontalHeaderItem(col_idx)
+        if not header_item:
+            return
+        header_text = header_item.text()
+        if not header_text:
+            return
+        if header_text == "Artwork":
+            thumbnail_url = item.text()
+            # Store larger version for popup
+            large_url = self._resize_google_thumb(thumbnail_url, 300, 300)
+            r_large = requests.get(large_url)
+            large_img = QImage()
+            large_img.loadFromData(r_large.content)
+            large_pixmap = QPixmap.fromImage(large_img)
+
+            # Small thumbnail for cell
+            thumb = QPixmap.fromImage(large_img).scaled(
+                64, 64, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation
+            )
+
+            item.setIcon(thumb)
+            item.setSizeHint(QSize(64, 64))
+            item.setText("")
+
+            # Store large pixmap for popup (keyed by row)
+            item.setData(Qt.ItemDataRole.UserRole, large_pixmap)
+        elif header_text == "Type":
+            video_type = item.text()
+            match video_type:
+                case VideoType.UGC:
+                    type_str = "User-generated Content"
+                case VideoType.ATV:
+                    type_str = "Artist-uploaded Track"
+                case VideoType.OMV:
+                    type_str = "Official Music Video"
+                case _:
+                    type_str = "Unknown"
+            item.setText(type_str)
+
+    def _resize_google_thumb(self, url: str, width: int, height: int) -> str:
         if "w" in url and "-h" in url:
             return re.sub(r"w\d+-h\d+", f"w{width}-h{height}", url)
-        return url  # fallback: unchanged
+        return url
 
     def eventFilter(self, obj, event):
         """
@@ -79,62 +138,3 @@ class TracklistTableWidget(QTableWidget):
             return False
 
         return super().eventFilter(obj, event)
-
-    def set_max_column_widths(self):
-        """Size columns to content, then cap at max 200px."""
-        self.resizeColumnsToContents()  # natural size first
-
-        for col in range(self.columnCount()):
-            col_width = self.columnWidth(col)
-            if col_width > 200:
-                self.setColumnWidth(col, 200)
-
-            # Make all columns resizable
-            self.horizontalHeader().setSectionResizeMode(col, QHeaderView.ResizeMode.Interactive)
-
-        # Optional: stretch last column
-        last_col = self.columnCount() - 1
-        self.horizontalHeader().setSectionResizeMode(last_col, QHeaderView.ResizeMode.Stretch)
-
-    def update_item(self, col_idx, item):
-        """
-        Update certain row items like Artwork or Type
-        """
-        header_item = self.horizontalHeaderItem(col_idx)
-        if not header_item:
-            return
-        header_text = header_item.text()
-        if not header_text:
-            return
-        if header_text == "Artwork":
-            thumbnail_url = item.text()
-            # Store larger version for popup
-            large_url = self.resize_google_thumb(thumbnail_url, 300, 300)
-            r_large = requests.get(large_url)
-            large_img = QImage()
-            large_img.loadFromData(r_large.content)
-            large_pixmap = QPixmap.fromImage(large_img)
-
-            # Small thumbnail for cell
-            thumb = QPixmap.fromImage(large_img).scaled(
-                64, 64, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation
-            )
-
-            item.setIcon(thumb)
-            item.setSizeHint(QSize(64, 64))
-            item.setText("")
-
-            # Store large pixmap for popup (keyed by row)
-            item.setData(Qt.ItemDataRole.UserRole, large_pixmap)
-        elif header_text == "Type":
-            video_type = item.text()
-            match video_type:
-                case VideoType.UGC:
-                    type_str = "User-generated Content"
-                case VideoType.ATV:
-                    type_str = "Artist-uploaded Track"
-                case VideoType.OMV:
-                    type_str = "Official Music Video"
-                case _:
-                    type_str = "Unknown"
-            item.setText(type_str)
