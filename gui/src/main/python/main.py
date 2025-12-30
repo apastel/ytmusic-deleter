@@ -417,7 +417,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def launch_process(self, args: list[str]):
         self.p = QProcess()
-        self.p.readyReadStandardOutput.connect(self.handle_stdout)
         self.p.readyReadStandardError.connect(self.handle_stderr)
         self.p.stateChanged.connect(self.handle_state)
         self.p.finished.connect(self.process_finished)
@@ -452,19 +451,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def handle_stderr(self):
         data = self.p.readAllStandardError()
         stderr = bytes(data).decode("ISO-8859-1")
-        self.message(stderr)
-
-    @Slot()
-    def handle_stdout(self):
-        data = self.p.readAllStandardOutput()
-        stdout = bytes(data).decode("ISO-8859-1")
-        percent_complete = self.get_percent_complete(stdout)
+        percent_complete = self.get_percent_complete(stderr)
         if percent_complete:
             self.progress_dialog.progressBar.setValue(percent_complete)
-        item_processing = self.get_item_processing(stdout)
+        item_processing = self.get_item_processing(stderr)
         if item_processing:
             self.progress_dialog.itemLine.setText(item_processing)
-        self.message(stdout)
+        self.message(stderr)
 
     def handle_state(self, state):
         states = {

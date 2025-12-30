@@ -619,7 +619,6 @@ def get_playlist_from_title(yt_auth: YTMusic, playlist_title: str) -> dict:
 
 
 def update_progress():
-    global progress_bar
     progress_bar.update()
     if get_current_context().obj["STATIC_PROGRESS"]:
         logging.info(f"Total complete: {round(progress_bar.count / progress_bar.total * 100)}%")
