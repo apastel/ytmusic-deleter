@@ -130,9 +130,6 @@
      <height>21</height>
     </rect>
    </property>
-   <property name="toolTip">
-    <string>A value closer to 100 will be more strict regarding matches when searching YTMusic for the song/album. A value of 100 will basically only add exact matches. If you find that not many matches are being found, try lowering this value, but you may end up with albums in your library that are not exact matches. 85 is recommended to start out with.</string>
-   </property>
    <property name="text">
     <string>Match score cutoff:</string>
    </property>
@@ -149,14 +146,11 @@
      <height>22</height>
     </rect>
    </property>
-   <property name="toolTip">
-    <string>A value closer to 100 will be more strict regarding matches when searching YTMusic for the song/album. A value of 100 will basically only add exact matches. If you find that not many matches are being found, try lowering this value, but you may end up with albums in your library that are not exact matches. 85 is recommended to start out with.</string>
-   </property>
    <property name="maximum">
     <number>100</number>
    </property>
    <property name="value">
-    <number>85</number>
+    <number>90</number>
    </property>
   </widget>
   <widget class="QToolButton" name="infoButton">

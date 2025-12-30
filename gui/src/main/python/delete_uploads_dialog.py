@@ -1,16 +1,18 @@
 from generated import ui_delete_uploads_dialog
 from PySide6 import QtCore
-from PySide6 import QtWidgets
+from PySide6.QtWidgets import QDialog
+from PySide6.QtWidgets import QMessageBox
+from PySide6.QtWidgets import QStyle
 
 
-class DeleteUploadsDialog(QtWidgets.QDialog, ui_delete_uploads_dialog.Ui_DeleteUploadsDialog):
+class DeleteUploadsDialog(QDialog, ui_delete_uploads_dialog.Ui_DeleteUploadsDialog):
     def __init__(self, parent):
         super().__init__(parent)
         self.setupUi(self)
 
         self.enable_score_cutoff()
         self.addUploadsCheckBox.checkStateChanged.connect(self.enable_score_cutoff)
-        self.infoButton.setIcon(self.style().standardIcon(QtWidgets.QStyle.SP_MessageBoxInformation))
+        self.infoButton.setIcon(self.style().standardIcon(QStyle.StandardPixmap.SP_MessageBoxInformation))
         self.infoButton.clicked.connect(self.show_info_dialog)
 
     def accept(self):
@@ -22,12 +24,11 @@ class DeleteUploadsDialog(QtWidgets.QDialog, ui_delete_uploads_dialog.Ui_DeleteU
 
     @QtCore.Slot()
     def enable_score_cutoff(self):
-        self.scoreCutoffInput.setValue(85)
         self.scoreCutoffLabel.setEnabled(self.addUploadsCheckBox.isChecked())
         self.scoreCutoffInput.setEnabled(self.addUploadsCheckBox.isChecked())
 
     def show_info_dialog(self):
-        QtWidgets.QMessageBox.information(
+        QMessageBox.information(
             self,
             "Add to Library",
             "Checking this box will make the tool attempt to add each album or song to your library from YouTube Music's"

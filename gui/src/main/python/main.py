@@ -38,6 +38,8 @@ from PySide6.QtGui import QPixmap
 from PySide6.QtWidgets import QLabel
 from PySide6.QtWidgets import QMainWindow
 from PySide6.QtWidgets import QMessageBox
+from PySide6.QtWidgets import QProxyStyle
+from PySide6.QtWidgets import QStyle
 from remove_duplicates_dialog import RemoveDuplicatesDialog
 from settings_dialog import SettingsDialog
 from sort_playlists_dialog import SortPlaylistsDialog
@@ -563,8 +565,16 @@ class AppContext(ApplicationContext):
 
     def run(self):
         self.app.setStyle("Fusion")
+        self.app.setStyle(InstantToolTipStyle(self.app.style()))
         self.window.show()
         return self.app.exec()
+
+
+class InstantToolTipStyle(QProxyStyle):
+    def styleHint(self, hint, option=None, widget=None, returnData=None):
+        if hint == QStyle.StyleHint.SH_ToolTip_WakeUpDelay:
+            return 0
+        return super().styleHint(hint, option, widget, returnData)
 
 
 class ClickableLabel(QLabel):

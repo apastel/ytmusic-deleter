@@ -65,7 +65,7 @@ class Ui_PlaylistSelectionDialog(object):
         self.scoreCutoffInput.setEnabled(False)
         self.scoreCutoffInput.setGeometry(QRect(160, 290, 42, 22))
         self.scoreCutoffInput.setMaximum(100)
-        self.scoreCutoffInput.setValue(85)
+        self.scoreCutoffInput.setValue(90)
         self.infoButton = QToolButton(PlaylistSelectionDialog)
         self.infoButton.setObjectName(u"infoButton")
         self.infoButton.setGeometry(QRect(170, 260, 24, 24))
@@ -84,13 +84,7 @@ class Ui_PlaylistSelectionDialog(object):
         self.radioButtonUploads.setText(QCoreApplication.translate("PlaylistSelectionDialog", u"Uploads", None))
         self.radioButtonLabel.setText(QCoreApplication.translate("PlaylistSelectionDialog", u"Add all songs from...", None))
         self.fuzzyCheckbox.setText(QCoreApplication.translate("PlaylistSelectionDialog", u"Use fuzzy matching", None))
-#if QT_CONFIG(tooltip)
-        self.scoreCutoffLabel.setToolTip(QCoreApplication.translate("PlaylistSelectionDialog", u"A value closer to 100 will be more strict regarding matches when searching YTMusic for the song/album. A value of 100 will basically only add exact matches. If you find that not many matches are being found, try lowering this value, but you may end up with albums in your library that are not exact matches. 85 is recommended to start out with.", None))
-#endif // QT_CONFIG(tooltip)
         self.scoreCutoffLabel.setText(QCoreApplication.translate("PlaylistSelectionDialog", u"Match score cutoff:", None))
-#if QT_CONFIG(tooltip)
-        self.scoreCutoffInput.setToolTip(QCoreApplication.translate("PlaylistSelectionDialog", u"A value closer to 100 will be more strict regarding matches when searching YTMusic for the song/album. A value of 100 will basically only add exact matches. If you find that not many matches are being found, try lowering this value, but you may end up with albums in your library that are not exact matches. 85 is recommended to start out with.", None))
-#endif // QT_CONFIG(tooltip)
         self.infoButton.setText(QCoreApplication.translate("PlaylistSelectionDialog", u"...", None))
     # retranslateUi
 

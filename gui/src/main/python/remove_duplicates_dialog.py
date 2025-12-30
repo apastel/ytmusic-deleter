@@ -28,7 +28,7 @@ class RemoveDuplicatesDialog(QDialog, Ui_PlaylistSelectionDialog):
         self.radioButtonLabel.setVisible(False)
         self.radioButtonLibrary.setVisible(False)
         self.radioButtonUploads.setVisible(False)
-        self.infoButton.setIcon(self.style().standardIcon(QStyle.SP_MessageBoxInformation))
+        self.infoButton.setIcon(self.style().standardIcon(QStyle.StandardPixmap.SP_MessageBoxInformation))
         self.infoButton.clicked.connect(self.show_info_dialog)
 
         try:
@@ -59,7 +59,6 @@ class RemoveDuplicatesDialog(QDialog, Ui_PlaylistSelectionDialog):
         self.buttonBox.button(QDialogButtonBox.Ok).setEnabled(len(self.playlistList.selectedItems()) > 0)
 
     def enable_score_cutoff(self):
-        self.scoreCutoffInput.setValue(85)
         self.scoreCutoffLabel.setEnabled(self.fuzzyCheckbox.isChecked())
         self.scoreCutoffInput.setEnabled(self.fuzzyCheckbox.isChecked())
 
