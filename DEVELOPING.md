@@ -1,10 +1,8 @@
 # Developer's Guide
-## Operating System
-Windows and Linux are both supported for developing, testing, releasing, and installing YTMusic Deleter.
-Mac may be supported but never been thoroughly tested.
-Things to note:
-* Git Bash is recommmended for Windows development
-* Linux debian package may not produce a desktop icon (have to run /opt/YTMusic_Deleter/YTMusic_Deleter after installing .deb package)
+## Dev Container
+This project uses Dev Containers to set up the development environment. Open the project in VS Code and use the Dev Containers
+extension to build the dev container. Upon completion, the YTMusic Deleter application should automatically start up in a
+X11 GUI window.
 
 ## Setup
 * Install [Python](https://www.python.org/)
@@ -21,7 +19,7 @@ Things to note:
 
 ## Unit Tests
 * `cp tests/resources/test.example.cfg tests/resources/test.cfg`
-* `curl -o tests/resources/test.mp3 https://www.kozco.com/tech/piano2-CoolEdit.mp3`
+* `wget --content-disposition -P tests/resources/ "https://drive.google.com/uc?export=download&id=18AP7mQqQxqj2_delNyhoCNa6UCUCN9-P"`
 * `ytmusicapi browser` to create browser.json for uploads, put in tests/resources
 * `ytmusicapi oauth` to create oauth.json for other tests, put in tests/resources
 * `pdm run pytest`

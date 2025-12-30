@@ -1,24 +1,25 @@
 {
-  "name": "Ubuntu 22.04 Codespace",
-  "image": "mcr.microsoft.com/devcontainers/base:jammy",
-
+  "name": "Ubuntu 22.04 Codespace (Optimized)",
+  "build": {
+    "dockerfile": "Dockerfile"
+  },
   "features": {
     "ghcr.io/devcontainers/features/python:1": {
       "version": "3.12"
     },
     "ghcr.io/devcontainers-extra/features/pdm:2": {}
   },
-
   "runArgs": [
-    "--net=host", // Often useful for GUI apps, though not strictly required if only X11 is needed
-    "-e", "DISPLAY=${env:DISPLAY}", // Pass the host's DISPLAY env variable
-    "-v", "/tmp/.X11-unix:/tmp/.X11-unix" // Mount the X11 socket
+    "--net=host",
+    "-e", "DISPLAY=${localEnv:DISPLAY}"
   ],
-
-  // Ensure the environment variable is set correctly *after* the container starts
+  "mounts": [
+    "source=/tmp/.X11-unix,target=/tmp/.X11-unix,type=bind,consistency=cached",
+    "source=/dev/dri,target=/dev/dri,type=bind,consistency=cached"
+  ],
   "remoteEnv": {
-    "DISPLAY": "${env:DISPLAY}"
+    "DISPLAY": "${localEnv:DISPLAY}"
   },
-
-  "postCreateCommand": "sudo apt-get update && sudo apt-get install -y libdbus-1-3 libxcb-cursor0 libxcb-xinerama0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-render-util0 libxkbcommon-x11-0 libfontconfig1 libfreetype6 libgl1 libegl1-mesa libglvnd-dev libxcb-shape0 && sudo ldconfig && pdm install && /workspaces/ytmusic-deleter/.venv/bin/python3 -m pre_commit install && pdm fbs run"
+  "onCreateCommand": "./.devcontainer/on-create.sh",
+  "postCreateCommand": ".devcontainer/post-create.sh"
 }
