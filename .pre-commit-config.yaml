@@ -1,30 +1,30 @@
 exclude: ^(gui/src/main/python/generated/|gui/src/freeze/)
 repos:
   - repo: https://github.com/asottile/pyupgrade
-    rev: v3.19.1
+    rev: v3.21.2
     hooks:
       - id: pyupgrade
-        args: ["--py38-plus"]
+        args: ["--py312-plus"]
   - repo: https://github.com/asottile/reorder_python_imports
-    rev: v3.14.0
+    rev: v3.16.0
     hooks:
       - id: reorder-python-imports
         args: ["--application-directories", "ytmusic_deleter"]
   - repo: https://github.com/psf/black
-    rev: 25.1.0
+    rev: 25.12.0
     hooks:
       - id: black
   - repo: https://github.com/pycqa/flake8
-    rev: 7.1.1
+    rev: 7.3.0
     hooks:
       - id: flake8
         additional_dependencies:
           - flake8-bugbear
           - flake8-implicit-str-concat
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v5.0.0
+    rev: v6.0.0
     hooks:
-      - id: check-byte-order-marker
+      - id: fix-byte-order-marker
       - id: trailing-whitespace
         exclude: README.md
       - id: end-of-file-fixer

@@ -1,6 +1,3 @@
-from typing import Dict
-from typing import List
-
 from generated.ui_checkbox_track_listing import Ui_CheckboxTrackListingDialog
 from PySide6.QtCore import Property
 from PySide6.QtCore import QRect
@@ -19,7 +16,7 @@ ARTWORK_COLUMN_INDEX = 5
 
 
 class CheckboxTrackListingDialog(QDialog, Ui_CheckboxTrackListingDialog):
-    def __init__(self, parent, dupe_groups: List[List[Dict]]):
+    def __init__(self, parent, dupe_groups: list[list[dict]]):
         super().__init__(parent)
         self.setupUi(self)
 
@@ -81,7 +78,7 @@ class CheckboxTableWidget(TracklistTableWidget):
 
     def repopulate_table(self):
         for row_idx, track in enumerate(self.parentWidget().dupe_groups[self.table_idx]):
-            data_list: List[str] = [
+            data_list: list[str] = [
                 track["artist"],
                 track["title"],
                 track["album"],
@@ -89,7 +86,7 @@ class CheckboxTableWidget(TracklistTableWidget):
                 track["thumbnail"],
                 track["videoType"],
             ]
-            row_items: List[QTableWidgetItem] = [QTableWidgetItem(data) for data in data_list]
+            row_items: list[QTableWidgetItem] = [QTableWidgetItem(data) for data in data_list]
 
             # Insert the blank row
             self.insertRow(row_idx)

@@ -1,6 +1,4 @@
 import logging
-from typing import Dict
-from typing import List
 from typing import TypedDict
 
 from click import get_current_context
@@ -145,7 +143,7 @@ class SearchResult(TypedDict):
     browseId: str
 
 
-def simplify_album_results(album_results: List[Dict]) -> List[SearchResult]:
+def simplify_album_results(album_results: list[dict]) -> list[SearchResult]:
     """
     Take the search results response object from YTM and return a simplified list
     of results that just has the artist, album title, and browseId.
@@ -154,7 +152,7 @@ def simplify_album_results(album_results: List[Dict]) -> List[SearchResult]:
         {"artist": "Metallica", "title": "Reload", "browseId": "fedcba"},
     ]
     """
-    simplified_results: List[SearchResult] = []
+    simplified_results: list[SearchResult] = []
     missing_metadata_count = 0
     for album_result in album_results:
         search_result_artist = album_result.get("artist")

@@ -1,7 +1,5 @@
 import logging
 from collections import defaultdict
-from typing import Dict
-from typing import List
 
 from click import get_current_context
 from InquirerPy import get_style
@@ -70,7 +68,7 @@ def check_for_duplicates(playlist: dict, yt_auth: YTMusic = None, fuzzy: bool = 
     return duplicate_groups
 
 
-def _group_duplicate_tracks(tracks: List[Dict], fuzzy: bool, score_cutoff: int) -> List[List[Dict]]:
+def _group_duplicate_tracks(tracks: list[dict], fuzzy: bool, score_cutoff: int) -> list[list[dict]]:
     """
     Groups tracks in a list considering both videoId and similar title with same artist.
 
@@ -110,7 +108,7 @@ def _get_matching_algorithm(track, group, fuzzy: bool, score_cutoff: int):
     )
 
 
-def determine_tracks_to_remove(duplicate_groups: List[List[Dict]]) -> tuple[List[Dict], List[List[Dict]] | None]:
+def determine_tracks_to_remove(duplicate_groups: list[list[dict]]) -> tuple[list[dict], list[list[dict]] | None]:
     logging.info(f"There are {len(duplicate_groups)} sets of duplicates in your playlist.")
 
     # Automatically mark exact dupes for deletion
@@ -144,7 +142,7 @@ def determine_tracks_to_remove(duplicate_groups: List[List[Dict]]) -> tuple[List
     return tracks_to_remove, None
 
 
-def _remove_exact_dupes(duplicate_groups) -> tuple[List[List[Dict]], List[Dict]]:
+def _remove_exact_dupes(duplicate_groups) -> tuple[list[list[dict]], list[dict]]:
     """
     Removes tracks with duplicate videoIds from each group in duplicate_groups.
 

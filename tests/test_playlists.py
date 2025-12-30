@@ -1,6 +1,3 @@
-from typing import Dict
-from typing import List
-
 from ytmusic_deleter.common import can_edit_playlist
 from ytmusic_deleter.duplicates import _remove_exact_dupes
 from ytmusic_deleter.duplicates import check_for_duplicates
@@ -9,7 +6,7 @@ from ytmusicapi import YTMusic
 
 class TestPlaylists:
     def test_check_for_duplicates(
-        self, yt_browser: YTMusic, get_playlist_with_dupes, expected_dupe_groups: List[List[Dict]]
+        self, yt_browser: YTMusic, get_playlist_with_dupes, expected_dupe_groups: list[list[dict]]
     ):
         playlist = yt_browser.get_playlist(get_playlist_with_dupes)
         duplicate_groups = check_for_duplicates(playlist, yt_browser)
@@ -17,14 +14,14 @@ class TestPlaylists:
         assert lists_of_dictlists_equal(expected_dupe_groups, duplicate_groups)
 
     def test_check_for_duplicates_fuzzy(
-        self, yt_browser: YTMusic, get_playlist_with_dupes, expected_dupe_groups: List[List[Dict]]
+        self, yt_browser: YTMusic, get_playlist_with_dupes, expected_dupe_groups: list[list[dict]]
     ):
         playlist = yt_browser.get_playlist(get_playlist_with_dupes)
         duplicate_groups = check_for_duplicates(playlist, yt_browser, True, 90)
 
         assert lists_of_dictlists_equal(expected_dupe_groups, duplicate_groups)
 
-    def test_remove_exact_dupes(self, expected_dupe_groups: List[List[Dict]]):
+    def test_remove_exact_dupes(self, expected_dupe_groups: list[list[dict]]):
         expected_unique_groups = [
             [
                 {"artist": "Metallica", "setVideoId": "017208FAA85233F9", "title": "Battery", "videoId": "hqnaXzz72H4"},

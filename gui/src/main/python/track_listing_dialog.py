@@ -1,5 +1,3 @@
-from typing import List
-
 from generated.ui_track_listing import Ui_TrackListingDialog
 from PySide6.QtCore import QRect
 from PySide6.QtWidgets import QDialog
@@ -23,7 +21,7 @@ class TrackListingDialog(QDialog, Ui_TrackListingDialog):
         self.tracklist = tracklist
 
         for row_idx, track in enumerate(tracklist):
-            data_list: List[str] = [
+            data_list: list[str] = [
                 track["artist"],
                 track["title"],
                 track["album"],
@@ -31,7 +29,7 @@ class TrackListingDialog(QDialog, Ui_TrackListingDialog):
                 track["thumbnail"],
                 track["videoType"],
             ]
-            row_items: List[QTableWidgetItem] = [QTableWidgetItem(data) for data in data_list]
+            row_items: list[QTableWidgetItem] = [QTableWidgetItem(data) for data in data_list]
 
             # Insert the blank row
             self.tracklistTable.insertRow(row_idx)

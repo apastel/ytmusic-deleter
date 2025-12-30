@@ -2,8 +2,6 @@ import configparser
 import time
 from pathlib import Path
 from random import shuffle
-from typing import Dict
-from typing import List
 
 import click.testing
 import pytest
@@ -49,7 +47,7 @@ def fixture_sample_video() -> str:
 
 
 @pytest.fixture(name="medium_song_list")
-def fixture_sample_song_list() -> List[str]:
+def fixture_sample_song_list() -> list[str]:
     return ["hpSrLjc5SMs", "PIuAFrLeXfY", "9gi4WwQcPW8", "beX-9wW5rL0", "8ay_BkRuv-o", "HGorCGszxZU", "t2rsf8SiMJY"]
 
 
@@ -66,7 +64,7 @@ def fixture_long_song_list(yt_browser: YTMusic, long_playlist: str) -> set[str]:
 
 
 @pytest.fixture(name="sample_song_list_dupes")
-def fixture_sample_song_list_dupes() -> List[str]:
+def fixture_sample_song_list_dupes() -> list[str]:
     return [
         "vA1nlwTbCvg",  # title: "Battery", album: "Master of Puppets"
         "vA1nlwTbCvg",  # title: "Battery", album: "Master of Puppets"
@@ -85,7 +83,7 @@ def fixture_sample_song_list_dupes() -> List[str]:
 
 
 @pytest.fixture(name="expected_dupe_groups")
-def fixture_expected_dupe_groups() -> List[List[Dict]]:
+def fixture_expected_dupe_groups() -> list[list[dict]]:
     return [
         [
             {"artist": "Metallica", "setVideoId": "017208FAA85233F9", "title": "Battery", "videoId": "hqnaXzz72H4"},
@@ -138,7 +136,7 @@ def fixture_expected_dupe_groups() -> List[List[Dict]]:
 
 
 @pytest.fixture(name="fuzzy_test_data")
-def fixture_fuzzy_test_data() -> List[Dict]:
+def fixture_fuzzy_test_data() -> list[dict]:
     return [
         {
             "upload_artist": "The Offspring",
@@ -271,7 +269,7 @@ def fixture_upload_file_path(config) -> str:
 
 
 @pytest.fixture(name="upload_song")
-def fixture_upload_song(config, yt_browser: YTMusic, upload_file_path) -> Dict | None:
+def fixture_upload_song(config, yt_browser: YTMusic, upload_file_path) -> dict | None:
     """
     Upload a song and wait for it to finish processing.
     """

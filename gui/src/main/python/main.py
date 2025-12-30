@@ -9,7 +9,6 @@ import webbrowser
 from importlib.metadata import version
 from pathlib import Path
 from time import strftime
-from typing import List
 
 import requests
 import ytmusicapi.auth.oauth.exceptions
@@ -349,7 +348,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         # Turn "Remove Library" into "remove-library" for example
         self.show_dialog([button_text.lower().replace(" ", "-")])
 
-    def show_dialog(self, args: List[str]):
+    def show_dialog(self, args: list[str]):
         if self.p is None and self.is_signed_in():
             if args[0] == "delete-uploads":
                 self.delete_uploads_dialog = DeleteUploadsDialog(self)
@@ -390,7 +389,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                         self.add_to_library_checked(False)
                     self.launch_process(args)
 
-    def confirm(self, args: List[str]):
+    def confirm(self, args: list[str]):
         confirmation_dialog = QMessageBox()
         confirmation_dialog.setIcon(QMessageBox.Warning)
         if args[0] == "remove-library":
@@ -416,13 +415,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         confirmation_dialog.setStandardButtons(QMessageBox.StandardButton.Ok | QMessageBox.StandardButton.Cancel)
         return confirmation_dialog.exec()
 
-    def launch_process(self, args: List[str]):
+    def launch_process(self, args: list[str]):
         self.p = QProcess()
         self.p.readyReadStandardOutput.connect(self.handle_stdout)
         self.p.readyReadStandardError.connect(self.handle_stderr)
         self.p.stateChanged.connect(self.handle_state)
         self.p.finished.connect(self.process_finished)
-        cli_args: List[str] = (
+        cli_args: list[str] = (
             [
                 "-l",
                 str(self.log_dir),
