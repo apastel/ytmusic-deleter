@@ -104,7 +104,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.accountPhotoButton.clicked.connect(self.account_button_clicked)
         self.signOutButton.clicked.connect(self.sign_out)
         self.accountWidgetCloseButton.clicked.connect(self.accountWidget.close)
-        self.actionSettings.triggered.connect(self.on_open_settings_clicked)
+        self.actionSettings.triggered.connect(self.open_settings_clicked)
         self.actionExit.triggered.connect(QCoreApplication.quit)
         self.removeLibraryButton.clicked.connect(self.prepare_to_invoke)
         self.deleteUploadsButton.clicked.connect(self.prepare_to_invoke)
@@ -337,7 +337,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.auth_dialog.show()
 
     @Slot()
-    def on_open_settings_clicked(self):
+    def open_settings_clicked(self):
         self.settings_dialog = SettingsDialog(self)
         self.settings_dialog.save_settings_signal.connect(self.save_settings)
         self.settings_dialog.exec()

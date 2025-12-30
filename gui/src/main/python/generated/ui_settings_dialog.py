@@ -23,13 +23,13 @@ class Ui_SettingsDialog(object):
     def setupUi(self, SettingsDialog):
         if not SettingsDialog.objectName():
             SettingsDialog.setObjectName(u"SettingsDialog")
-        SettingsDialog.setWindowModality(Qt.NonModal)
+        SettingsDialog.setWindowModality(Qt.WindowModality.ApplicationModal)
         SettingsDialog.resize(497, 300)
-        SettingsDialog.setModal(True)
         self.buttonBox = QDialogButtonBox(SettingsDialog)
         self.buttonBox.setObjectName(u"buttonBox")
         self.buttonBox.setGeometry(QRect(390, 20, 81, 71))
-        self.buttonBox.setStandardButtons(QDialogButtonBox.NoButton)
+        self.buttonBox.setOrientation(Qt.Orientation.Vertical)
+        self.buttonBox.setStandardButtons(QDialogButtonBox.StandardButton.Cancel|QDialogButtonBox.StandardButton.Save)
         self.verboseCheckBox = QCheckBox(SettingsDialog)
         self.verboseCheckBox.setObjectName(u"verboseCheckBox")
         self.verboseCheckBox.setGeometry(QRect(30, 20, 241, 41))
