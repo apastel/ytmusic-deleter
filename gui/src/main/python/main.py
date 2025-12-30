@@ -384,7 +384,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
             else:
                 self.message("Showing confirmation dialog")
-                if self.confirm(args) == QMessageBox.Ok:
+                if self.confirm(args) == QMessageBox.StandardButton.Ok:
                     if args[0] == "delete-uploads" and self.add_to_library:
                         args += ["-a"]
                         self.add_to_library_checked(False)
@@ -413,7 +413,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         confirmation_dialog.setText(f"{text}")
         confirmation_dialog.setInformativeText("Are you sure you want to continue?")
         confirmation_dialog.setWindowTitle("Alert")
-        confirmation_dialog.setStandardButtons(QMessageBox.Ok | QMessageBox.Cancel)
+        confirmation_dialog.setStandardButtons(QMessageBox.StandardButton.Ok | QMessageBox.StandardButton.Cancel)
         return confirmation_dialog.exec()
 
     def launch_process(self, args: List[str]):

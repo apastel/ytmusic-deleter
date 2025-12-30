@@ -58,7 +58,7 @@ class BrowserAuthDialog(QDialog, Ui_AuthDialog):
 
     @Slot()
     def enable_ok_button(self):
-        self.buttonBox.button(QDialogButtonBox.Ok).setEnabled(
+        self.buttonBox.button(QDialogButtonBox.StandardButton.Ok).setEnabled(
             self.headersInputBox.toPlainText() != "" or self.fileNameField.text() != ""
         )
 

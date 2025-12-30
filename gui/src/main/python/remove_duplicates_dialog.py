@@ -20,7 +20,7 @@ class RemoveDuplicatesDialog(QDialog, Ui_PlaylistSelectionDialog):
         self.setupUi(self)
 
         self.setWindowTitle("Select Playlist to De-dupe")
-        self.buttonBox.button(QDialogButtonBox.Ok).setText("Next")
+        self.buttonBox.button(QDialogButtonBox.StandardButton.Ok).setText("Next")
         self.enable_ok_button()
         self.enable_score_cutoff()
         self.fuzzyCheckbox.checkStateChanged.connect(self.enable_score_cutoff)
@@ -56,7 +56,7 @@ class RemoveDuplicatesDialog(QDialog, Ui_PlaylistSelectionDialog):
         self.launch_remove_dupes(selected_playlist[0].text())
 
     def enable_ok_button(self):
-        self.buttonBox.button(QDialogButtonBox.Ok).setEnabled(len(self.playlistList.selectedItems()) > 0)
+        self.buttonBox.button(QDialogButtonBox.StandardButton.Ok).setEnabled(len(self.playlistList.selectedItems()) > 0)
 
     def enable_score_cutoff(self):
         self.scoreCutoffLabel.setEnabled(self.fuzzyCheckbox.isChecked())
@@ -97,7 +97,7 @@ class RemoveDuplicatesDialog(QDialog, Ui_PlaylistSelectionDialog):
 
     def _handle_playlist_result(self, result):
         if isinstance(result, Exception):
-            QMessageBox.critical(self, "Error", str(result), QMessageBox.Ok)
+            QMessageBox.critical(self, "Error", str(result), QMessageBox.StandardButton.Ok)
             return
         self.playlist, self.yt_auth, self.selected_playlist_id = result
         ProgressWorkerDialog("Checking for duplicates", self).run(
@@ -117,7 +117,7 @@ class RemoveDuplicatesDialog(QDialog, Ui_PlaylistSelectionDialog):
 
     def _handle_dupe_result(self, result):
         if isinstance(result, Exception):
-            QMessageBox.warning(self, "No duplicates", str(result), QMessageBox.Ok)
+            QMessageBox.warning(self, "No duplicates", str(result), QMessageBox.StandardButton.Ok)
             return
         items_to_remove, remaining_dupe_groups = result
 
@@ -170,6 +170,6 @@ class RemoveDuplicatesDialog(QDialog, Ui_PlaylistSelectionDialog):
 
     def _after_deletion(self, result):
         if isinstance(result, Exception):
-            QMessageBox.critical(self, "Error", str(result), QMessageBox.Ok)
+            QMessageBox.critical(self, "Error", str(result), QMessageBox.StandardButton.Ok)
         else:
-            QMessageBox.information(self, "Finished!", str(result), QMessageBox.Ok)
+            QMessageBox.information(self, "Finished!", str(result), QMessageBox.StandardButton.Ok)

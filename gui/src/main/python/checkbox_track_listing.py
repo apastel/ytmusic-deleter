@@ -32,7 +32,7 @@ class CheckboxTrackListingDialog(QDialog, Ui_CheckboxTrackListingDialog):
         self.setupUi(self)
 
         self.dupe_groups = dupe_groups
-        self.okCancelbuttonBox.button(QDialogButtonBox.Ok).setText("Finish")
+        self.okCancelbuttonBox.button(QDialogButtonBox.StandardButton.Ok).setText("Finish")
         self.tableWidget = CheckboxTableWidget(self)
         self.leftButton.setEnabled(False)
         self.rightButton.setEnabled(False)

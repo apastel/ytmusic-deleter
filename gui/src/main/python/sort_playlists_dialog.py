@@ -72,7 +72,7 @@ class SortPlaylistsDialog(QDialog, Ui_SortPlaylistDialog):
 
     @Slot()
     def enable_ok_button(self):
-        self.buttonBox.button(QDialogButtonBox.Ok).setEnabled(
+        self.buttonBox.button(QDialogButtonBox.StandardButton.Ok).setEnabled(
             len(self.playlistList.selectedItems()) > 0
             and (self.selectedAttributesListWidget.count() > 0 or self.shuffleCheckBox.isChecked())
         )

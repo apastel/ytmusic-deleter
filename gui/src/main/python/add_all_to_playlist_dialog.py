@@ -47,4 +47,4 @@ class AddAllToPlaylistDialog(QDialog, Ui_PlaylistSelectionDialog):
 
     @Slot()
     def enable_ok_button(self):
-        self.buttonBox.button(QDialogButtonBox.Ok).setEnabled(len(self.playlistList.selectedItems()) > 0)
+        self.buttonBox.button(QDialogButtonBox.StandardButton.Ok).setEnabled(len(self.playlistList.selectedItems()) > 0)

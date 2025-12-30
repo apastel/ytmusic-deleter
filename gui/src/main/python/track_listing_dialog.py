@@ -14,7 +14,7 @@ class TrackListingDialog(QDialog, Ui_TrackListingDialog):
     def __init__(self, parent, tracklist, show_thumbnail: bool = True):
         super().__init__(parent)
         self.setupUi(self)
-        self.buttonBox.button(QDialogButtonBox.Cancel).setText("Skip")
+        self.buttonBox.button(QDialogButtonBox.StandardButton.Cancel).setText("Skip")
 
         self.tracklist = tracklist
 
