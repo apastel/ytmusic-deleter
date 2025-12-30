@@ -17,7 +17,7 @@ class TrackListingDialog(QDialog, Ui_TrackListingDialog):
         self.tracklistTable = TracklistTableWidget(ARTWORK_COLUMN_INDEX, self)
         self.tracklistTable.setGeometry(QRect(30, 70, 860, 440))
         self.tracklistTable.setColumnCount(6)
-        self.tracklistTable.setHorizontalHeaderLabels(["Artist", "Title", "Album", "Duration", "Artwork", "Type"])
+        self.tracklistTable.setHorizontalHeaderLabels(["Artist", "Title", "Album", "Duration", "Thumbnail", "Type"])
         self.buttonBox.button(QDialogButtonBox.StandardButton.Cancel).setText("Skip")
 
         self.tracklist = tracklist

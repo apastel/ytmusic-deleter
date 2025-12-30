@@ -67,7 +67,7 @@ class CheckboxTableWidget(TracklistTableWidget):
         self.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
         self.cellChanged.connect(self.on_cell_changed)
         self.setColumnCount(7)
-        self.setHorizontalHeaderLabels(["Remove?", "Artist", "Title", "Album", "Duration", "Artwork", "Type"])
+        self.setHorizontalHeaderLabels(["Remove?", "Artist", "Title", "Album", "Duration", "Thumbnail", "Type"])
 
     @Property(int, notify=table_idx_changed)
     def table_idx(self):

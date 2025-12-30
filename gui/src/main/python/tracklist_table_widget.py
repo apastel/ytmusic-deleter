@@ -44,7 +44,7 @@ class TracklistTableWidget(QTableWidget):
 
     def update_item(self, col_idx, item):
         """
-        Update certain row items like Artwork or Type
+        Update certain row items like Thumbnail or Type
         """
         header_item = self.horizontalHeaderItem(col_idx)
         if not header_item:
@@ -52,10 +52,10 @@ class TracklistTableWidget(QTableWidget):
         header_text = header_item.text()
         if not header_text:
             return
-        if header_text == "Artwork":
+        if header_text == "Thumbnail":
             thumbnail_url = item.text()
             # Store larger version for popup
-            large_url = self._resize_google_thumb(thumbnail_url, 300, 300)
+            large_url = self._resize_google_thumb(thumbnail_url, 264, 264)
             r_large = requests.get(large_url)
             large_img = QImage()
             large_img.loadFromData(r_large.content)
