@@ -63,7 +63,7 @@ class Ui_CheckboxTrackListingDialog(object):
 
         self.tableWidget = QTableWidget(CheckboxTrackListingDialog)
         self.tableWidget.setObjectName(u"tableWidget")
-        self.tableWidget.setGeometry(QRect(30, 40, 861, 441))
+        self.tableWidget.setGeometry(QRect(30, 40, 860, 440))
         self.instructionsLabel = QLabel(CheckboxTrackListingDialog)
         self.instructionsLabel.setObjectName(u"instructionsLabel")
         self.instructionsLabel.setGeometry(QRect(60, 20, 821, 16))

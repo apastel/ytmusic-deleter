@@ -34,41 +34,16 @@
     <rect>
      <x>30</x>
      <y>70</y>
-     <width>861</width>
-     <height>441</height>
+     <width>860</width>
+     <height>440</height>
     </rect>
    </property>
    <property name="editTriggers">
     <set>QAbstractItemView::NoEditTriggers</set>
    </property>
    <property name="columnCount">
-    <number>5</number>
+    <number>0</number>
    </property>
-   <column>
-    <property name="text">
-     <string>Artist</string>
-    </property>
-   </column>
-   <column>
-    <property name="text">
-     <string>Title</string>
-    </property>
-   </column>
-   <column>
-    <property name="text">
-     <string>Album</string>
-    </property>
-   </column>
-   <column>
-    <property name="text">
-     <string>Duration</string>
-    </property>
-   </column>
-   <column>
-    <property name="text">
-     <string>Artwork</string>
-    </property>
-   </column>
   </widget>
   <widget class="QLabel" name="descriptionLabel">
    <property name="geometry">

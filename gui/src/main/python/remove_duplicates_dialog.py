@@ -122,7 +122,7 @@ class RemoveDuplicatesDialog(QDialog, Ui_PlaylistSelectionDialog):
         items_to_remove, remaining_dupe_groups = result
 
         # Step 3: Show interactive dialog
-        self.track_listing_dialog = TrackListingDialog(self, items_to_remove, show_thumbnail=False)
+        self.track_listing_dialog = TrackListingDialog(self, items_to_remove)
         ok_clicked = self.track_listing_dialog.exec()
         if not ok_clicked:
             items_to_remove = []
