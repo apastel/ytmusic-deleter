@@ -215,17 +215,15 @@ def remove_library_items(library_items):
 
         id = item.get("playlistId")
         response = None
+        feedback_tokens = item.get("feedbackTokens")
         if id:
             logging.debug(f"Removing album using id: {id}")
             response = yt_auth.rate_playlist(id, LikeStatus.INDIFFERENT)
-        elif item.get("feedbackTokens") and isinstance(item.get("feedbackTokens"), dict) and item.get("album"):
-            logging.debug("This is a song, removing item by removing containing album.")
-            album_browse_id = item["album"]["id"]
-            audio_playlist_id = common.get_album_audio_playlist_id(album_browse_id)
-            response = None
-            if audio_playlist_id:
-                response = yt_auth.rate_playlist(audio_playlist_id, LikeStatus.INDIFFERENT)
-                yt_auth.edit_song_library_status
+        elif feedback_tokens and isinstance(feedback_tokens, dict) and feedback_tokens.get("remove"):
+            logging.debug("This is a song, removing using feedback token.")
+            remove_token = feedback_tokens.get("remove")
+            assert remove_token is not None  # for Pylance
+            response = yt_auth.edit_song_library_status([remove_token])
         else:
             logging.error(
                 f"""

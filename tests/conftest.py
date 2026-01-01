@@ -352,12 +352,11 @@ def fixture_add_library_album(yt_browser: YTMusic, sample_album_as_playlist):
 
 @pytest.fixture(name="add_library_song")
 def fixture_add_library_song(yt_browser: YTMusic, sample_album_browse_id):
-    # Currently can't work due to `edit_song_library_status` not working
     catalog_album = yt_browser.get_album(sample_album_browse_id)
-    add_token = catalog_album.get("tracks")[0]["feedbackTokens"]["add"]
-    print(add_token)
+    album_tracks = catalog_album.get("tracks")
+    assert album_tracks is not None
+    add_token = album_tracks[0]["feedbackTokens"]["add"]
     response = yt_browser.edit_song_library_status([add_token])
-    print(response)
     assert "actions" in response
 
     # Wait for song to finish processing
@@ -365,7 +364,7 @@ def fixture_add_library_song(yt_browser: YTMusic, sample_album_browse_id):
     while retries_remaining:
         songs = yt_browser.get_library_songs(limit=None)
         for song in songs:
-            if song.get("title") == "Walk On Water (feat. Beyoncé)":
+            if song.get("title") == "Bad Guy":
                 return song
         retries_remaining -= 1
         time.sleep(2)
