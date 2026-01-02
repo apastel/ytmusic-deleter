@@ -600,7 +600,9 @@ def add_all_to_library(ctx: click.Context, playlist_title_or_id):
 
     # Get playlist
     logging.info("Loading playlist...")
-    playlist = get_library_playlist_from_title(yt_auth, playlist_title_or_id, fail_if_not_exist=False)
+    playlist = get_library_playlist_from_title(
+        yt_auth, playlist_title_or_id, fail_if_not_exist=False, fail_if_not_owner=False
+    )
     if not playlist:
         # Playlist title couldn't be found, attempt to get as playlistId
         try:
@@ -647,7 +649,7 @@ def add_all_to_library(ctx: click.Context, playlist_title_or_id):
 
 
 def get_library_playlist_from_title(
-    yt_auth: YTMusic, playlist_title: str, fail_if_not_exist: bool = True
+    yt_auth: YTMusic, playlist_title: str, fail_if_not_exist: bool = True, fail_if_not_owner: bool = True
 ) -> dict | None:
     """
     Takes the given playlist title string and returns the full dict object for that playlist.
@@ -675,7 +677,7 @@ def get_library_playlist_from_title(
     playlist: dict = yt_auth.get_playlist(selected_playlist_id, limit=None)
     playlist_title_formatted = playlist.get("title")
     logging.info(f"Retrieved playlist named {playlist_title_formatted!r} with {len(playlist.get('tracks'))} tracks.")
-    if not common.can_edit_playlist(playlist):
+    if fail_if_not_owner and not common.can_edit_playlist(playlist):
         raise click.BadParameter(
             f"Cannot modify playlist {playlist_title_formatted!r}. You are not the owner of this playlist."
         )
