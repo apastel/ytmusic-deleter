@@ -518,7 +518,7 @@ def make_sort_key(track, sort_attributes):
 def remove_duplicates(ctx: click.Context, playlist_title, exact, fuzzy, score_cutoff):
     """Delete all duplicates in a given playlist"""
     yt_auth: YTMusic = ctx.obj["YT_AUTH"]
-    playlist = get_playlist_from_title(yt_auth, playlist_title)
+    playlist = get_library_playlist_from_title(yt_auth, playlist_title)
 
     # Get a list of all the sets of duplicates
     duplicates = check_for_duplicates(playlist, yt_auth, fuzzy, score_cutoff)
@@ -555,7 +555,7 @@ def add_all_to_playlist(ctx: click.Context, playlist_title, library, uploads):
         raise click.BadParameter("You must specify either --library or --uploads.")
 
     yt_auth: YTMusic = ctx.obj["YT_AUTH"]
-    playlist = get_playlist_from_title(yt_auth, playlist_title)
+    playlist = get_library_playlist_from_title(yt_auth, playlist_title)
     if library:
         logging.info("User has selected 'Library' option. Retrieving all library songs...")
         library_songs = yt_auth.get_library_songs(limit=None)
@@ -585,7 +585,60 @@ def add_all_to_playlist(ctx: click.Context, playlist_title, library, uploads):
     logging.info(f"Finished adding {len(video_ids)} songs to playlist {playlist.get('title')!r}.")
 
 
-def get_playlist_from_title(yt_auth: YTMusic, playlist_title: str) -> dict:
+@cli.command
+@click.argument("playlist_title_or_id")
+@click.pass_context
+def add_all_to_library(ctx: click.Context, playlist_title_or_id):
+    """
+    Add each individual song from a playlist to your YTMusic library.
+
+    Supplied argument can be a playlist title or a playlist ID (e.g. PLTkvVIeIOLkXCnGpcx4QBnWliyGsMO8zC)
+    """
+    yt_auth: YTMusic = ctx.obj["YT_AUTH"]
+
+    # Get playlist
+    playlist = get_library_playlist_from_title(yt_auth, playlist_title_or_id, fail_if_not_exist=False)
+    if not playlist:
+        # Playlist title couldn't be found, attempt to get as playlistId
+        playlist = yt_auth.get_playlist(playlist_title_or_id, limit=None)
+    playlist_tracks = playlist.get("tracks")
+    if not playlist_tracks:
+        raise click.BadParameter("Could not find any tracks in the selected playlist")
+    playlist_title = playlist.get("title")
+    logging.info(
+        f"Will attempt to add all {len(playlist_tracks)} tracks from playlist {playlist_title!r} to your library"
+    )
+
+    global progress_bar
+    progress_bar = manager.counter(
+        total=len(playlist_tracks),
+        desc="Playlist Tracks Processed",
+        unit="tracks",
+        enabled=not ctx.obj["STATIC_PROGRESS"],
+    )
+    added_tracks_count = 0
+    for track in playlist_tracks:
+        track_str = f"{track['artists'][0]['name']} - {track['title']!r}"
+        add_token = track.get("feedbackTokens", {}).get("add")
+        if add_token:
+            response = yt_auth.edit_song_library_status([add_token])
+            if "actions" in response:
+                added_tracks_count += 1
+                logging.info(f"Added {track_str} to your library")
+            else:
+                logging.error(f"Failed to add {track_str} to your library")
+        else:
+            logging.error(f"{track_str} is a video and cannot be added to your library")
+        update_progress()
+    logging.info(
+        f"Finished adding {added_tracks_count} out of {len(playlist_tracks)} tracks from "
+        "playlist {playlist_title!r} to your library"
+    )
+
+
+def get_library_playlist_from_title(
+    yt_auth: YTMusic, playlist_title: str, fail_if_not_exist: bool = True
+) -> dict | None:
     """
     Takes the given playlist title string and returns the full dict object for that playlist.
     Raises an error if the playlist is not modifiable.
@@ -602,10 +655,13 @@ def get_playlist_from_title(yt_auth: YTMusic, playlist_title: str) -> dict:
         None,
     )
     if not selected_playlist_id:
-        raise click.BadParameter(
-            f"No playlist found named {playlist_title!r}. Double-check your playlist name "
-            '(or surround it "with quotes") and try again.'
-        )
+        if fail_if_not_exist:
+            raise click.BadParameter(
+                f"No playlist found named {playlist_title!r}. Double-check your playlist name "
+                '(or surround it "with quotes") and try again.'
+            )
+        else:
+            return
     playlist: dict = yt_auth.get_playlist(selected_playlist_id, limit=None)
     playlist_title_formatted = playlist.get("title")
     logging.info(f"Retrieved playlist named {playlist_title_formatted!r} with {len(playlist.get('tracks'))} tracks.")

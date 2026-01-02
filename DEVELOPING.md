@@ -20,7 +20,6 @@ Might not be able to get `xdg-open` to work for opening the file manager locatio
 
 ## Pytest
 * `cp tests/resources/test.example.cfg tests/resources/test.cfg`
-  * Fill out file
 * `wget --content-disposition -P tests/resources/ "https://drive.google.com/uc?export=download&id=18AP7mQqQxqj2_delNyhoCNa6UCUCN9-P"`
   * This will download the sample mp3 for upload tests
 * Copy `browser.json` from app data directory into `tests/resources`

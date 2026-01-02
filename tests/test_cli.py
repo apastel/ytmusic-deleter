@@ -7,6 +7,7 @@ from retry import retry
 from ytmusic_deleter.cli import cli
 from ytmusic_deleter.duplicates import check_for_duplicates
 from ytmusicapi import YTMusic
+from ytmusicapi.models.content.enums import VideoType
 
 
 class TestCli:
@@ -135,25 +136,63 @@ class TestCli:
         ), "Playlist contained wrong number of remaining duplicates"
 
     def test_add_all_library_songs_to_playlist(
-        self, yt_browser: YTMusic, get_playlist_with_dupes: str, add_library_album
+        self, yt_browser: YTMusic, create_playlist_and_delete_after: str, add_library_album, cleanup_library
     ):
-        assert 13 == len(yt_browser.get_playlist(get_playlist_with_dupes).get("tracks"))
+        num_tracks_before_add = len(yt_browser.get_playlist(create_playlist_and_delete_after).get("tracks"))
+        num_library_album_tracks = len(yt_browser.get_album(add_library_album["browseId"])["tracks"])
         runner = CliRunner()
         result = runner.invoke(
-            cli, ["add-all-to-playlist", "--library", "Test Dupes"], standalone_mode=False, obj=yt_browser
+            cli,
+            ["add-all-to-playlist", "--library", "Test Playlist (to be deleted)"],
+            standalone_mode=False,
+            obj=yt_browser,
         )
         time.sleep(3)
-        assert len(yt_browser.get_playlist(get_playlist_with_dupes).get("tracks")) >= 25
+        assert (
+            len(yt_browser.get_playlist(create_playlist_and_delete_after).get("tracks"))
+            == num_tracks_before_add + num_library_album_tracks
+        )
         assert result.exit_code == 0
 
-    def test_add_all_uploaded_songs_to_playlist(self, yt_browser: YTMusic, get_playlist_with_dupes: str, upload_song):
-        num_tracks_before_add = len(yt_browser.get_playlist(get_playlist_with_dupes).get("tracks"))
+    def test_add_all_uploaded_songs_to_playlist(
+        self, yt_browser: YTMusic, create_playlist_and_delete_after: str, upload_song, cleanup_uploads
+    ):
+        num_tracks_before_add = len(yt_browser.get_playlist(create_playlist_and_delete_after).get("tracks"))
         runner = CliRunner()
         result = runner.invoke(
-            cli, ["add-all-to-playlist", "--uploads", "Test Dupes"], standalone_mode=False, obj=yt_browser
+            cli,
+            ["add-all-to-playlist", "--uploads", "Test Playlist (to be deleted)"],
+            standalone_mode=False,
+            obj=yt_browser,
         )
         time.sleep(3)
-        assert num_tracks_before_add + 1 == len(yt_browser.get_playlist(get_playlist_with_dupes).get("tracks"))
+        assert len(yt_browser.get_playlist(create_playlist_and_delete_after).get("tracks")) == num_tracks_before_add + 1
+        assert result.exit_code == 0
+
+    def test_add_all_playlist_tracks_to_library_via_title(
+        self, yt_browser: YTMusic, get_playlist_with_dupes, cleanup_library
+    ):
+        runner = CliRunner()
+        result = runner.invoke(cli, ["add-all-to-library", "Test Dupes"], standalone_mode=False, obj=yt_browser)
+        # Playlist has 10 unique tracks even though it has 13 tracks
+        assert (
+            len(yt_browser.get_library_songs(limit=None)) == 10
+        ), "Number of songs in library did not match number of songs in playlist"
+        assert result.exit_code == 0
+
+    def test_add_all_playlist_tracks_to_library_via_id(
+        self, yt_browser: YTMusic, sample_public_playlist, cleanup_library
+    ):
+        runner = CliRunner()
+        result = runner.invoke(
+            cli, ["add-all-to-library", sample_public_playlist], standalone_mode=False, obj=yt_browser
+        )
+        playlist_tracks = yt_browser.get_playlist(sample_public_playlist, limit=None)["tracks"]
+        num_non_video_tracks = sum(track["videoType"] == VideoType.ATV for track in playlist_tracks)
+        time.sleep(3)
+        assert (
+            len(yt_browser.get_library_songs(limit=None)) == num_non_video_tracks
+        ), "Number of songs in library did not match number of songs in playlist"
         assert result.exit_code == 0
 
     def test_browser_auth(self, yt_browser: YTMusic):
