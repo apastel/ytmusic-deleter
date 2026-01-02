@@ -24,7 +24,7 @@ class SortPlaylistsDialog(QDialog, Ui_SortPlaylistDialog):
         self.removeButton.clicked.connect(self.remove_item)
         self.availableAttributesListWidget.itemSelectionChanged.connect(self.enable_right_arrow_button)
         self.selectedAttributesListWidget.itemSelectionChanged.connect(self.enable_left_arrow_button)
-        self.playlistList.setSelectionMode(QAbstractItemView.MultiSelection)
+        self.playlistList.setSelectionMode(QAbstractItemView.SelectionMode.MultiSelection)
 
         self.original_order = ["Artist", "Album Title", "Track Title", "Duration"]
         # Populate the available list, maintaining original order

@@ -175,7 +175,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         """Closes accountWidget when clicking outside of it."""
         # Alternative to this is setting the Qt.Popup flag but that causes
         # the accountWidget to appear way outside the bounds of the app.
-        if obj == self.centralWidget and event.type() == QEvent.MouseButtonRelease:
+        if obj == self.centralWidget and event.type() == QEvent.Type.MouseButtonRelease:
             if not self.accountWidget.geometry().contains(event.position().toPoint()):
                 self.accountWidget.close()
         return super().eventFilter(obj, event)
@@ -235,7 +235,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             response = requests.get(account_info["accountPhotoUrl"])
             pixmap = QPixmap()
             pixmap.loadFromData(response.content)
-            pixmap = pixmap.scaled(self.accountPhotoButton.size(), Qt.KeepAspectRatio, Qt.SmoothTransformation)
+            pixmap = pixmap.scaled(
+                self.accountPhotoButton.size(),
+                Qt.AspectRatioMode.KeepAspectRatio,
+                Qt.TransformationMode.SmoothTransformation,
+            )
             photo_path: Path = self.account_photo_dir / "account_photo.jpg"
             pixmap.save(str(photo_path))
             background_photo_style = f"\nQPushButton {{ background-image: url({photo_path.as_posix()}); }}"
@@ -246,7 +250,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 self.message(f"Signed in using OAuth as {account_name!r}")
         else:
             pixmap = QPixmap(AppContext._instance.get_resource("person.png"))
-            pixmap = pixmap.scaled(self.accountPhotoButton.size(), Qt.KeepAspectRatio, Qt.SmoothTransformation)
+            pixmap = pixmap.scaled(
+                self.accountPhotoButton.size(),
+                Qt.AspectRatioMode.KeepAspectRatio,
+                Qt.TransformationMode.SmoothTransformation,
+            )
             icon = QIcon(pixmap)
             self.accountPhotoButton.setStyleSheet(self.photo_button_stylesheet)
             self.accountPhotoButton.setIcon(icon)
@@ -401,7 +409,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def confirm(self, args: list[str]):
         confirmation_dialog = QMessageBox()
-        confirmation_dialog.setIcon(QMessageBox.Warning)
+        confirmation_dialog.setIcon(QMessageBox.Icon.Warning)
         if args[0] == "remove-library":
             text = "This will remove all your library songs and albums. This will not delete your uploads."
         elif args[0] == "delete-playlists":
@@ -471,9 +479,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def handle_state(self, state):
         states = {
-            QProcess.NotRunning: "Not running",
-            QProcess.Starting: "Starting",
-            QProcess.Running: "Running",
+            QProcess.ProcessState.NotRunning: "Not running",
+            QProcess.ProcessState.Starting: "Starting",
+            QProcess.ProcessState.Running: "Running",
         }
         state_name = states[state]
         self.message(f"State changed: {state_name}")

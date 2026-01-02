@@ -8,7 +8,7 @@ class ProgressWorkerDialog(QProgressDialog):
     def __init__(self, message: str, parent=None, maximum=0):
         super().__init__(f"{message}...", None, 0, maximum, parent)
         self.setWindowTitle("Please wait")
-        self.setWindowModality(Qt.WindowModal)
+        self.setWindowModality(Qt.WindowModality.WindowModal)
         self.setCancelButton(None)
         self.setValue(0)
         self.setMinimumWidth(350)
