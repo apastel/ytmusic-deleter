@@ -3,7 +3,8 @@ from PySide6.QtCore import QRect
 from PySide6.QtWidgets import QDialog
 from PySide6.QtWidgets import QDialogButtonBox
 from PySide6.QtWidgets import QTableWidgetItem
-from tracklist_table_widget import TracklistTableWidget
+
+from .tracklist_table_widget import TracklistTableWidget
 
 ARTWORK_COLUMN_INDEX = 4
 

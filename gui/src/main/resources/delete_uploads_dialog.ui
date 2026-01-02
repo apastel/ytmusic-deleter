@@ -23,10 +23,10 @@
     </rect>
    </property>
    <property name="orientation">
-    <enum>Qt::Horizontal</enum>
+    <enum>Qt::Orientation::Horizontal</enum>
    </property>
    <property name="standardButtons">
-    <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+    <set>QDialogButtonBox::StandardButton::Cancel|QDialogButtonBox::StandardButton::Ok</set>
    </property>
   </widget>
   <widget class="QLabel" name="infoLabel">
@@ -50,9 +50,6 @@
      <width>201</width>
      <height>16</height>
     </rect>
-   </property>
-   <property name="toolTip">
-    <string>This will attempt to add each album or song to your library from YouTube Music's online catalog before deleting it from your uploads. If a match could not be found, the album or song will remain in your uploads.</string>
    </property>
    <property name="text">
     <string>Add uploads to library first</string>

@@ -1,17 +1,18 @@
 import ytmusicapi
-from checkbox_track_listing import CheckboxTrackListingDialog
 from generated.ui_playlist_selection_dialog import Ui_PlaylistSelectionDialog
 from progress_worker_dialog import ProgressWorkerDialog
 from PySide6.QtWidgets import QDialog
 from PySide6.QtWidgets import QDialogButtonBox
 from PySide6.QtWidgets import QMessageBox
 from PySide6.QtWidgets import QStyle
-from track_listing_dialog import TrackListingDialog
 from ytmusic_deleter import common
 from ytmusic_deleter.duplicates import check_for_duplicates
 from ytmusic_deleter.duplicates import determine_tracks_to_remove
 from ytmusicapi import YTMusic
 from ytmusicapi.models.content.enums import LikeStatus
+
+from .checkbox_track_listing import CheckboxTrackListingDialog
+from .track_listing_dialog import TrackListingDialog
 
 
 class RemoveDuplicatesDialog(QDialog, Ui_PlaylistSelectionDialog):

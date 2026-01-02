@@ -12,16 +12,18 @@ from time import strftime
 import requests
 import ytmusicapi.auth.oauth.exceptions
 import ytmusicapi.exceptions
-from add_all_to_library_dialog import AddAllToLibraryDialog
-from add_all_to_playlist_dialog import AddAllToPlaylistDialog
 from browser_auth_dialog import BrowserAuthDialog
-from delete_uploads_dialog import DeleteUploadsDialog
 from fbs_runtime import PUBLIC_SETTINGS
 from fbs_runtime.application_context import cached_property
 from fbs_runtime.application_context import is_frozen
 from fbs_runtime.application_context.PySide6 import ApplicationContext
 from fbs_runtime.excepthook.sentry import SentryExceptionHandler
 from generated.ui_main_window import Ui_MainWindow
+from library_dialogs.delete_uploads_dialog import DeleteUploadsDialog
+from playlist_dialogs.add_all_to_library_dialog import AddAllToLibraryDialog
+from playlist_dialogs.add_all_to_playlist_dialog import AddAllToPlaylistDialog
+from playlist_dialogs.remove_dupes_dialogs.remove_duplicates_dialog import RemoveDuplicatesDialog
+from playlist_dialogs.sort_playlists_dialog import SortPlaylistsDialog
 from progress_dialog import ProgressDialog
 from progress_worker_dialog import ProgressWorkerDialog
 from PySide6.QtCore import QCoreApplication
@@ -39,9 +41,7 @@ from PySide6.QtWidgets import QMainWindow
 from PySide6.QtWidgets import QMessageBox
 from PySide6.QtWidgets import QProxyStyle
 from PySide6.QtWidgets import QStyle
-from remove_duplicates_dialog import RemoveDuplicatesDialog
 from settings_dialog import SettingsDialog
-from sort_playlists_dialog import SortPlaylistsDialog
 from ytmusic_deleter import common
 from ytmusicapi.auth.oauth import RefreshingToken
 from ytmusicapi.auth.types import AuthType
