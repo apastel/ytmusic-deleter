@@ -9,6 +9,7 @@ from random import shuffle as unsort
 from time import strftime
 
 import click
+import ytmusicapi
 from click import get_current_context
 from ytmusic_deleter import common
 from ytmusic_deleter._version import __version__
@@ -52,7 +53,7 @@ def main():
 
 
 @click.group()
-@click.version_option(__version__)
+@click.version_option(f"{__version__}\nytmusicapi version: {ytmusicapi.__version__}")
 @click.option(
     "--credential-dir",
     "-c",
@@ -606,7 +607,8 @@ def add_all_to_library(ctx: click.Context, playlist_title_or_id):
             playlist = yt_auth.get_playlist(playlist_title_or_id, limit=None)
         except KeyError:
             raise click.BadParameter(
-                f"Playlist with ID {playlist_title_or_id} is private or does not exist."
+                f"No playlist named {playlist_title_or_id!r} found in your library.\n"
+                f"If {playlist_title_or_id!r} is a playlist ID, that playlist is private or does not exist."
             ) from KeyError
     playlist_tracks = playlist.get("tracks")
     if not playlist_tracks:
