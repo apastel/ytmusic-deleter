@@ -53,7 +53,7 @@ def main():
 
 
 @click.group()
-@click.version_option(f"{__version__}\nytmusicapi version: {ytmusicapi.__version__}")
+@click.version_option(f"{__version__}, ytmusicapi version: {ytmusicapi.__version__}")
 @click.option(
     "--credential-dir",
     "-c",
