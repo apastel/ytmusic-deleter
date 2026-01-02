@@ -403,6 +403,33 @@
      <bool>false</bool>
     </property>
    </widget>
+   <widget class="QPushButton" name="addAllToLibraryButton">
+    <property name="enabled">
+     <bool>true</bool>
+    </property>
+    <property name="geometry">
+     <rect>
+      <x>410</x>
+      <y>240</y>
+      <width>101</width>
+      <height>41</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>8</pointsize>
+     </font>
+    </property>
+    <property name="statusTip">
+     <string>Add all songs from a playlist to your library.</string>
+    </property>
+    <property name="text">
+     <string>Add All to Library</string>
+    </property>
+    <property name="default">
+     <bool>false</bool>
+    </property>
+   </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">

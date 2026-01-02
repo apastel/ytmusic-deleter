@@ -131,6 +131,11 @@ class Ui_MainWindow(object):
         self.addAllToPlaylistButton.setEnabled(True)
         self.addAllToPlaylistButton.setGeometry(QRect(290, 240, 101, 41))
         self.addAllToPlaylistButton.setFont(font3)
+        self.addAllToLibraryButton = QPushButton(self.centralWidget)
+        self.addAllToLibraryButton.setObjectName(u"addAllToLibraryButton")
+        self.addAllToLibraryButton.setEnabled(True)
+        self.addAllToLibraryButton.setGeometry(QRect(410, 240, 101, 41))
+        self.addAllToLibraryButton.setFont(font3)
         MainWindow.setCentralWidget(self.centralWidget)
         self.menubar = QMenuBar(MainWindow)
         self.menubar.setObjectName(u"menubar")
@@ -157,6 +162,7 @@ class Ui_MainWindow(object):
         self.deleteHistoryButton.setDefault(False)
         self.removeDupesButton.setDefault(False)
         self.addAllToPlaylistButton.setDefault(False)
+        self.addAllToLibraryButton.setDefault(False)
 
 
         QMetaObject.connectSlotsByName(MainWindow)
@@ -211,6 +217,10 @@ class Ui_MainWindow(object):
         self.addAllToPlaylistButton.setStatusTip(QCoreApplication.translate("MainWindow", u"Add all library songs or uploads to a playlist.", None))
 #endif // QT_CONFIG(statustip)
         self.addAllToPlaylistButton.setText(QCoreApplication.translate("MainWindow", u"Add All to Playlist", None))
+#if QT_CONFIG(statustip)
+        self.addAllToLibraryButton.setStatusTip(QCoreApplication.translate("MainWindow", u"Add all songs from a playlist to your library.", None))
+#endif // QT_CONFIG(statustip)
+        self.addAllToLibraryButton.setText(QCoreApplication.translate("MainWindow", u"Add All to Library", None))
         self.menuSettings.setTitle(QCoreApplication.translate("MainWindow", u"File", None))
     # retranslateUi
 

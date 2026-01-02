@@ -13,6 +13,7 @@ from time import strftime
 import requests
 import ytmusicapi.auth.oauth.exceptions
 import ytmusicapi.exceptions
+from add_all_to_library_dialog import AddAllToLibraryDialog
 from add_all_to_playlist_dialog import AddAllToPlaylistDialog
 from browser_auth_dialog import BrowserAuthDialog
 from delete_uploads_dialog import DeleteUploadsDialog
@@ -114,6 +115,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.sortPlaylistButton.clicked.connect(self.prepare_to_invoke)
         self.removeDupesButton.clicked.connect(self.prepare_to_invoke)
         self.addAllToPlaylistButton.clicked.connect(self.prepare_to_invoke)
+        self.addAllToLibraryButton.clicked.connect(self.prepare_to_invoke)
 
         # Create donate button
         self.donateLabel = ClickableLabel(self.centralWidget, "https://www.buymeacoffee.com/jewbix.cube")
@@ -350,44 +352,54 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def show_dialog(self, args: list[str]):
         if self.p is None and self.is_signed_in():
-            if args[0] == "delete-uploads":
-                self.delete_uploads_dialog = DeleteUploadsDialog(self)
-                self.delete_uploads_dialog.show()
+            match args[0]:
+                case "delete-uploads":
+                    self.delete_uploads_dialog = DeleteUploadsDialog(self)
+                    self.delete_uploads_dialog.show()
 
-            elif args[0] == "sort-playlist":
-                please_wait_dialog = ProgressWorkerDialog("Loading your playlists", self)
+                case "sort-playlist":
+                    please_wait_dialog = ProgressWorkerDialog("Loading your playlists", self)
 
-                def load_window():
-                    self.remove_duplicates_dialog = SortPlaylistsDialog(self)
-                    self.remove_duplicates_dialog.show()
+                    def load_window():
+                        self.remove_duplicates_dialog = SortPlaylistsDialog(self)
+                        self.remove_duplicates_dialog.show()
 
-                please_wait_dialog.run(load_window)
+                    please_wait_dialog.run(load_window)
 
-            elif args[0] == "remove-duplicates":
-                please_wait_dialog = ProgressWorkerDialog("Loading your playlists", self)
+                case "remove-duplicates":
+                    please_wait_dialog = ProgressWorkerDialog("Loading your playlists", self)
 
-                def load_window():
-                    self.remove_duplicates_dialog = RemoveDuplicatesDialog(self)
-                    self.remove_duplicates_dialog.show()
+                    def load_window():
+                        self.remove_duplicates_dialog = RemoveDuplicatesDialog(self)
+                        self.remove_duplicates_dialog.show()
 
-                please_wait_dialog.run(load_window)
+                    please_wait_dialog.run(load_window)
 
-            elif args[0] == "add-all-to-playlist":
-                please_wait_dialog = ProgressWorkerDialog("Loading your playlists", self)
+                case "add-all-to-playlist":
+                    please_wait_dialog = ProgressWorkerDialog("Loading your playlists", self)
 
-                def load_window():
-                    self.remove_duplicates_dialog = AddAllToPlaylistDialog(self)
-                    self.remove_duplicates_dialog.show()
+                    def load_window():
+                        self.remove_duplicates_dialog = AddAllToPlaylistDialog(self)
+                        self.remove_duplicates_dialog.show()
 
-                please_wait_dialog.run(load_window)
+                    please_wait_dialog.run(load_window)
 
-            else:
-                self.message("Showing confirmation dialog")
-                if self.confirm(args) == QMessageBox.StandardButton.Ok:
-                    if args[0] == "delete-uploads" and self.add_to_library:
-                        args += ["-a"]
-                        self.add_to_library_checked(False)
-                    self.launch_process(args)
+                case "add-all-to-library":
+                    please_wait_dialog = ProgressWorkerDialog("Loading your playlists", self)
+
+                    def load_window():
+                        self.remove_duplicates_dialog = AddAllToLibraryDialog(self)
+                        self.remove_duplicates_dialog.show()
+
+                    please_wait_dialog.run(load_window)
+
+                case _:
+                    self.message("Showing confirmation dialog")
+                    if self.confirm(args) == QMessageBox.StandardButton.Ok:
+                        if args[0] == "delete-uploads" and self.add_to_library:
+                            args += ["-a"]
+                            self.add_to_library_checked(False)
+                        self.launch_process(args)
 
     def confirm(self, args: list[str]):
         confirmation_dialog = QMessageBox()

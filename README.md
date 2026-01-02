@@ -42,6 +42,7 @@ Features
 * Shuffle your playlists
 * Remove duplicates from your playlists (either exact duplicates or similiar duplicates)
 * Add all of your uploads or library songs to a particular playlist
+* Add all songs from a playlist to your library
 
 ![YTMusic Deleter screenshot](https://i.imgur.com/TVpB6xY.gif)  
 

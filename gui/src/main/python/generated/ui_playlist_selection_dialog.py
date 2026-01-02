@@ -16,9 +16,9 @@ from PySide6.QtGui import (QBrush, QColor, QConicalGradient, QCursor,
     QImage, QKeySequence, QLinearGradient, QPainter,
     QPalette, QPixmap, QRadialGradient, QTransform)
 from PySide6.QtWidgets import (QAbstractButton, QApplication, QButtonGroup, QDialog,
-    QDialogButtonBox, QLabel, QListWidget, QListWidgetItem,
-    QRadioButton, QSizePolicy, QSpinBox, QToolButton,
-    QWidget)
+    QDialogButtonBox, QLabel, QLineEdit, QListWidget,
+    QListWidgetItem, QRadioButton, QSizePolicy, QSpinBox,
+    QToolButton, QWidget)
 
 class Ui_PlaylistSelectionDialog(object):
     def setupUi(self, PlaylistSelectionDialog):
@@ -68,6 +68,16 @@ class Ui_PlaylistSelectionDialog(object):
         self.infoButton.setObjectName(u"infoButton")
         self.infoButton.setGeometry(QRect(180, 260, 24, 24))
         self.infoButton.setAutoRaise(True)
+        self.playlistIdInput = QLineEdit(PlaylistSelectionDialog)
+        self.playlistIdInput.setObjectName(u"playlistIdInput")
+        self.playlistIdInput.setGeometry(QRect(160, 280, 201, 22))
+        self.playlistIdLabel = QLabel(PlaylistSelectionDialog)
+        self.playlistIdLabel.setObjectName(u"playlistIdLabel")
+        self.playlistIdLabel.setGeometry(QRect(10, 260, 191, 41))
+        self.playlistIdInfoButton = QToolButton(PlaylistSelectionDialog)
+        self.playlistIdInfoButton.setObjectName(u"playlistIdInfoButton")
+        self.playlistIdInfoButton.setGeometry(QRect(50, 250, 24, 24))
+        self.playlistIdInfoButton.setAutoRaise(True)
 
         self.retranslateUi(PlaylistSelectionDialog)
         self.buttonBox.accepted.connect(PlaylistSelectionDialog.accept)
@@ -83,5 +93,7 @@ class Ui_PlaylistSelectionDialog(object):
         self.radioButtonLabel.setText(QCoreApplication.translate("PlaylistSelectionDialog", u"Radio Button Label", None))
         self.scoreCutoffLabel.setText(QCoreApplication.translate("PlaylistSelectionDialog", u"Match score cutoff:", None))
         self.infoButton.setText(QCoreApplication.translate("PlaylistSelectionDialog", u"...", None))
+        self.playlistIdLabel.setText(QCoreApplication.translate("PlaylistSelectionDialog", u"<html><head/><body><p align=\"center\">Or</p><p align=\"center\">Paste Playlist ID:</p></body></html>", None))
+        self.playlistIdInfoButton.setText(QCoreApplication.translate("PlaylistSelectionDialog", u"...", None))
     # retranslateUi
 

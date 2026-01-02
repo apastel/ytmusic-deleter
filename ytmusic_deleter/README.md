@@ -122,6 +122,11 @@ Add all uploads to a playlist called "All my uploads"
 ytmusic-deleter add-all-to-playlist "All my uploads" --uploads
 ```
 
+Add all songs from a playlist to your library
+```
+ytmusic-deleter add-all-to-library "Sample Playlist"
+```
+
 #### Extra options
 These supplemental options are unlikely to be helpful for most use cases and are mainly to support the GUI version.
 ```

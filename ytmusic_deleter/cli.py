@@ -592,15 +592,22 @@ def add_all_to_library(ctx: click.Context, playlist_title_or_id):
     """
     Add each individual song from a playlist to your YTMusic library.
 
-    Supplied argument can be a playlist title or a playlist ID (e.g. PLTkvVIeIOLkXCnGpcx4QBnWliyGsMO8zC)
+    Supplied argument can be a playlist title from your own library,
+    or a playlist ID of any playlist (e.g. PLTkvVIeIOLkXCnGpcx4QBnWliyGsMO8zC)
     """
     yt_auth: YTMusic = ctx.obj["YT_AUTH"]
 
     # Get playlist
+    logging.info("Loading playlist...")
     playlist = get_library_playlist_from_title(yt_auth, playlist_title_or_id, fail_if_not_exist=False)
     if not playlist:
         # Playlist title couldn't be found, attempt to get as playlistId
-        playlist = yt_auth.get_playlist(playlist_title_or_id, limit=None)
+        try:
+            playlist = yt_auth.get_playlist(playlist_title_or_id, limit=None)
+        except KeyError:
+            raise click.BadParameter(
+                f"Playlist with ID {playlist_title_or_id} is private or does not exist."
+            ) from KeyError
     playlist_tracks = playlist.get("tracks")
     if not playlist_tracks:
         raise click.BadParameter("Could not find any tracks in the selected playlist")
@@ -619,6 +626,7 @@ def add_all_to_library(ctx: click.Context, playlist_title_or_id):
     added_tracks_count = 0
     for track in playlist_tracks:
         track_str = f"{track['artists'][0]['name']} - {track['title']!r}"
+        logging.info(f"Processing item: {track_str}")
         add_token = track.get("feedbackTokens", {}).get("add")
         if add_token:
             response = yt_auth.edit_song_library_status([add_token])
@@ -632,7 +640,7 @@ def add_all_to_library(ctx: click.Context, playlist_title_or_id):
         update_progress()
     logging.info(
         f"Finished adding {added_tracks_count} out of {len(playlist_tracks)} tracks from "
-        "playlist {playlist_title!r} to your library"
+        f"playlist {playlist_title!r} to your library"
     )
 
 
