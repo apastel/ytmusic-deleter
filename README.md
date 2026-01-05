@@ -7,7 +7,7 @@
 [![Release test](https://github.com/apastel/ytmusic-deleter/actions/workflows/build-deb.yml/badge.svg)](https://github.com/apastel/ytmusic-deleter/actions/workflows/build-deb.yml)
 [![Pytest](https://github.com/apastel/ytmusic-deleter/actions/workflows/pytest.yml/badge.svg)](https://github.com/apastel/ytmusic-deleter/actions/workflows/pytest.yml)
 ![Codecov](https://img.shields.io/codecov/c/github/apastel/ytmusic-deleter?color=green)
-[![Discord](https://img.shields.io/discord/1156973782741827686?logo=discord)](https://discord.gg/M9t5H8njrM)
+[![Discord](https://img.shields.io/discord/1156973782741827686?logo=discord)](https://discord.gg/8TCX6Q8hrh)
 
 YTMusic Deleter is an installable program for performing batch delete operations on your YouTube Music library, since
 currently there is no built-in option to do this. This tool is faster than browser-based / Javscript-based tools because
