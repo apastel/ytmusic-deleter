@@ -4,13 +4,13 @@ dynamic = ["version"]
 authors = [{ name = "apastel", email = "alex.r.pastel@gmail.com" }]
 description = "Easily delete your YouTube Music library"
 dependencies = [
-    "click>=8.1.7",
-    "enlighten>=1.12.4",
+    "click>=8.3.1",
+    "enlighten>=1.14.1",
     "thefuzz>=0.22.1",
-    "ytmusicapi>=1.10.0",
+    "ytmusicapi>=1.11.4",
     "inquirerpy>=0.3.4",
 ]
-requires-python = "<3.13,>=3.10"
+requires-python = ">=3.10"
 readme = "ytmusic_deleter/README.md"
 license = { text = "GPL-3.0" }
 
@@ -34,24 +34,6 @@ precision = 2
 [tool.black]
 line-length = 120
 
-[tool.pdm.dev-dependencies]
-lint = [
-    "flake8>=7.0.0",
-    "black>=24.3.0",
-    "pre-commit>=3.5.0",
-]
-test = [
-    "pytest>=8.1.1",
-    "pytest-cov>=5.0.0",
-    "coverage>=7.4.4",
-    "retry>=0.9.2"
-]
-gui = [
-    "fbs @ file:///${PROJECT_ROOT}/fbs_pro-1.2.1.tar.gz",
-    "fbs[licensing,sentry,upload]>=1.2.1",
-    "PySide6>=6.6.3.1",
-]
-
 [tool.pdm.scripts]
 # Use this to run any 'fbs' commands from the root, ex: `pdm fbs run` or `pdm fbs freeze`
 fbs = "sh fbs.sh"
@@ -70,3 +52,24 @@ includes = ["ytmusic_deleter/**/*.py"]
 source = "scm"
 write_to = "ytmusic_deleter/_version.py"
 write_template = "__version__ = \"{}\"\n"
+
+[tool.pdm.overrides]
+pyinstaller = ">=6.17.0"
+
+[dependency-groups]
+gui = [
+    "fbs @ file:///${PROJECT_ROOT}/fbs_pro-1.2.1.tar.gz",
+    "fbs[licensing,sentry,upload]>=1.2.1",
+    "PySide6>=6.10.1",
+]
+lint = [
+    "flake8>=7.3.0",
+    "black>=25.12.0",
+    "pre-commit>=4.5.1",
+]
+test = [
+    "pytest>=9.0.2",
+    "pytest-cov>=7.0.0",
+    "coverage>=7.13.1",
+    "retry>=0.9.2",
+]
