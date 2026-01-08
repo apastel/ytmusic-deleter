@@ -54,6 +54,7 @@ write_to = "ytmusic_deleter/_version.py"
 write_template = "__version__ = \"{}\"\n"
 
 [tool.pdm.overrides]
+# fbs-1.2.1 pulls PyInstaller too old for Python 3.13+
 pyinstaller = ">=6.17.0"
 
 [dependency-groups]
