@@ -23,8 +23,8 @@ If this project helped you and you want to thank me, you can <a href="https://ww
 
 Get help on Discord!
 
-<a href="https://discord.gg/M9t5H8njrM" target="_blank">
-  <img src="https://invidget.switchblade.xyz/M9t5H8njrM" alt="Get help on Discord!">
+<a href="https://discord.gg/8TCX6Q8hrh" target="_blank">
+  <img src="https://invidget.switchblade.xyz/8TCX6Q8hrh" alt="Get help on Discord!">
 </a>
 
 
