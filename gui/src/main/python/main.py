@@ -280,6 +280,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.sortPlaylistButton.setEnabled(is_signed_in)
         self.removeDupesButton.setEnabled(is_signed_in)
         self.addAllToPlaylistButton.setEnabled(is_signed_in)
+        self.addAllToLibraryButton.setEnabled(is_signed_in)
 
     @Slot()
     def account_button_clicked(self):
