@@ -50,7 +50,7 @@ jobs:
         curl -L https://drive.google.com/uc?id=$FBS_URL_ID --output fbs_pro-1.2.1.tar.gz
     - name: Install dependencies
       run: |
-        pdm install -dG gui --no-editable
+        pdm --no-cache install -dG gui --no-editable
     - name: Run CLI from venv
       id: run-cli
       run: |
