@@ -237,6 +237,12 @@ def fixture_sample_podcast() -> str:
     return "PLk1Sqn_f33KuU_aJDvMPPAy_SoxXTt_ub"
 
 
+@pytest.fixture(name="sample_smaller_podcast")
+def fixture_sample_smaller_podcasat() -> str:
+    """Time to Relax with The Offspring"""
+    return "PL99E7hmNQn662uYuQZd7N3oYGrBU8odNK"
+
+
 @pytest.fixture(name="client_id")
 def fixture_client_id(config) -> str:
     return config["auth"]["client_id"]
@@ -388,6 +394,11 @@ def fixture_add_podcast(yt_browser: YTMusic, sample_podcast):
         time.sleep(2)
 
     raise AssertionError("Failed to confirm that podcast was added to library")
+
+
+@pytest.fixture(name="add_episodes_for_later")
+def fixture_add_episodes_for_later(yt_browser: YTMusic, sample_smaller_podcast):
+    yt_browser.add_playlist_items(common.SAVED_EPISODES_PLAYLIST_ID, source_playlist=sample_smaller_podcast)
 
 
 @pytest.fixture(name="like_song")

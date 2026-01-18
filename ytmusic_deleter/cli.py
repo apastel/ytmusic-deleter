@@ -20,6 +20,8 @@ from ytmusic_deleter.progress import manager
 from ytmusic_deleter.uploads import maybe_delete_uploaded_albums
 from ytmusicapi import YTMusic
 from ytmusicapi.models.content.enums import LikeStatus
+from ytmusicapi.type_alias import JsonDict
+from ytmusicapi.type_alias import JsonList
 
 
 def configure_logging(log_dir, no_logfile, verbose):
@@ -162,6 +164,8 @@ def remove_library(ctx: click.Context):
 
     podcasts_removed, library_podcasts = remove_library_podcasts()
 
+    remove_episodes_for_later()
+
     items_removed = albums_removed + songs_removed + podcasts_removed
 
     items_total = len(library_albums) + len(library_songs) + len(library_podcasts)
@@ -242,6 +246,36 @@ def remove_library_items(library_items):
             logging.error(f"\tFailed to remove {artist} - {title!r} from your library.")
         update_progress()
     return items_removed
+
+
+def remove_episodes_for_later():
+    yt_auth: YTMusic = get_current_context().obj["YT_AUTH"]
+    logging.info(f"Retrieving the {common.EPISODES_FOR_LATER!r} playlist...")
+    episodes_for_later_playlist: JsonDict | None = yt_auth.get_playlist(common.SAVED_EPISODES_PLAYLIST_ID, limit=None)
+
+    if not episodes_for_later_playlist:
+        logging.warning(f"{common.EPISODES_FOR_LATER!r} playlist was not found, skip removing episodes.")
+        return
+
+    playlist_episodes: JsonList = episodes_for_later_playlist.get("tracks", [])
+    if not playlist_episodes:
+        logging.info(f"{common.EPISODES_FOR_LATER!r} playlist already empty.")
+        return
+
+    playlist_id: str = episodes_for_later_playlist.get("id", "")
+    if not playlist_id:
+        logging.error(f"{common.EPISODES_FOR_LATER!r} playlist missing 'id' attribute, skip removing episodes")
+        return
+
+    logging.info(f"Clearing {len(playlist_episodes)} episodes from the {common.EPISODES_FOR_LATER!r} playlist...")
+    response: str | JsonDict = yt_auth.remove_playlist_items(playlist_id, playlist_episodes)
+    status: str = response if isinstance(response, str) else response.get("status", "")
+    if status == "STATUS_SUCCEEDED":
+        logging.info(f"Successfully cleared the {common.EPISODES_FOR_LATER!r} playlist.")
+    else:
+        logging.error(
+            f"May have failed to delete the episodes in the {common.EPISODES_FOR_LATER!r} playlist. Status: {status}"
+        )
 
 
 @cli.command()
@@ -330,6 +364,7 @@ def delete_playlists(ctx: click.Context):
             )
         update_progress()
     logging.info(f"Deleted {playlists_deleted} out of {len(library_playlists)} playlists from your library.")
+    remove_episodes_for_later()
     return (playlists_deleted, len(library_playlists))
 
 
@@ -650,7 +685,7 @@ def add_all_to_library(ctx: click.Context, playlist_title_or_id):
 
 def get_library_playlist_from_title(
     yt_auth: YTMusic, playlist_title: str, fail_if_not_exist: bool = True, fail_if_not_owner: bool = True
-) -> dict | None:
+) -> JsonDict | None:
     """
     Takes the given playlist title string and returns the full dict object for that playlist.
     Raises an error if the playlist is not modifiable.

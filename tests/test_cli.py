@@ -4,10 +4,13 @@ import pytest
 from click.testing import CliRunner
 from click.testing import Result
 from retry import retry
+from ytmusic_deleter import common
 from ytmusic_deleter.cli import cli
 from ytmusic_deleter.duplicates import check_for_duplicates
 from ytmusicapi import YTMusic
 from ytmusicapi.models.content.enums import VideoType
+from ytmusicapi.type_alias import JsonDict
+from ytmusicapi.type_alias import JsonList
 
 
 class TestCli:
@@ -40,7 +43,9 @@ class TestCli:
                 return True
         raise AssertionError("Uploaded song was not added to library before deleting")
 
-    def test_remove_library(self, yt_browser: YTMusic, add_library_album, add_library_song, add_podcast):
+    def test_remove_library(
+        self, yt_browser: YTMusic, add_library_album, add_library_song, add_podcast, add_episodes_for_later
+    ):
         runner = CliRunner()
         result = runner.invoke(cli, ["remove-library"], standalone_mode=False, obj=yt_browser)
         assert result.exit_code == 0
@@ -68,6 +73,14 @@ class TestCli:
             retries_remaining -= 1
             time.sleep(2)
         assert len(podcasts_remaining) == 0, f"Not all podcasts were removed. {len(podcasts_remaining)} still remain."
+
+        # Verify "Episodes for Later" playlist is empty
+        episodes_for_later_playlist: JsonDict | None = yt_browser.get_playlist(
+            common.SAVED_EPISODES_PLAYLIST_ID, limit=None
+        )
+        assert episodes_for_later_playlist is not None, f"{common.EPISODES_FOR_LATER!r} playlist could not be found"
+        playlist_episodes: JsonList = episodes_for_later_playlist.get("tracks", [])
+        assert len(playlist_episodes) == 0, f"{common.EPISODES_FOR_LATER!r} playlist still had episodes in it."
 
     def test_unlike_all_songs(self, yt_browser: YTMusic, like_songs, cleanup_library):
         runner = CliRunner()
