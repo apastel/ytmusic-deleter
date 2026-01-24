@@ -34,7 +34,10 @@ defaults:
 
 jobs:
   build:
-    runs-on: ubuntu-22.04
+    strategy:
+      matrix:
+        os: [ubuntu-22.04, ubuntu-22.04-arm]
+    runs-on: ${{ matrix.os }}
     outputs:
       installer-version: ${{ steps.json-properties.outputs.version }}
       cli-version: ${{ steps.run-cli.outputs.version }}
@@ -120,24 +123,46 @@ jobs:
       uses: zoexx/github-action-json-file-properties@1.0.6
       with:
         file_path: gui/src/build/settings/base.json
+    - name: Rename installer per version
+      id: rename-installer
+      run: |
+        if [[ "${{ matrix.os }}" == "ubuntu-22.04" ]]; then
+          ARCH=x86
+        elif [[ "${{ matrix.os }}" == "ubuntu-22.04-arm" ]]; then
+          ARCH=arm
+        fi
+        mv ./gui/target/linux-installer-to-be-renamed.deb \
+           ./gui/target/YTMusic_Deleter-${{ steps.json-properties.outputs.version }}-Linux-Installer_$ARCH.dmg
+        echo "ARCH=$ARCH" >> $GITHUB_ENV
     - name: Save .deb as artifact
       id: upload_deb
       uses: actions/upload-artifact@v4
       with:
         name: installer-deb
-        path: ./gui/target/YTMusic_Deleter-${{ steps.json-properties.outputs.version }}-Linux-Installer.deb
+        path: ./gui/target/YTMusic_Deleter-${{ steps.json-properties.outputs.version }}-Linux-Installer_${{ env.ARCH }}.deb
+      env:
+        ARCH: ${{ env.ARCH }}
 
   verify:
-    runs-on: ubuntu-22.04
+    strategy:
+      matrix:
+        os: [ubuntu-22.04, ubuntu-22.04-arm]
+    runs-on: ${{ matrix.os }}
     needs: build
     steps:
       - name: Download Artifact
         uses: actions/download-artifact@v4
         with:
-          name: installer-deb
+          name: installer-deb-${{ matrix.os }}
       - name: Run installer
         run: |
-          sudo dpkg -i ./YTMusic_Deleter-${{ needs.build.outputs.installer-version }}-Linux-Installer.deb
+          # Have to redefine ARCH
+          if [[ "${{ matrix.os }}" == "ubuntu-22.04" ]]; then
+            ARCH=x86
+          elif [[ "${{ matrix.os }}" == "ubuntu-22.04-arm" ]]; then
+            ARCH=arm
+          fi
+          sudo dpkg -i ./YTMusic_Deleter-${{ needs.build.outputs.installer-version }}-Linux-Installer_$ARCH.deb
       - name: Install dependencies
         run: |
           sudo apt update && sudo apt install -y libegl1
