@@ -122,7 +122,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.donateLabel.setGeometry(QRect(40, 30, 260, 50))
         base_url = "https://img.buymeacoffee.com/button-api/"
         params = {
-            "text": "Buy me a beer!",
+            "text": "Buy me a beer",
             "emoji": "🍺",
             "slug": "jewbix.cube",
             "button_colour": "FFDD00",
@@ -140,9 +140,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         except requests.exceptions.RequestException as e:
             self.message(f"Error getting image for donate button: {e}")
             self.donateLabel.setText("Click me to donate 5 bucks!")
-        self.donateLabel.setToolTip(
-            "It's a donate button! If this tool saved you a lot of time, consider buying me a beer!"
-        )
+        self.donateLabel.setToolTip("If this tool saved you a lot of time, consider buying me a beer!")
 
         self.signInButton.clicked.connect(self.prompt_for_auth)
         self.accountWidget.hide()
