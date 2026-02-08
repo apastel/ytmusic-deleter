@@ -23,7 +23,7 @@ def do_auth(
     """
     auth_file_name = const.OAUTH_FILENAME if oauth else const.BROWSER_FILENAME
     auth_file_path: str = str(Path(credential_dir) / auth_file_name)
-    yt_auth: ytmusicapi.YTMusic = None
+    yt_auth: ytmusicapi.YTMusic | None = None
     try:
         logging.info(f"Attempting authentication with: {auth_file_path}")
         yt_auth = _authenticate(auth_file_path, oauth, client_id, client_secret)
@@ -36,8 +36,9 @@ def do_auth(
         if not yt_auth:
             raise RuntimeError("Authentication failed")
         logging.info(f'Authenticated with: {auth_file_path}"')
-        if oauth:
-            logging.info(f"Signed in using OAuth as {yt_auth.get_account_info().get('accountName')!r}")
+        logging.info(
+            f"Signed in using {"OAuth" if oauth else "browser authentication"} as {yt_auth.get_account_info().get('accountName')!r}"
+        )
     return yt_auth
 
 

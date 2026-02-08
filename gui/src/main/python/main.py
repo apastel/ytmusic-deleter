@@ -43,7 +43,6 @@ from PySide6.QtWidgets import QProxyStyle
 from PySide6.QtWidgets import QStyle
 from settings_dialog import SettingsDialog
 from ytmusic_deleter import common
-from ytmusicapi.auth.oauth import RefreshingToken
 from ytmusicapi.auth.types import AuthType
 
 from common import APP_DATA_PATH
@@ -89,6 +88,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         # Initailize UI from generated files
         self.setupUi(self)
         self.p = None
+        self.remove_duplicates_dialog = None
 
         self.centralWidget.installEventFilter(self)
         self.photo_button_stylesheet = self.accountPhotoButton.styleSheet()
@@ -214,55 +214,40 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             return False
 
         # Display account name in popover
-        if self.ytmusic.auth_type == AuthType.OAUTH_CUSTOM_CLIENT:
-            try:
-                account_info: dict = self.ytmusic.get_account_info()
-            except Exception as e:
-                message = "Failed to get user's account info. Clearing login state then log back in."
-                self.message(message + "\n" + str(e))
-                logging.exception(message, e)
-                self.sign_out()
-                return False
-            account_name = account_info["accountName"]
-            self.accountNameLabel.setText(account_name)
-            channel_handle = account_info["channelHandle"]
-            if channel_handle:
-                self.channelHandleLabel.setText(f"({channel_handle})")
-            else:
-                self.channelHandleLabel.setText("")
-
-            # Display account photo
-            response = requests.get(account_info["accountPhotoUrl"])
-            pixmap = QPixmap()
-            pixmap.loadFromData(response.content)
-            pixmap = pixmap.scaled(
-                self.accountPhotoButton.size(),
-                Qt.AspectRatioMode.KeepAspectRatio,
-                Qt.TransformationMode.SmoothTransformation,
-            )
-            photo_path: Path = self.account_photo_dir / "account_photo.jpg"
-            pixmap.save(str(photo_path))
-            background_photo_style = f"\nQPushButton {{ background-image: url({photo_path.as_posix()}); }}"
-            self.accountPhotoButton.setIcon(QIcon())
-            self.accountPhotoButton.setStyleSheet(self.photo_button_stylesheet + background_photo_style)
-
-            if display_message:
-                self.message(f"Signed in using OAuth as {account_name!r}")
+        try:
+            account_info: dict = self.ytmusic.get_account_info()
+        except Exception as e:
+            message = "Failed to get user's account info. Clearing login state then log back in."
+            self.message(message + "\n" + str(e))
+            logging.exception(message, e)
+            self.sign_out()
+            return False
+        account_name = account_info["accountName"]
+        self.accountNameLabel.setText(account_name)
+        channel_handle = account_info["channelHandle"]
+        if channel_handle:
+            self.channelHandleLabel.setText(f"({channel_handle})")
         else:
-            pixmap = QPixmap(AppContext._instance.get_resource("person.png"))
-            pixmap = pixmap.scaled(
-                self.accountPhotoButton.size(),
-                Qt.AspectRatioMode.KeepAspectRatio,
-                Qt.TransformationMode.SmoothTransformation,
-            )
-            icon = QIcon(pixmap)
-            self.accountPhotoButton.setStyleSheet(self.photo_button_stylesheet)
-            self.accountPhotoButton.setIcon(icon)
-            self.accountPhotoButton.setIconSize(pixmap.size())
-            self.accountNameLabel.setText("Signed in")
             self.channelHandleLabel.setText("")
-            if display_message:
-                self.message("Signed in.")
+
+        # Display account photo
+        response = requests.get(account_info["accountPhotoUrl"])
+        pixmap = QPixmap()
+        pixmap.loadFromData(response.content)
+        pixmap = pixmap.scaled(
+            self.accountPhotoButton.size(),
+            Qt.AspectRatioMode.KeepAspectRatio,
+            Qt.TransformationMode.SmoothTransformation,
+        )
+        photo_path: Path = self.account_photo_dir / "account_photo.jpg"
+        pixmap.save(str(photo_path))
+        background_photo_style = f"\nQPushButton {{ background-image: url({photo_path.as_posix()}); }}"
+        self.accountPhotoButton.setIcon(QIcon())
+        self.accountPhotoButton.setStyleSheet(self.photo_button_stylesheet + background_photo_style)
+
+        if display_message:
+            auth_str = "OAuth" if self.ytmusic.auth_type == AuthType.OAUTH_CUSTOM_CLIENT else "browser authentication"
+            self.message(f"Signed in using {auth_str} as {account_name!r}")
 
         return True
 
@@ -328,7 +313,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
             try:
                 raw_token = oauth.token_from_code(code["device_code"])
-                ref_token = RefreshingToken(credentials=oauth, **raw_token)
+                ref_token = ytmusicapi.auth.oauth.RefreshingToken(credentials=oauth, **raw_token)
                 # store the token in oauth.json
                 ref_token.store_token(self.auth_file_path)
                 if self.is_signed_in():
@@ -468,15 +453,16 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     @Slot()
     def handle_stderr(self):
-        data = self.p.readAllStandardError()
-        stderr = bytes(data).decode("ISO-8859-1")
-        percent_complete = self.get_percent_complete(stderr)
-        if percent_complete:
-            self.progress_dialog.progressBar.setValue(percent_complete)
-        item_processing = self.get_item_processing(stderr)
-        if item_processing:
-            self.progress_dialog.itemLine.setText(item_processing)
-        self.message(stderr)
+        if self.p is not None:
+            data = self.p.readAllStandardError()
+            stderr = bytes(data).decode("ISO-8859-1")
+            percent_complete = self.get_percent_complete(stderr)
+            if percent_complete:
+                self.progress_dialog.progressBar.setValue(percent_complete)
+            item_processing = self.get_item_processing(stderr)
+            if item_processing:
+                self.progress_dialog.itemLine.setText(item_processing)
+            self.message(stderr)
 
     def handle_state(self, state):
         states = {
