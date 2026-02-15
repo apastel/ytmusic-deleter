@@ -35,7 +35,7 @@ def do_auth(
     finally:
         if not yt_auth:
             raise RuntimeError("Authentication failed")
-        logging.info(f'Authenticated with: {auth_file_path}"')
+        logging.info(f"Authenticated with: {auth_file_path}")
         logging.info(
             f"Signed in using {"OAuth" if oauth else "browser authentication"} as {yt_auth.get_account_info().get('accountName')!r}"
         )
