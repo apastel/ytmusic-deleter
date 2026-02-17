@@ -44,6 +44,7 @@ generate = "bash gui/scripts/generate_ui_files.sh"
 # Use this to bump all the project versions
 version = "bash bump_versions.sh"
 freeze-prep = "bash gui/scripts/freeze_prep.sh"
+designer = ".venv/bin/pyside6-designer"
 
 [tool.pdm.build]
 includes = ["ytmusic_deleter/**/*.py"]
