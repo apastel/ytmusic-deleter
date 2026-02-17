@@ -9,6 +9,7 @@ import webbrowser
 from pathlib import Path
 from time import strftime
 
+import error_reporter
 import requests
 import ytmusicapi.auth.oauth.exceptions
 import ytmusicapi.exceptions
@@ -36,11 +37,13 @@ from PySide6.QtCore import Slot
 from PySide6.QtGui import QIcon
 from PySide6.QtGui import QImage
 from PySide6.QtGui import QPixmap
+from PySide6.QtWidgets import QDialog
 from PySide6.QtWidgets import QLabel
 from PySide6.QtWidgets import QMainWindow
 from PySide6.QtWidgets import QMessageBox
 from PySide6.QtWidgets import QProxyStyle
 from PySide6.QtWidgets import QStyle
+from report_preview_dialog import DebugReportPreviewDialog
 from settings_dialog import SettingsDialog
 from ytmusic_deleter import common
 from ytmusicapi.auth.types import AuthType
@@ -73,12 +76,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.account_photo_dir.mkdir(parents=True, exist_ok=True)
 
         # Initialize a logger
+        self.log_file_path = Path(self.log_dir) / f"ytmusic-deleter-gui_{strftime('%Y-%m-%d')}.log"
         logging.basicConfig(
             level=logging.DEBUG if self.verbose_logging else logging.INFO,
             format="[%(asctime)s] %(message)s",
             datefmt="%Y-%m-%d %H:%M:%S",
             handlers=[
-                logging.FileHandler(Path(self.log_dir) / f"ytmusic-deleter-gui_{strftime('%Y-%m-%d')}.log"),
+                logging.FileHandler(self.log_file_path),
                 logging.StreamHandler(sys.stdout),
             ],
         )
@@ -105,6 +109,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.accountWidgetCloseButton.clicked.connect(self.accountWidget.close)
         self.actionSettings.triggered.connect(self.open_settings_clicked)
         self.actionExit.triggered.connect(QCoreApplication.quit)
+        self.reportButton.clicked.connect(self.on_report_issue_clicked)
         self.removeLibraryButton.clicked.connect(self.prepare_to_invoke)
         self.deleteUploadsButton.clicked.connect(self.prepare_to_invoke)
         self.deletePlaylistsButton.clicked.connect(self.prepare_to_invoke)
@@ -168,6 +173,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.message(
                 f"{CLI_EXECUTABLE!r} executable not found. It's possible that it's not installed and none of the functions will work."  # noqa
             )
+        self.message(f"Log file path: {self.log_file_path}")
 
     def eventFilter(self, obj, event):
         """Closes accountWidget when clicking outside of it."""
@@ -477,10 +483,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.message("Process finished.")
         self.p = None
 
-    def message(self, msg):
+    def message(self, msg, exc_info=None):
         msg = msg.rstrip()  # Remove extra newlines
         self.consoleTextArea.appendPlainText(msg)
-        logging.info(msg)
+        logging.exception("Unhandled exception occurred", exc_info=exc_info) if exc_info else logging.info(msg)
 
     def get_percent_complete(self, output):
         """
@@ -521,7 +527,37 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         )
 
     def log_unhandled_exception(self, exc_type, exc_value, exc_traceback):
-        logging.exception("Unhandled exception occurred", exc_info=(exc_type, exc_value, exc_traceback))
+        self.message(
+            "Unhandled exception occurred, check the logs or click 'Report a Problem'",
+            exc_info=(exc_type, exc_value, exc_traceback),
+        )
+
+    def on_report_issue_clicked(self):
+        # Read the app log file
+        log_preview = ""
+        if self.log_file_path.exists():
+            try:
+                with open(self.log_file_path, encoding="utf-8") as f:
+                    log_preview = f.read()
+                self.message(f"Read {len(log_preview)} bytes from log file for error report.")
+            except Exception as e:
+                self.message(f"Failed to read log file: {e}")
+                log_preview = f"Error reading log file: {e}"
+        else:
+            self.message(f"Log file not found at {self.log_file_path}")
+            log_preview = "Log file not found"
+
+        dialog = DebugReportPreviewDialog(log_preview)
+        if dialog.exec() == QDialog.DialogCode.Accepted:
+            title = dialog.get_user_title()
+            description = dialog.get_user_description()
+            contact = dialog.get_user_contact()
+            app_log = dialog.get_edited_logs()
+
+            event_id = error_reporter.send_debug_report(self, self.ytmusic, app_log, title, description, contact)
+            QMessageBox.information(
+                self, "Report Sent", f"Thank you! Your report has been sent.\nReference ID: {event_id}"
+            )
 
 
 class AppContext(ApplicationContext):

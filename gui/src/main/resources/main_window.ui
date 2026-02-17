@@ -430,6 +430,22 @@
      <bool>false</bool>
     </property>
    </widget>
+   <widget class="QPushButton" name="reportButton">
+    <property name="geometry">
+     <rect>
+      <x>730</x>
+      <y>280</y>
+      <width>121</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="toolTip">
+     <string>Click this to send a report to the developer.</string>
+    </property>
+    <property name="text">
+     <string>Report a Problem</string>
+    </property>
+   </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
