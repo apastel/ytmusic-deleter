@@ -136,6 +136,9 @@ class Ui_MainWindow(object):
         self.addAllToLibraryButton.setEnabled(True)
         self.addAllToLibraryButton.setGeometry(QRect(410, 240, 101, 41))
         self.addAllToLibraryButton.setFont(font3)
+        self.reportButton = QPushButton(self.centralWidget)
+        self.reportButton.setObjectName(u"reportButton")
+        self.reportButton.setGeometry(QRect(730, 280, 121, 31))
         MainWindow.setCentralWidget(self.centralWidget)
         self.menubar = QMenuBar(MainWindow)
         self.menubar.setObjectName(u"menubar")
@@ -221,6 +224,10 @@ class Ui_MainWindow(object):
         self.addAllToLibraryButton.setStatusTip(QCoreApplication.translate("MainWindow", u"Add all songs from a playlist to your library.", None))
 #endif // QT_CONFIG(statustip)
         self.addAllToLibraryButton.setText(QCoreApplication.translate("MainWindow", u"Add All to Library", None))
+#if QT_CONFIG(tooltip)
+        self.reportButton.setToolTip(QCoreApplication.translate("MainWindow", u"Click this to send a report to the developer.", None))
+#endif // QT_CONFIG(tooltip)
+        self.reportButton.setText(QCoreApplication.translate("MainWindow", u"Report a Problem", None))
         self.menuSettings.setTitle(QCoreApplication.translate("MainWindow", u"File", None))
     # retranslateUi
 
