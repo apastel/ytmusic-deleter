@@ -307,23 +307,10 @@ def unlike_all(ctx: click.Context):
         )
         title = track["title"]
         logging.info(f"Processing track: {artist} - {title!r}")
-        try:
-            response = yt_auth.rate_song(track["videoId"], LikeStatus.INDIFFERENT)
-            num_retries = 300
-            while num_retries > 0 and (
-                not common.string_exists_in_dict(response, "Removed from liked music")
-                or not common.string_exists_in_dict(response, "consistencyTokenJar")
-            ):
-                logging.info("\tRetrying track...")
-                response = yt_auth.rate_song(track["videoId"], LikeStatus.INDIFFERENT)
-                num_retries -= 1
-            if num_retries == 0:
-                logging.error("\tRan out of retries to remove track from Likes. Try running 'Unlike All' again.")
-            else:
-                logging.info("\tRemoved track from Likes.")
-                songs_unliked += 1
-        except Exception as e:
-            logging.exception(e)
+        success = common.unlike_song(yt_auth, track)
+        if success:
+            songs_unliked += 1
+        else:
             logging.error(f"\tFailed to unlike {artist} - {title!r}")
         update_progress()
     logging.info(f"Finished unliking {songs_unliked} out of {len(your_likes['tracks'])} songs.")
@@ -573,7 +560,10 @@ def remove_duplicates(ctx: click.Context, playlist_title, exact, fuzzy, score_cu
         return
     if playlist_id == "LM":
         for song in items_to_remove:
-            yt_auth.rate_song(song["videoId"], LikeStatus.INDIFFERENT)
+            success = common.unlike_song(yt_auth, song)
+            logging.info(song)
+            if not success:
+                logging.error(f"\tFailed to unlike {song["artist"]} - {song["title"]!r}")
     else:
         for chunk in common.chunked(items_to_remove, 50):
             yt_auth.remove_playlist_items(playlist_id, chunk)

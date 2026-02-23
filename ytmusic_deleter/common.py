@@ -3,6 +3,7 @@ import re
 
 import click
 from ytmusicapi import YTMusic
+from ytmusicapi.models.content.enums import LikeStatus
 
 BROWSER_FILENAME = "browser.json"
 OAUTH_FILENAME = "oauth.json"
@@ -14,6 +15,28 @@ ARTIST_NAME_SCORE_CUTOFF = 90
 PARENTHETICALS_REGEX = r"\s*\([^)]*\)$|\s*\[[^)]*\]$|[^\w\s]"
 EXTRA_WHITESPACE_REGEX = r"\s+"
 SORTABLE_ATTRIBUTES = ["artist", "album_title", "track_title", "duration"]
+
+
+def unlike_song(yt_auth, track) -> bool:
+    try:
+        response = yt_auth.rate_song(track["videoId"], LikeStatus.INDIFFERENT)
+        num_retries = 300
+        while num_retries > 0 and (
+            not string_exists_in_dict(response, "Removed from liked music")
+            or not string_exists_in_dict(response, "consistencyTokenJar")
+        ):
+            logging.info("\tRetrying track...")
+            response = yt_auth.rate_song(track["videoId"], LikeStatus.INDIFFERENT)
+            num_retries -= 1
+        if num_retries == 0:
+            logging.error("\tRan out of retries to remove track from Likes. Try running 'Unlike All' again.")
+            return False
+        else:
+            logging.info("\tRemoved track from Likes.")
+            return True
+    except Exception as e:
+        logging.exception(e)
+        return False
 
 
 def strip_parentheticals(input_str: str) -> str:

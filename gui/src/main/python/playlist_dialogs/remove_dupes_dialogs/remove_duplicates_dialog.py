@@ -9,7 +9,6 @@ from ytmusic_deleter import common
 from ytmusic_deleter.duplicates import check_for_duplicates
 from ytmusic_deleter.duplicates import determine_tracks_to_remove
 from ytmusicapi import YTMusic
-from ytmusicapi.models.content.enums import LikeStatus
 
 from .checkbox_track_listing import CheckboxTrackListingDialog
 from .track_listing_dialog import TrackListingDialog
@@ -161,11 +160,13 @@ class RemoveDuplicatesDialog(QDialog, Ui_PlaylistSelectionDialog):
             if not items_to_remove:
                 return "No duplicate tracks were marked for deletion."
             total = len(items_to_remove)
-            removed = 0
             if self.playlist.get("id") == "LM":
                 for i, song in enumerate(items_to_remove, 1):
-                    self.yt_auth.rate_song(song["videoId"], LikeStatus.INDIFFERENT)
-                    dialog.set_progress(i, f"Removed {i} out of {total} duplicates...")
+                    success = common.unlike_song(self.yt_auth, song)
+                    if success:
+                        dialog.set_progress(i, f"Removed {i} out of {total} duplicates...")
+                    else:
+                        self.parentWidget().message(f"Failed to unlike {song['artist']} - {song['title']!r}")
             else:
                 for i, chunk in enumerate(common.chunked(items_to_remove, 50), 1):
                     self.yt_auth.remove_playlist_items(self.selected_playlist_id, chunk)
