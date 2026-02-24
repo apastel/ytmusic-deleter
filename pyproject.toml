@@ -22,7 +22,7 @@ build-backend = "pdm.backend"
 ytmusic-deleter = "ytmusic_deleter.cli:main"
 
 [tool.pytest.ini_options]
-addopts = "-rA --cov"
+addopts = "-rA --cov --reruns 2 --reruns-delay 10"
 log_cli = false
 
 [tool.coverage.run]
@@ -71,6 +71,7 @@ lint = [
 ]
 test = [
     "pytest>=9.0.2",
+    "pytest-rerunfailures>=15.1",
     "pytest-cov>=7.0.0",
     "coverage>=7.13.1",
     "retry>=0.9.2",

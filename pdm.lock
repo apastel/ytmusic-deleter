@@ -5,7 +5,7 @@
 groups = ["default", "gui", "lint", "test"]
 strategy = ["inherit_metadata"]
 lock_version = "4.5.0"
-content_hash = "sha256:dc1766efc64f1c17a48ae2f645a0d9311cf4480fe3002f00b4a2e9d900818166"
+content_hash = "sha256:bd6ff46aa4e43047f5abc4b9c415403f402197587390ffceb7ada6fc7f867fbb"
 
 [[metadata.targets]]
 requires_python = ">=3.10,<3.15"
@@ -1071,6 +1071,22 @@ dependencies = [
 files = [
     {file = "pytest_cov-7.0.0-py3-none-any.whl", hash = "sha256:3b8e9558b16cc1479da72058bdecf8073661c7f57f7d3c5f22a1c23507f2d861"},
     {file = "pytest_cov-7.0.0.tar.gz", hash = "sha256:33c97eda2e049a0c5298e91f519302a1334c26ac65c1a483d6206fd458361af1"},
+]
+
+[[package]]
+name = "pytest-rerunfailures"
+version = "16.1"
+requires_python = ">=3.10"
+summary = "pytest plugin to re-run tests to eliminate flaky failures"
+groups = ["test"]
+marker = "python_version >= \"3.10\" and python_version < \"3.15\""
+dependencies = [
+    "packaging>=17.1",
+    "pytest!=8.2.2,>=7.4",
+]
+files = [
+    {file = "pytest_rerunfailures-16.1-py3-none-any.whl", hash = "sha256:5d11b12c0ca9a1665b5054052fcc1084f8deadd9328962745ef6b04e26382e86"},
+    {file = "pytest_rerunfailures-16.1.tar.gz", hash = "sha256:c38b266db8a808953ebd71ac25c381cb1981a78ff9340a14bcb9f1b9bff1899e"},
 ]
 
 [[package]]
