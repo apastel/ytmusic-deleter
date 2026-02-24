@@ -115,7 +115,11 @@ jobs:
             exit 1
         fi
     - name: Install NSIS
-      run: choco install nsis -y
+      uses: nick-fields/retry@v3
+      with:
+        command: choco install nsis -y
+        max_attempts: 3
+        timeout_minutes: 1
     - name: Add NSIS to PATH
       run: echo "C:\Program Files (x86)\NSIS" >> $GITHUB_PATH
     - name: Create installer
