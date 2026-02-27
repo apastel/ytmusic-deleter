@@ -20,9 +20,9 @@ jobs:
         contents: write
         actions: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Setup Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: 3.x
       - name: Setup PDM
@@ -31,12 +31,12 @@ jobs:
         run: |
           pdm version ${{ inputs.revision  }}
       - name: Commit version files to main, and tag
-        uses: stefanzweifel/git-auto-commit-action@v5
+        uses: stefanzweifel/git-auto-commit-action@v7
         with:
           commit_message: ${{ inputs.revision }}
           tagging_message: ${{ inputs.revision }}
       - name: Dispatch release workflow
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         with:
           github-token: ${{ github.token }}
           script: |

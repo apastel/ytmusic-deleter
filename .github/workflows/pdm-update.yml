@@ -13,7 +13,7 @@ jobs:
   update-dependencies:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Download fbs
         env:
             FBS_URL_ID: ${{ secrets.FBS_URL_ID }}
