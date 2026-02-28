@@ -35,6 +35,7 @@ defaults:
 jobs:
   build:
     runs-on: windows-latest
+    timeout-minutes: 10
     outputs:
       installer-version: ${{ steps.json-properties.outputs.version }}
       cli-version: ${{ steps.run-cli.outputs.version }}
@@ -57,6 +58,7 @@ jobs:
         . .venv/Scripts/activate
         echo "version=$(ytmusic-deleter --version)" >> $GITHUB_OUTPUT
     - name: Run fbs app
+      timeout-minutes: 1
       run: |
 
         # Store the version argument
