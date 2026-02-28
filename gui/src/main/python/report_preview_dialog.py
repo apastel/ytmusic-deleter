@@ -48,7 +48,13 @@ class DebugReportPreviewDialog(QDialog):
         # Optional contact info
         contact_label = QLabel(
             "Optional: Contact info (email or Discord username) if you wish to be contacted regarding this problem:"
+            "<br><span style='color: #666; font-size: 11px;'>"
+            "You must be a member of the <a href='https://discord.gg/8TCX6Q8hrh'>Discord</a> server "
+            "for me to be able to reach out to you on Discord."
+            "</span>"
         )
+        contact_label.setOpenExternalLinks(True)
+        contact_label.setWordWrap(True)
         layout.addWidget(contact_label)
 
         self.contact_input = QLineEdit()
