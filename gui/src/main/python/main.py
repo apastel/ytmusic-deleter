@@ -537,7 +537,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         log_preview = ""
         if self.log_file_path.exists():
             try:
-                with open(self.log_file_path, encoding="utf-8") as f:
+                with open(self.log_file_path, encoding="latin-1", errors="replace") as f:
                     log_preview = f.read()
                 self.message(f"Read {len(log_preview)} bytes from log file for error report.")
             except Exception as e:
