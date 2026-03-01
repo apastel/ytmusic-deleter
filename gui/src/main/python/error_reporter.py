@@ -71,9 +71,16 @@ def send_debug_report(
     request_logs = ytmusic_logger.get_request_logs()
 
     def safe_count(func, *args, **kwargs):
-        """Safely get count from a YTMusic function, return error string on failure"""
+        """Safely get count from a YTMusic function, return error string on failure
+
+        Some YTMusic APIs return a dict with a "tracks" key instead of a list,
+        so we special-case that format here.
+        """
         try:
             result = func(*args, **kwargs)
+            # If the result is a dict containing a tracks list, count that instead
+            if isinstance(result, dict) and "tracks" in result:
+                return len(result.get("tracks", []))
             return len(result)
         except Exception as e:
             return f"Error: {e}"
