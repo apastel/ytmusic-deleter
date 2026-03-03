@@ -58,29 +58,33 @@ jobs:
         . .venv/Scripts/activate
         echo "version=$(ytmusic-deleter --version)" >> $GITHUB_OUTPUT
     - name: Run fbs app
-      timeout-minutes: 1
-      run: |
+      uses: nick-fields/retry@v3
+      with:
+        max_attempts: 3
+        timeout_minutes: 1
+        shell: bash
+        command: |
 
-        # Store the version argument
-        version_str="${{ steps.run-cli.outputs.version }}"
+          # Store the version argument
+          version_str="${{ steps.run-cli.outputs.version }}"
 
-        # Makes app run headless
-        export QT_QPA_PLATFORM=offscreen
+          # Makes app run headless
+          export QT_QPA_PLATFORM=offscreen
 
-        # Launch the fbs app and kill it after 10 seconds, saving the output.
-        # We don't want the timing out to fail the job. Normally using `timeout --preserve-status` would handle this but
-        # still getting exit code "241" which is an unknown code. Alternatively, running the entire step in a separate
-        # script file allows using just `timeout 10s pdm fbs run` but would rather not do that.
-        output=$(timeout 10s pdm fbs run || true)
+          # Launch the fbs app and kill it after 10 seconds, saving the output.
+          # We don't want the timing out to fail the job. Normally using `timeout --preserve-status` would handle this but
+          # still getting exit code "241" which is an unknown code. Alternatively, running the entire step in a separate
+          # script file allows using just `timeout 10s pdm fbs run` but would rather not do that.
+          output=$(timeout 10s pdm fbs run || true)
 
-        # Check if the output contains the right CLI version
-        if grep -q "$version_str" <<< "$output"; then
-            echo "GUI is running the right CLI version: $version_str"
-        else
-            echo "$version_str" not found in output, which was the following:
-            echo $output
-            exit 1
-        fi
+          # Check if the output contains the right CLI version
+          if grep -q "$version_str" <<< "$output"; then
+              echo "GUI is running the right CLI version: $version_str"
+          else
+              echo "$version_str" not found in output, which was the following:
+              echo $output
+              exit 1
+          fi
     - name: Freeze prep
       run: |
         pdm freeze-prep
