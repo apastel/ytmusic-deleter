@@ -1,6 +1,7 @@
 import time
 
 import ytmusicapi
+from retry import retry
 from ytmusicapi.models.content.enums import LikeStatus
 
 PLAYLISTS = [
@@ -46,22 +47,17 @@ def string_exists_in_dict(data: dict, search_string: str) -> bool:
 
 def like_many_songs(yt_browser: ytmusicapi.YTMusic, long_song_list):
     total_songs_to_like = len(long_song_list)
+
+    @retry(AssertionError, tries=500, delay=0.1)
+    def _like_song(song):
+        response = yt_browser.rate_song(song, LikeStatus.LIKE)
+        assert string_exists_in_dict(response, "consistencyTokenJar")
+        assert string_exists_in_dict(response, "Saved to liked music")
+
     for idx, song in enumerate(long_song_list):
         print(f"liking song {idx + 1} out of {total_songs_to_like}")
-        response = yt_browser.rate_song(song, LikeStatus.LIKE)
-        num_retries = 300
-        while (
-            num_retries > 0
-            and not string_exists_in_dict(response, "consistencyTokenJar")
-            and not string_exists_in_dict(response, "Saved to liked music")
-        ):
-            print("retrying track...")
-            response = yt_browser.rate_song(song, LikeStatus.LIKE)
-            num_retries -= 1
-        if num_retries == 0:
-            print("\tRan out of retries to add track to Likes.")
-        else:
-            print("\tAdded track to Likes.")
+        _like_song(song)
+
     time.sleep(5)
     liked_songs = yt_browser.get_liked_songs(limit=None)["tracks"]
     return liked_songs

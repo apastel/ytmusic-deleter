@@ -5,6 +5,7 @@ from random import shuffle
 
 import click.testing
 import pytest
+from retry import retry
 from ytmusic_deleter import auth
 from ytmusic_deleter import cli
 from ytmusic_deleter import common
@@ -48,7 +49,15 @@ def fixture_sample_video() -> str:
 
 @pytest.fixture(name="medium_song_list")
 def fixture_sample_song_list() -> list[str]:
-    return ["hpSrLjc5SMs", "PIuAFrLeXfY", "9gi4WwQcPW8", "beX-9wW5rL0", "8ay_BkRuv-o", "HGorCGszxZU", "t2rsf8SiMJY"]
+    return [
+        "VTgMFcFIH9k",  # Matchbox Twenty - Unwell
+        "9qnqYL0eNNI",  # Coldplay - Yellow
+        "hpSrLjc5SMs",  # Oasis - Wonderwall
+        "9gi4WwQcPW8",  # Everclear - Santa Monic
+        "beX-9wW5rL0",  # Weezer - Island In The Sun
+        "8ay_BkRuv-o",  # Smash Mouth - All Star
+        "PIuAFrLeXfY",  # Tom Petty - Free Fallin'
+    ]
 
 
 @pytest.fixture(name="long_playlist")
@@ -426,38 +435,19 @@ def fixture_like_song(yt_browser: YTMusic, sample_video):
 
 @pytest.fixture(name="like_songs")
 def fixture_like_songs(yt_browser: YTMusic, medium_song_list):
-    for song in medium_song_list:
-        num_retries = 300
+
+    @retry(AssertionError, tries=500, delay=0.1)
+    def _like_song(song):
         response = yt_browser.rate_song(song, LikeStatus.LIKE)
-        while (
-            num_retries > 0
-            and not common.string_exists_in_dict(response, "consistencyTokenJar")
-            and not common.string_exists_in_dict(response, "Saved to liked music")
-        ):
-            response = yt_browser.rate_song(song, LikeStatus.LIKE)
-            num_retries -= 1
-        if num_retries == 0:
-            pytest.fail(f"Ran out of tries to add song {song!r} to likes.")
+        # assert common.string_exists_in_dict(response, "consistencyTokenJar")
+        assert common.string_exists_in_dict(response, "Saved to liked music")
+
+    for song in medium_song_list:
+        _like_song(song)
+
     time.sleep(5)
     liked_songs = yt_browser.get_liked_songs(limit=None)["tracks"]
     assert len(liked_songs) >= len(medium_song_list)
-    return liked_songs
-
-
-@pytest.fixture(name="like_many_songs")
-def fixture_like_many_songs(yt_browser: YTMusic, long_song_list):
-    for song in long_song_list:
-        response = yt_browser.rate_song(song, LikeStatus.LIKE)
-        num_retries = 300
-        while (
-            num_retries > 0
-            and not common.string_exists_in_dict(response, "consistencyTokenJar")
-            and not common.string_exists_in_dict(response, "Saved to liked music")
-        ):
-            response = yt_browser.rate_song(song, LikeStatus.LIKE)
-            num_retries -= 1
-    time.sleep(5)
-    liked_songs = yt_browser.get_liked_songs(limit=None)["tracks"]
     return liked_songs
 
 
