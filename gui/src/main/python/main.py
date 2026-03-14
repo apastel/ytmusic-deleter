@@ -82,7 +82,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             format="[%(asctime)s] %(message)s",
             datefmt="%Y-%m-%d %H:%M:%S",
             handlers=[
-                logging.FileHandler(self.log_file_path),
+                logging.FileHandler(self.log_file_path, delay=True),
                 logging.StreamHandler(sys.stdout),
             ],
         )
