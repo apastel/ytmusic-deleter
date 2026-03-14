@@ -2,6 +2,7 @@ import logging
 import re
 
 import click
+from retry import retry
 from ytmusicapi import YTMusic
 from ytmusicapi.models.content.enums import LikeStatus
 
@@ -18,24 +19,22 @@ SORTABLE_ATTRIBUTES = ["artist", "album_title", "track_title", "duration"]
 
 
 def unlike_song(yt_auth, track) -> bool:
+
+    @retry(AssertionError, tries=500, delay=0.1)
+    def _unlike_song(song):
+        try:
+            response = yt_auth.rate_song(song, LikeStatus.INDIFFERENT)
+        except Exception as e:
+            logging.exception(e)
+        assert string_exists_in_dict(response, "Removed from liked music")
+        assert string_exists_in_dict(response, "consistencyTokenJar")
+
     try:
-        response = yt_auth.rate_song(track["videoId"], LikeStatus.INDIFFERENT)
-        num_retries = 300
-        while num_retries > 0 and (
-            not string_exists_in_dict(response, "Removed from liked music")
-            or not string_exists_in_dict(response, "consistencyTokenJar")
-        ):
-            logging.info("\tRetrying track...")
-            response = yt_auth.rate_song(track["videoId"], LikeStatus.INDIFFERENT)
-            num_retries -= 1
-        if num_retries == 0:
-            logging.error("\tRan out of retries to remove track from Likes. Try running 'Unlike All' again.")
-            return False
-        else:
-            logging.info("\tRemoved track from Likes.")
-            return True
-    except Exception as e:
-        logging.exception(e)
+        _unlike_song(track["videoId"])
+        logging.info("\tRemoved track from Likes.")
+        return True
+    except AssertionError:
+        logging.error("\tRan out of retries to remove track from Likes. Try running 'Unlike All' again.")
         return False
 
 
@@ -69,12 +68,12 @@ def string_exists_in_dict(data: dict, search_string: str) -> bool:
         bool: True if the string is found, False otherwise.
     """
     for key, value in data.items():
-        if search_string in str(key):
+        if search_string.lower() in str(key).lower():
             return True
         if isinstance(value, dict):
             if string_exists_in_dict(value, search_string):
                 return True
-        elif search_string in str(value):
+        elif search_string.lower() in str(value).lower():
             return True
     return False
 

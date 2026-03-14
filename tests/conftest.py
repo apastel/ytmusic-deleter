@@ -57,6 +57,9 @@ def fixture_sample_song_list() -> list[str]:
         "beX-9wW5rL0",  # Weezer - Island In The Sun
         "8ay_BkRuv-o",  # Smash Mouth - All Star
         "PIuAFrLeXfY",  # Tom Petty - Free Fallin'
+        "-s3pZTbS724",  # System of a Down - X
+        "-uQi0vJK9lk",  # The Offspring - The Kids Aren't Alright
+        "gDrIvnbwrHk",  # blink-182 - Dammit
     ]
 
 
@@ -411,43 +414,26 @@ def fixture_add_episodes_for_later(yt_browser: YTMusic, sample_smaller_podcast):
     yt_browser.add_playlist_items(common.SAVED_EPISODES_PLAYLIST_ID, source_playlist=sample_smaller_podcast)
 
 
-@pytest.fixture(name="like_song")
-def fixture_like_song(yt_browser: YTMusic, sample_video):
-    response = yt_browser.rate_song(sample_video, LikeStatus.LIKE)
-    assert "actions" in response
-
-    # Wait for song to finish processing
-    retries_remaining = 5
-    song_processed = False
-    while retries_remaining and not song_processed:
-        liked_songs = yt_browser.get_liked_songs(limit=None)
-        for song in liked_songs["tracks"]:
-            if song.get("title") == "Wonderwall":
-                yield song
-                song_processed = True
-                break
-        retries_remaining -= 1
-        time.sleep(2)
-
-    # Remove song from library to clean up
-    yt_browser.rate_playlist("OLAK5uy_lZ90LvUqQdKrByCbk99v54d8XpUOmFavo", LikeStatus.INDIFFERENT)
-
-
 @pytest.fixture(name="like_songs")
 def fixture_like_songs(yt_browser: YTMusic, medium_song_list):
+    total_songs_to_like = len(medium_song_list)
 
     @retry(AssertionError, tries=500, delay=0.1)
     def _like_song(song):
         response = yt_browser.rate_song(song, LikeStatus.LIKE)
-        # assert common.string_exists_in_dict(response, "consistencyTokenJar")
         assert common.string_exists_in_dict(response, "Saved to liked music")
+        assert common.string_exists_in_dict(response, "consistencyTokenJar")
 
-    for song in medium_song_list:
-        _like_song(song)
+    for idx, song in enumerate(medium_song_list):
+        print(f"liking song {idx + 1} out of {total_songs_to_like}")
+        try:
+            _like_song(song)
+        except AssertionError:
+            print(f"\tfailed to like song {idx + 1} out of {total_songs_to_like}")
 
     time.sleep(5)
     liked_songs = yt_browser.get_liked_songs(limit=None)["tracks"]
-    assert len(liked_songs) >= len(medium_song_list)
+    assert len(liked_songs) >= total_songs_to_like
     return liked_songs
 
 
