@@ -45,20 +45,15 @@ jobs:
       with:
         fetch-depth: 0
     - uses: pdm-project/setup-pdm@v4
-    - name: Download fbs
-      env:
-        FBS_URL_ID: ${{ secrets.FBS_URL_ID }}
-      run: |
-        curl -L https://drive.google.com/uc?id=$FBS_URL_ID --output fbs_pro-1.2.1.tar.gz
     - name: Install dependencies
       run: |
-        pdm --no-cache install -dG gui --no-editable
+        pdm --no-cache install --no-editable
     - name: Run CLI from venv
       id: run-cli
       run: |
         . .venv/Scripts/activate
         echo "version=$(ytmusic-deleter --version)" >> $GITHUB_OUTPUT
-    - name: Run fbs app
+    - name: Run GUI app
       uses: nick-fields/retry@v3
       with:
         max_attempts: 3
@@ -72,11 +67,8 @@ jobs:
           # Makes app run headless
           export QT_QPA_PLATFORM=offscreen
 
-          # Launch the fbs app and kill it after 10 seconds, saving the output.
-          # We don't want the timing out to fail the job. Normally using `timeout --preserve-status` would handle this but
-          # still getting exit code "241" which is an unknown code. Alternatively, running the entire step in a separate
-          # script file allows using just `timeout 10s pdm fbs run` but would rather not do that.
-          output=$(timeout 10s pdm fbs run || true)
+          # Launch the GUI app and kill it after 10 seconds, saving the output.
+          output=$(timeout 10s pdm gui || true)
 
           # Check if the output contains the right CLI version
           if grep -q "$version_str" <<< "$output"; then
@@ -100,7 +92,8 @@ jobs:
         Install-VcRedist -VcList $VcList -Silent
     - name: Freeze exe
       run: |
-        pdm fbs freeze
+        pdm freeze-prep
+        pyinstaller gui/src/main/python/gui.spec
     - name: Run frozen exe
       run: |
 
@@ -131,7 +124,8 @@ jobs:
       run: echo "C:\Program Files (x86)\NSIS" >> $GITHUB_PATH
     - name: Create installer
       run: |
-        pdm fbs installer
+        VERSION=$(python -c "from ytmusic_deleter._version import __version__; print(__version__)")
+        makensis -DVERSION="$VERSION" gui/src/installer/windows/Installer.nsi
     - name: Get base.json file
       id: json-properties
       uses: zoexx/github-action-json-file-properties@1.0.6

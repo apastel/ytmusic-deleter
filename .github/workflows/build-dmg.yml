@@ -40,22 +40,17 @@ jobs:
         os: [macos-14, macos-15, macos-26]
     runs-on: ${{ matrix.os }}
     outputs:
-      installer-version: ${{ steps.json-properties.outputs.version }}
+      installer-version: ${{ steps.run-cli.outputs.version }}
       cli-version: ${{ steps.run-cli.outputs.version }}
     steps:
     - uses: actions/checkout@v6
       with:
         fetch-depth: 0
     - uses: pdm-project/setup-pdm@v4
-    - name: Download fbs
-      env:
-        FBS_URL_ID: ${{ secrets.FBS_URL_ID }}
-      run: |
-        curl -L https://drive.google.com/uc?id=$FBS_URL_ID --output fbs_pro-1.2.1.tar.gz
     - name: Install dependencies
       run: |
 
-        pdm install -dG gui --no-editable
+        pdm install --no-editable
 
         # adds `timeout` command
         brew install coreutils
@@ -64,7 +59,7 @@ jobs:
       run: |
         . .venv/bin/activate
         echo "version=$(ytmusic-deleter --version)" >> $GITHUB_OUTPUT
-    - name: Run fbs app
+    - name: Run GUI app
       run: |
 
         # Store the version argument
@@ -73,11 +68,8 @@ jobs:
         # Makes app run headless
         export QT_QPA_PLATFORM=offscreen
 
-        # Launch the fbs app and kill it after 10 seconds, saving the output.
-        # We don't want the timing out to fail the job. Normally using `timeout --preserve-status` would handle this but
-        # still getting exit code "241" which is an unknown code. Alternatively, running the entire step in a separate
-        # script file allows using just `timeout 10s pdm fbs run` but would rather not do that.
-        output=$(timeout 10s pdm fbs run || true)
+        # Launch the GUI app and kill it after 10 seconds, saving the output.
+        output=$(timeout 10s pdm gui || true)
 
         # Check if the output contains the right CLI version
         if grep -q "$version_str" <<< "$output"; then
@@ -92,7 +84,7 @@ jobs:
         pdm freeze-prep
     - name: Freeze exe
       run: |
-        pdm fbs freeze
+        pyinstaller gui/src/main/python/gui.spec
     - name: Run frozen exe
       run: |
 
@@ -102,7 +94,7 @@ jobs:
         # Makes app run headless
         export QT_QPA_PLATFORM=offscreen
 
-        # Launch the fbs app and kill it after 10 seconds, saving the output.
+        # Launch the frozen app and kill it after 10 seconds, saving the output.
         output=$(timeout 10s ./gui/target/YTMusic_Deleter.app/Contents/MacOS/YTMusic_Deleter || true)
 
         # Check if the output contains the right CLI version
@@ -116,17 +108,27 @@ jobs:
     - name: Create installer
       uses: nick-fields/retry@v3
       with:
-        command: pdm fbs installer
+        command: |
+          brew install create-dmg
+          VERSION=$(python -c "from ytmusic_deleter._version import __version__; print(__version__)")
+          create-dmg \
+            --volname "YTMusic Deleter" \
+            --volicon "./gui/target/YTMusic_Deleter.app/Contents/Resources/YTMusic_Deleter.icns" \
+            --window-pos 200 120 \
+            --window-size 800 400 \
+            --icon-size 100 \
+            --icon "YTMusic_Deleter.app" 200 190 \
+            --hide-extension "YTMusic_Deleter.app" \
+            --app-drop-link 600 185 \
+            "mac-installer-to-be-renamed.dmg" \
+            "./gui/target/YTMusic_Deleter.app"
         max_attempts: 10
         timeout_minutes: 20
-    - name: Get base.json file
-      id: json-properties
-      uses: zoexx/github-action-json-file-properties@1.0.6
-      with:
-        file_path: gui/src/build/settings/base.json
     - name: Rename installer per version
       id: rename-installer
       run: |
+
+        VERSION=$(python -c "from ytmusic_deleter._version import __version__; print(__version__)")
 
         if [[ "${{ matrix.os }}" == "macos-14" ]]; then
           MAC_VERSION=14
@@ -135,15 +137,15 @@ jobs:
         elif [[ "${{ matrix.os }}" == "macos-26" ]]; then
           MAC_VERSION=26
         fi
-        mv ./gui/target/mac-installer-to-be-renamed.dmg \
-           ./gui/target/YTMusic_Deleter-${{ steps.json-properties.outputs.version }}-MacOS-$MAC_VERSION-Installer_arm.dmg
+        mv ./mac-installer-to-be-renamed.dmg \
+           ./YTMusic_Deleter-${VERSION}-MacOS-$MAC_VERSION-Installer_arm.dmg
         echo "MAC_VERSION=$MAC_VERSION" >> $GITHUB_ENV
     - name: Save .dmg as artifact
       id: upload_dmg
       uses: actions/upload-artifact@v7
       with:
         name: installer-dmg-${{ matrix.os }}
-        path: ./gui/target/YTMusic_Deleter-${{ steps.json-properties.outputs.version }}-MacOS-${{ env.MAC_VERSION }}-Installer_arm.dmg
+        path: ./YTMusic_Deleter-*-MacOS-${{ env.MAC_VERSION }}-Installer_arm.dmg
       env:
         MAC_VERSION: ${{ env.MAC_VERSION }}
 

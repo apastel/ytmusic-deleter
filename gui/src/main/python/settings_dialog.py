@@ -1,7 +1,7 @@
 import os
 import subprocess
 
-import fbs_runtime.platform
+from app_settings import platform
 from generated.ui_settings_dialog import Ui_SettingsDialog
 from PySide6.QtCore import Qt
 from PySide6.QtCore import Signal
@@ -65,9 +65,9 @@ class SettingsDialog(QDialog, Ui_SettingsDialog):
 
 
 def open_file_browser(path: str) -> None:
-    if fbs_runtime.platform.is_windows():
+    if platform.is_windows():
         os.startfile(path)
-    elif fbs_runtime.platform.is_mac():
+    elif platform.is_mac():
         subprocess.Popen(["open", path])
-    elif fbs_runtime.platform.is_linux():
+    elif platform.is_linux():
         subprocess.Popen(["xdg-open", path])

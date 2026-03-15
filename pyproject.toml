@@ -36,10 +36,10 @@ precision = 2
 line-length = 120
 
 [tool.pdm.scripts]
-# Use this to run any 'fbs' commands from the root, ex: `pdm fbs run` or `pdm fbs freeze`
-fbs = "sh fbs.sh"
 # Seems redundant, but takes advantage of pdm's platform-agnostic venv activation
 ytmusic-deleter = "ytmusic-deleter"
+# Use this to run the GUI in development mode
+gui = "python gui/src/main/python/main.py"
 # Use this to generate the UI files (Windows only)
 generate = "bash gui/scripts/generate_ui_files.sh"
 # Use this to bump all the project versions
@@ -61,8 +61,6 @@ pyinstaller = ">=6.17.0"
 
 [dependency-groups]
 gui = [
-    "fbs @ file:///${PROJECT_ROOT}/fbs_pro-1.2.1.tar.gz",
-    "fbs[licensing,sentry,upload]>=1.2.1",
     "PySide6>=6.10.1",
 ]
 lint = [

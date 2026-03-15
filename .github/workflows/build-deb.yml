@@ -37,28 +37,23 @@ jobs:
   build:
     runs-on: ubuntu-22.04
     outputs:
-      installer-version: ${{ steps.json-properties.outputs.version }}
+      installer-version: ${{ steps.run-cli.outputs.version }}
       cli-version: ${{ steps.run-cli.outputs.version }}
     steps:
     - uses: actions/checkout@v6
       with:
         fetch-depth: 0
     - uses: pdm-project/setup-pdm@v4
-    - name: Download fbs
-      env:
-        FBS_URL_ID: ${{ secrets.FBS_URL_ID }}
-      run: |
-        curl -L https://drive.google.com/uc?id=$FBS_URL_ID --output fbs_pro-1.2.1.tar.gz
     - name: Install dependencies
       run: |
         sudo apt update && sudo apt install -y libegl1 libegl1-mesa
-        pdm install -dG gui --no-editable
+        pdm install --no-editable
     - name: Run CLI from venv
       id: run-cli
       run: |
         . .venv/bin/activate
         echo "version=$(ytmusic-deleter --version)" >> $GITHUB_OUTPUT
-    - name: Run fbs app
+    - name: Run GUI app
       run: |
 
         # Store the version argument
@@ -67,11 +62,8 @@ jobs:
         # Makes app run headless
         export QT_QPA_PLATFORM=offscreen
 
-        # Launch the fbs app and kill it after 10 seconds, saving the output.
-        # We don't want the timing out to fail the job. Normally using `timeout --preserve-status` would handle this but
-        # still getting exit code "241" which is an unknown code. Alternatively, running the entire step in a separate
-        # script file allows using just `timeout 10s pdm fbs run` but would rather not do that.
-        output=$(timeout 10s pdm fbs run || true)
+        # Launch the GUI app and kill it after 10 seconds, saving the output.
+        output=$(timeout 10s pdm gui || true)
 
         # Check if the output contains the right CLI version
         if grep -q "$version_str" <<< "$output"; then
@@ -86,7 +78,7 @@ jobs:
         pdm freeze-prep
     - name: Freeze exe
       run: |
-        pdm fbs freeze
+        pyinstaller gui/src/main/python/gui.spec
     - name: Run frozen exe
       run: |
 
@@ -96,7 +88,7 @@ jobs:
         # Makes app run headless
         export QT_QPA_PLATFORM=offscreen
 
-        # Launch the fbs app and kill it after 10 seconds, saving the output.
+        # Launch the frozen app and kill it after 10 seconds, saving the output.
         output=$(timeout 10s ./gui/target/YTMusic_Deleter/YTMusic_Deleter || true)
 
         # Check if the output contains the right CLI version
@@ -115,18 +107,18 @@ jobs:
         sudo gem install fpm
     - name: Create installer
       run: |
-        pdm fbs installer
-    - name: Get base.json file
-      id: json-properties
-      uses: zoexx/github-action-json-file-properties@1.0.6
-      with:
-        file_path: gui/src/build/settings/base.json
+        VERSION=$(python -c "from ytmusic_deleter._version import __version__; print(__version__)")
+        fpm -s dir -t deb -n YTMusic_Deleter -v "$VERSION" \
+            --deb-compression xz \
+            --description "Easily delete your YouTube Music library" \
+            --maintainer "apastel <alex.r.pastel@gmail.com>" \
+            ./gui/target/YTMusic_Deleter/=/opt/YTMusic_Deleter/
     - name: Save .deb as artifact
       id: upload_deb
       uses: actions/upload-artifact@v7
       with:
         name: installer-deb
-        path: ./gui/target/YTMusic_Deleter-${{ steps.json-properties.outputs.version }}-Linux-Installer.deb
+        path: ./YTMusic_Deleter_*.deb
 
   verify:
     runs-on: ubuntu-22.04
@@ -138,7 +130,7 @@ jobs:
           name: installer-deb
       - name: Run installer
         run: |
-          sudo dpkg -i ./YTMusic_Deleter-${{ needs.build.outputs.installer-version }}-Linux-Installer.deb
+          sudo dpkg -i ./YTMusic_Deleter_*.deb
       - name: Install dependencies
         run: |
           sudo apt update && sudo apt install -y libegl1
