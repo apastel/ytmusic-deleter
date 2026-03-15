@@ -1,9 +1,15 @@
 !include MUI2.nsh
 !include FileFunc.nsh
+
+!define app_name "YTMusic_Deleter"
+!define display_name "YTMusic Deleter"
+!define author "apastel"
+!define installer "YTMusic_Deleter-${VERSION}-Windows-Installer.exe"
+
 !define MUI_ICON "..\${app_name}\Icon.ico"
 !define MUI_UNICON "..\${app_name}\Icon.ico"
 
-!getdllversion "..\${app_name}\${app_name}.exe" ver
+!getdllversion "..\..\target\${app_name}\${app_name}.exe" ver
 !define VERSION "${ver1}.${ver2}.${ver3}.${ver4}"
 
 VIProductVersion "${VERSION}"
@@ -33,7 +39,7 @@ FunctionEnd
 ;General
 
   Name "${display_name}"
-  OutFile "..\${installer}"
+  OutFile "..\..\target\${installer}"
 
 ;--------------------------------
 ;Interface Settings
@@ -69,7 +75,7 @@ FunctionEnd
   "Software\Microsoft\Windows\CurrentVersion\Uninstall\${app_name}"
 Section
   SetOutPath "$InstDir"
-  File /r "..\${app_name}\*"
+  File /r "..\..\target\${app_name}\*"
   WriteRegStr SHCTX "Software\${app_name}" "" $InstDir
   WriteUninstaller "$InstDir\uninstall.exe"
   CreateShortCut "$SMPROGRAMS\${display_name}.lnk" "$InstDir\${app_name}.exe"
