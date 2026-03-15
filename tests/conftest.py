@@ -288,7 +288,7 @@ def fixture_upload_file_path(config) -> str:
 
 
 @pytest.fixture(name="upload_song")
-def fixture_upload_song(config, yt_browser: YTMusic, upload_file_path) -> dict | None:
+def fixture_upload_song(yt_browser: YTMusic, upload_file_path) -> dict | None:
     """
     Upload a song and wait for it to finish processing.
     """
@@ -313,16 +313,16 @@ def fixture_upload_song(config, yt_browser: YTMusic, upload_file_path) -> dict |
     assert upload_response == "STATUS_SUCCEEDED" or upload_response.status_code == 200
 
     # Wait for upload to finish processing
-    retries_remaining = 20
-    while retries_remaining:
-        time.sleep(5)
+    @retry(ValueError, tries=20, delay=5)
+    def _song_uploaded():
         songs = yt_browser.get_library_upload_songs(limit=None)
         for song in songs:
             if song.get("title") in upload_file_path:
                 return song
-        retries_remaining -= 1
+        raise ValueError
 
-    raise AssertionError("Failed to verify uploaded song exists in library.")
+    if not _song_uploaded():
+        raise AssertionError("Failed to verify uploaded song exists in library.")
 
 
 @pytest.fixture
