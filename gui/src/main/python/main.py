@@ -11,14 +11,11 @@ from time import strftime
 
 import error_reporter
 import requests
+import sentry_sdk
 import ytmusicapi.auth.oauth.exceptions
 import ytmusicapi.exceptions
+from app_settings import PUBLIC_SETTINGS
 from browser_auth_dialog import BrowserAuthDialog
-from fbs_runtime import PUBLIC_SETTINGS
-from fbs_runtime.application_context import cached_property
-from fbs_runtime.application_context import is_frozen
-from fbs_runtime.application_context.PySide6 import ApplicationContext
-from fbs_runtime.excepthook.sentry import SentryExceptionHandler
 from generated.ui_main_window import Ui_MainWindow
 from library_dialogs.delete_uploads_dialog import DeleteUploadsDialog
 from playlist_dialogs.add_all_to_library_dialog import AddAllToLibraryDialog
@@ -37,6 +34,7 @@ from PySide6.QtCore import Slot
 from PySide6.QtGui import QIcon
 from PySide6.QtGui import QImage
 from PySide6.QtGui import QPixmap
+from PySide6.QtWidgets import QApplication
 from PySide6.QtWidgets import QDialog
 from PySide6.QtWidgets import QLabel
 from PySide6.QtWidgets import QMainWindow
@@ -51,6 +49,10 @@ from ytmusicapi.auth.types import AuthType
 from common import APP_DATA_PATH
 
 
+def is_frozen():
+    return getattr(sys, "frozen", False)
+
+
 internal_directory = os.path.dirname(os.path.abspath(__file__))
 CLI_EXECUTABLE = f"{internal_directory}/ytmusic-deleter" if is_frozen() else "ytmusic-deleter"
 progress_re = re.compile(r"Total complete: (\d+)%")
@@ -62,7 +64,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         super().__init__()
 
         # Initialize settings
-        self.settings = QSettings(PUBLIC_SETTINGS["app_name"], PUBLIC_SETTINGS["app_name"])
+        self.settings = QSettings(PUBLIC_SETTINGS.app_name, PUBLIC_SETTINGS.app_name)
         try:
             self.resize(self.settings.value("mainwindow/size"))
             self.move(self.settings.value("mainwindow/pos"))
@@ -154,7 +156,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         self.update_buttons()
 
-        self.message(f"GUI version: {PUBLIC_SETTINGS['version']}")
+        self.message(f"GUI version: {PUBLIC_SETTINGS.version}")
         cli_path = shutil.which(CLI_EXECUTABLE)
         if cli_path:
             self.message(f"CLI path: {cli_path}")
@@ -560,39 +562,20 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             )
 
 
-class AppContext(ApplicationContext):
-    _instance = None
+class AppContext:
+    def __init__(self):
 
-    def __new__(cls, *args, **kwargs):
-        if cls._instance is None:
-            cls._instance = super().__new__(cls)
-        return cls._instance
+        self.app = QApplication(sys.argv)
+        self.window = MainWindow()
 
-    @cached_property
-    def window(self):
-        return MainWindow()
+        # Setup Sentry if DSN is available and frozen
+        if is_frozen() and PUBLIC_SETTINGS.sentry_dsn:
 
-    @cached_property
-    def exception_handlers(self):
-        result = super().exception_handlers
-        if is_frozen():
-            result.append(self.sentry_exception_handler)
-        return result
-
-    @cached_property
-    def sentry_exception_handler(self):
-        return SentryExceptionHandler(
-            PUBLIC_SETTINGS["sentry_dsn"],
-            PUBLIC_SETTINGS["version"],
-            PUBLIC_SETTINGS["environment"],
-            callback=self._on_sentry_init,
-        )
-
-    def _on_sentry_init(self):
-        scope = self.sentry_exception_handler.scope
-        from fbs_runtime import platform
-
-        scope.set_extra("os", platform.name())
+            sentry_sdk.init(
+                dsn=PUBLIC_SETTINGS.sentry_dsn,
+                release=PUBLIC_SETTINGS.version,
+                environment="production",
+            )
 
     def run(self):
         self.app.setStyle("Fusion")

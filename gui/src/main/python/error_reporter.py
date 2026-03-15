@@ -3,12 +3,15 @@ import json
 import re
 import uuid
 from collections import deque
+from typing import TYPE_CHECKING
 
 import requests
-from fbs_runtime import platform
-from fbs_runtime import PUBLIC_SETTINGS
-from main import MainWindow
+from app_settings import platform
+from app_settings import PUBLIC_SETTINGS
 from ytmusicapi import YTMusic
+
+if TYPE_CHECKING:
+    from main import MainWindow
 
 
 class YTMusicAPILogger:
@@ -57,7 +60,12 @@ YTMusic._send_request = logged_send_request
 
 
 def send_debug_report(
-    parent_widget: MainWindow, yt_auth: YTMusic, app_log: str, user_title=None, user_description=None, user_contact=None
+    parent_widget: "MainWindow",
+    yt_auth: YTMusic,
+    app_log: str,
+    user_title=None,
+    user_description=None,
+    user_contact=None,
 ):
     """
     Send debug report to Sentry
@@ -102,8 +110,8 @@ def send_debug_report(
         "level": "info",
         "message": message,
         "culprit": user_description if user_description else "User-submitted debug report",
-        "release": PUBLIC_SETTINGS["version"],
-        "environment": PUBLIC_SETTINGS["environment"],
+        "release": PUBLIC_SETTINGS.version,
+        "environment": PUBLIC_SETTINGS.environment,
         "extra": {
             "library stats": {
                 "playlist count": playlist_count,
@@ -113,14 +121,14 @@ def send_debug_report(
             },
             "total_requests": len(request_logs),
             "signin_type": yt_auth.auth_type.name if hasattr(yt_auth, "auth_type") else "unknown",
-            "os": platform.name(),
+            "os": platform.name,
             "account_info": yt_auth.get_account_info(),
             "description": user_description,
             "contact": user_contact,
         },
     }
 
-    dsn = PUBLIC_SETTINGS["sentry_dsn"]
+    dsn = PUBLIC_SETTINGS.sentry_dsn
     match = re.match(r"https://([^@]+)@([^/]+)/(\d+)", dsn)
     if not match:
         parent_widget.message("Invalid Sentry DSN")
@@ -167,7 +175,7 @@ def send_debug_report(
     url = f"https://{host}/api/{project_id}/envelope/"
     headers = {
         "Content-Type": "application/x-sentry-envelope",
-        "X-Sentry-Auth": f"Sentry sentry_version=7, sentry_key={key}, sentry_client=ytmusic-deleter/{PUBLIC_SETTINGS['version']}",
+        "X-Sentry-Auth": f"Sentry sentry_version=7, sentry_key={key}, sentry_client=ytmusic-deleter/{PUBLIC_SETTINGS.version}",
     }
 
     try:
