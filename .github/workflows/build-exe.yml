@@ -93,7 +93,7 @@ jobs:
     - name: List dist
       shell: pwsh
       run: |
-        Get-ChildItem -Path ".\ytmusic-deleter\ytmusic-deleter\dist" -Recurse
+        Get-ChildItem -Path ".\dist" -Recurse
 
     - name: Freeze exe
       run: |
