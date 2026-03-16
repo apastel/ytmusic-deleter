@@ -6,7 +6,7 @@ import sys
 from pathlib import Path
 
 # Get paths
-project_root = Path(sys.argv[0]).parent.parent.parent.parent.parent.resolve()
+project_root = (Path.cwd() / '../../../..').resolve()
 venv_path = project_root / '.venv'
 dist_path = project_root / 'dist'
 exe_path = dist_path / 'ytmusic-deleter'
