@@ -62,6 +62,7 @@ pyinstaller = ">=6.17.0"
 [dependency-groups]
 gui = [
     "PySide6>=6.10.1",
+    "sentry-sdk>=2.54.0",
 ]
 lint = [
     "flake8>=7.3.0",

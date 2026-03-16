@@ -5,7 +5,7 @@
 groups = ["default", "gui", "lint", "test"]
 strategy = ["inherit_metadata"]
 lock_version = "4.5.0"
-content_hash = "sha256:2a4aa867c49f6eaaacaaea7e778efd5ed074a564b30f6c63d215a0c172d5d5c6"
+content_hash = "sha256:3d6afa2c80027a2fff036e794cda3fd44c3f7b7031b843650d9e080e68be9aaa"
 
 [[metadata.targets]]
 requires_python = ">=3.10,<3.15"
@@ -89,7 +89,7 @@ name = "certifi"
 version = "2026.1.4"
 requires_python = ">=3.7"
 summary = "Python package for providing Mozilla's CA Bundle."
-groups = ["default"]
+groups = ["default", "gui"]
 marker = "python_version >= \"3.10\" and python_version < \"3.15\""
 files = [
     {file = "certifi-2026.1.4-py3-none-any.whl", hash = "sha256:9943707519e4add1115f44c2bc244f782c0249876bf51b6599fee1ffbedd685c"},
@@ -1149,6 +1149,22 @@ files = [
 ]
 
 [[package]]
+name = "sentry-sdk"
+version = "2.54.0"
+requires_python = ">=3.6"
+summary = "Python client for Sentry (https://sentry.io)"
+groups = ["gui"]
+marker = "python_version >= \"3.10\" and python_version < \"3.15\""
+dependencies = [
+    "certifi",
+    "urllib3>=1.26.11",
+]
+files = [
+    {file = "sentry_sdk-2.54.0-py2.py3-none-any.whl", hash = "sha256:fd74e0e281dcda63afff095d23ebcd6e97006102cdc8e78a29f19ecdf796a0de"},
+    {file = "sentry_sdk-2.54.0.tar.gz", hash = "sha256:2620c2575128d009b11b20f7feb81e4e4e8ae08ec1d36cbc845705060b45cc1b"},
+]
+
+[[package]]
 name = "shiboken6"
 version = "6.11.0"
 requires_python = "<3.15,>=3.10"
@@ -1247,7 +1263,7 @@ name = "urllib3"
 version = "2.6.3"
 requires_python = ">=3.9"
 summary = "HTTP library with thread-safe connection pooling, file post, and more."
-groups = ["default"]
+groups = ["default", "gui"]
 marker = "python_version >= \"3.10\" and python_version < \"3.15\""
 files = [
     {file = "urllib3-2.6.3-py3-none-any.whl", hash = "sha256:bf272323e553dfb2e87d9bfd225ca7b0f467b919d7bbd355436d3fd37cb0acd4"},
