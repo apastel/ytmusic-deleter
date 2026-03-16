@@ -81,6 +81,10 @@ jobs:
     - name: Freeze prep
       run: |
         pdm freeze-prep
+    - name: List dist
+      shell: pwsh
+      run: |
+        Get-ChildItem -Path ".\dist" -Recurse
     - uses: nuget/setup-nuget@v2
     - name: Install C++ Redist
       shell: pwsh
@@ -90,10 +94,6 @@ jobs:
         $VcList = Get-VcList -Export All | Where-Object { $_.Release -in "2010","2012" -and $_.Architecture -eq "x64" }
         Save-VcRedist -VcList $VcList -Path C:\Temp\VcRedist
         Install-VcRedist -VcList $VcList -Silent
-    - name: List dist
-      shell: pwsh
-      run: |
-        Get-ChildItem -Path ".\dist" -Recurse
 
     - name: Freeze exe
       run: |
