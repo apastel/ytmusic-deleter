@@ -2,10 +2,11 @@
 
 import os
 import site
+import sys
 from pathlib import Path
 
 # Get paths
-project_root = Path(__file__).parent.parent.parent.parent.parent
+project_root = Path(sys.argv[0]).parent.parent.parent.parent.parent
 venv_path = project_root / '.venv'
 dist_path = project_root / 'dist'
 exe_path = dist_path / 'ytmusic-deleter'
