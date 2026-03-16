@@ -3,6 +3,7 @@
 import os
 import site
 import sys
+import sysconfig
 from pathlib import Path
 
 # Get paths
@@ -12,7 +13,7 @@ dist_path = project_root / 'dist'
 exe_path = dist_path / 'ytmusic-deleter.exe'
 
 # Get site-packages
-site_packages = site.getsitepackages()[0] if hasattr(site, 'getsitepackages') else str(venv_path / 'lib' / 'python3.12' / 'site-packages')
+site_packages = sysconfig.get_paths()['purelib']
 
 # Data files to include
 datas = [
