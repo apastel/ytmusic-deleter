@@ -89,6 +89,11 @@ jobs:
         $VcList = Get-VcList -Export All | Where-Object { $_.Release -in "2010","2012" -and $_.Architecture -eq "x64" }
         Save-VcRedist -VcList $VcList -Path C:\Temp\VcRedist
         Install-VcRedist -VcList $VcList -Silent
+    - name: List dist
+      shell: pwsh
+      run: |
+        Get-ChildItem -Path ".\ytmusic-deleter\ytmusic-deleter\dist" -Recurse
+
     - name: Freeze exe
       run: |
         pdm run pyinstaller gui/src/main/python/gui.spec
