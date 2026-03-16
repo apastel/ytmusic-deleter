@@ -84,7 +84,7 @@ jobs:
         pdm freeze-prep
     - name: Freeze exe
       run: |
-        pyinstaller gui/src/main/python/gui.spec
+        pdm run pyinstaller gui/src/main/python/gui.spec
     - name: Run frozen exe
       run: |
 
