@@ -9,7 +9,7 @@ from pathlib import Path
 project_root = (Path.cwd() / sys.argv[0]).parent.parent.parent.parent.parent
 venv_path = project_root / '.venv'
 dist_path = project_root / 'dist'
-exe_path = dist_path / 'ytmusic-deleter'
+exe_path = dist_path / 'ytmusic-deleter.exe'
 
 # Get site-packages
 site_packages = site.getsitepackages()[0] if hasattr(site, 'getsitepackages') else str(venv_path / 'lib' / 'python3.12' / 'site-packages')
