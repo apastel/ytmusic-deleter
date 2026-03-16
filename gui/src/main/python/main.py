@@ -595,7 +595,6 @@ class AppContext:
 
         # Setup Sentry if DSN is available and frozen
         if is_frozen() and PUBLIC_SETTINGS.sentry_dsn:
-
             sentry_sdk.init(
                 dsn=PUBLIC_SETTINGS.sentry_dsn,
                 release=PUBLIC_SETTINGS.version,
@@ -627,8 +626,6 @@ class ClickableLabel(QLabel):
 
 def flush_sentry():
     """Necessary because fbs disables Sentry's Atexit handler"""
-    import sentry_sdk
-
     sentry_sdk.flush()
 
 
