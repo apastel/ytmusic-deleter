@@ -4,9 +4,6 @@
     "dockerfile": "Dockerfile"
   },
   "features": {
-    "ghcr.io/devcontainers/features/python:1": {
-      "version": "3.13"
-    },
     "ghcr.io/devcontainers-extra/features/pdm:2": {}
   },
   "initializeCommand": "sh -c 'if [ -e /dev/dri ]; then echo \"GPU_DEVICE=/dev/dri\" > .devcontainer/gpu.env; elif [ -e /dev/dxg ]; then echo \"GPU_DEVICE=/dev/dxg\" > .devcontainer/gpu.env; else echo \"GPU_DEVICE=/dev/null\" > .devcontainer/gpu.env; fi'",
@@ -24,6 +21,8 @@
   "remoteEnv": {
     "DISPLAY": "${localEnv:DISPLAY}"
   },
+  "remoteUser": "vscode",
+  "updateRemoteUserUID": true,
   "onCreateCommand": "./.devcontainer/on-create.sh",
   "postCreateCommand": ".devcontainer/post-create.sh"
 }

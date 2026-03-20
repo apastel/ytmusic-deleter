@@ -1,3 +1,3 @@
 #!/bin/bash
 # Runs early, before workspace mount
-pdm install
+pdm install --no-self
