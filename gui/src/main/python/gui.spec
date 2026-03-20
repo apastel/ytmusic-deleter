@@ -1,25 +1,31 @@
 # -*- mode: python ; coding: utf-8 -*-
 
 import os
-import site
 import sys
 import sysconfig
 from pathlib import Path
 
-# Get paths
-project_root = (Path.cwd() / sys.argv[0]).parent.parent.parent.parent.parent
-venv_path = project_root / '.venv'
-dist_path = project_root / 'dist'
-exe_path = dist_path / 'ytmusic-deleter.exe'
+is_windows = sys.platform.startswith("win")
 
-# Get site-packages
+project_root = Path.cwd()
+dist_path = project_root / 'dist'
+
+exe_name = "ytmusic-deleter.exe" if is_windows else "ytmusic-deleter"
+exe_path = dist_path / exe_name
+
 site_packages = sysconfig.get_paths()['purelib']
 
-# Data files to include
-datas = [
-    (str(exe_path), '_internal'),  # CLI executable
-    (os.path.join(site_packages, 'ytmusicapi', 'locales'), '_internal/ytmusicapi/locales'),  # ytmusicapi locales
-]
+datas = []
+
+if exe_path.exists():
+    datas.append((str(exe_path), '_internal'))
+else:
+    print(f"WARNING: CLI executable not found at {exe_path}")
+
+datas.append((
+    os.path.join(site_packages, 'ytmusicapi', 'locales'),
+    '_internal/ytmusicapi/locales'
+))
 
 a = Analysis(
     ['main.py'],
