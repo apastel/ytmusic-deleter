@@ -1,6 +1,9 @@
 #!/bin/bash
 set -e
 
+echo Create CLI executable
+pyinstaller ytmusic_deleter.spec
+
 echo Set up directories
 VENV_PATH=$PDM_PROJECT_ROOT/.venv
 if [[ $(uname) == "Linux" || $(uname) == "Darwin" ]]; then
@@ -12,9 +15,6 @@ else
 fi
 EXE_PATH=$PDM_PROJECT_ROOT/dist/ytmusic-deleter
 FREEZE_DIR=$PDM_PROJECT_ROOT/gui/src/freeze
-
-echo Create CLI executable
-pyinstaller ytmusic_deleter.spec
 
 echo Clean and re-create the freeze directories
 rm -rf "$FREEZE_DIR"
