@@ -4,9 +4,6 @@
     "dockerfile": "Dockerfile"
   },
   "features": {
-    "ghcr.io/devcontainers/features/python:1": {
-      "version": "3.13"
-    },
     "ghcr.io/devcontainers-extra/features/pdm:2": {}
   },
   "runArgs": [
@@ -17,6 +14,8 @@
     "source=/tmp/.X11-unix,target=/tmp/.X11-unix,type=bind,consistency=cached",
     "source=/dev/dri,target=/dev/dri,type=bind,consistency=cached"
   ],
+  "remoteUser": "vscode",
+  "updateRemoteUserUID": true,
   "remoteEnv": {
     "DISPLAY": "${localEnv:DISPLAY}"
   },
