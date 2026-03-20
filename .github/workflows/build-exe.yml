@@ -116,7 +116,7 @@ jobs:
         export QT_QPA_PLATFORM=offscreen
 
         # Launch the fbs app and kill it after 10 seconds, saving the output.
-        output=$(timeout 10s ./build/gui/YTMusic_Deleter.exe || true)
+        output=$(timeout 10s ./dist/YTMusic_Deleter/YTMusic_Deleter.exe || true)
 
         # Check if the output contains the right CLI version
         if grep -q "$version_str" <<< "$output"; then
