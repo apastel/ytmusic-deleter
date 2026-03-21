@@ -73,9 +73,6 @@ jobs:
             echo $output
             exit 1
         fi
-    - name: Freeze prep
-      run: |
-        pdm freeze-prep
     - name: Freeze exe
       run: |
         pdm run pyinstaller gui/src/main/python/gui.spec
@@ -89,7 +86,7 @@ jobs:
         export QT_QPA_PLATFORM=offscreen
 
         # Launch the frozen app and kill it after 10 seconds, saving the output.
-        output=$(timeout 10s ./gui/target/YTMusic_Deleter/YTMusic_Deleter || true)
+        output=$(timeout 10s ./dist/YTMusic_Deleter/YTMusic_Deleter || true)
 
         # Check if the output contains the right CLI version
         if grep -q "$version_str" <<< "$output"; then

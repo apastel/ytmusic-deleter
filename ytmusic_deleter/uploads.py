@@ -11,7 +11,9 @@ from ytmusicapi import YTMusic
 from ytmusicapi.models.content.enums import LikeStatus
 
 
-def maybe_delete_uploaded_albums() -> tuple[int, int]:
+def maybe_delete_uploaded_albums(
+    yt_auth: YTMusic = None, add_to_library: bool = False, score_cutoff: int = 90, static_progress: bool = False
+) -> tuple[int, int]:
     """
     Retrieve all of the uploaded songs, then filter the list to just songs from unique albums.
     Iterate over each album-unique song. If `add_to_library` is true, search the YTM online catalog
@@ -22,9 +24,16 @@ def maybe_delete_uploaded_albums() -> tuple[int, int]:
 
     `Returns`: a tuple of the number of albums deleted, and the total album count
     """
+    from click import get_current_context
+
+    if yt_auth is None:
+        try:
+            yt_auth: YTMusic = get_current_context().obj["YT_AUTH"]
+        except Exception as err:
+            raise ValueError("yt_auth must be provided when not running in Click context") from err
+
     logging.info("Retrieving all uploaded songs...")
     albums_deleted = 0
-    yt_auth: YTMusic = get_current_context().obj["YT_AUTH"]
     uploaded_songs = yt_auth.get_library_upload_songs(limit=None)
     if not uploaded_songs:
         logging.info("No uploaded songs were found.")
@@ -38,7 +47,7 @@ def maybe_delete_uploaded_albums() -> tuple[int, int]:
         total=len(album_unique_songs),
         desc="Albums Processed",
         unit="albums",
-        enabled=not get_current_context().obj["STATIC_PROGRESS"],
+        enabled=not static_progress,
     )
     for song in album_unique_songs:
         artist = (
@@ -48,7 +57,7 @@ def maybe_delete_uploaded_albums() -> tuple[int, int]:
         )
         album_title = song["album"]["name"] if song.get("album") else common.UNKNOWN_ALBUM
         logging.info(f"Processing album: {artist} - {album_title}")
-        if get_current_context().params["add_to_library"]:
+        if add_to_library:
             if artist == common.UNKNOWN_ARTIST or album_title == common.UNKNOWN_ALBUM:
                 if artist == common.UNKNOWN_ARTIST:
                     logging.warning("\tSong is missing artist metadata.")
@@ -57,7 +66,7 @@ def maybe_delete_uploaded_albums() -> tuple[int, int]:
                 logging.warning("\tSkipping match search and will not delete.")
                 update_progress(progress_bar)
                 continue
-            elif not add_album_to_library(artist, album_title):
+            elif not add_album_to_library(artist, album_title, yt_auth=yt_auth, score_cutoff=score_cutoff):
                 logging.warning(
                     f"\tNo album was added to library for '{artist} - {album_title}'. Will not delete from uploads."
                 )
@@ -110,8 +119,8 @@ def add_album_to_library(upload_artist, upload_title, yt_auth: YTMusic = None, s
     )
 
     # Make sure this result at least passes the score cutoff
-    if not score_cutoff:
-        score_cutoff = get_current_context().params["score_cutoff"]
+    if score_cutoff is None:
+        score_cutoff = 90
     if score < score_cutoff:
         logging.info(
             f"\tThe best search result '{match['artist']} - {match['title']}' had a match score of {score} which does not pass the score cutoff of {score_cutoff}."  # noqa: B950

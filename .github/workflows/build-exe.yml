@@ -78,9 +78,6 @@ jobs:
               echo $output
               exit 1
           fi
-    - name: Freeze prep
-      run: |
-        pdm freeze-prep
 
     - uses: nuget/setup-nuget@v2
     - name: Install C++ Redist
