@@ -12,7 +12,11 @@ from ytmusicapi.models.content.enums import LikeStatus
 
 
 def maybe_delete_uploaded_albums(
-    yt_auth: YTMusic = None, add_to_library: bool = False, score_cutoff: int = 90, static_progress: bool = False
+    yt_auth: YTMusic = None,
+    add_to_library: bool = False,
+    score_cutoff: int = 90,
+    static_progress: bool = False,
+    cancelled=None,
 ) -> tuple[int, int]:
     """
     Retrieve all of the uploaded songs, then filter the list to just songs from unique albums.
@@ -32,6 +36,8 @@ def maybe_delete_uploaded_albums(
         except Exception as err:
             raise ValueError("yt_auth must be provided when not running in Click context") from err
 
+    cancelled = cancelled or (lambda: False)
+
     logging.info("Retrieving all uploaded songs...")
     albums_deleted = 0
     uploaded_songs = yt_auth.get_library_upload_songs(limit=None)
@@ -50,6 +56,9 @@ def maybe_delete_uploaded_albums(
         enabled=not static_progress,
     )
     for song in album_unique_songs:
+        if cancelled():
+            logging.info("Operation cancelled by user.")
+            break
         artist = (
             song["artists"][0]["name"]
             if song.get("artists")  # Using `get` ensures key exists and isn't []

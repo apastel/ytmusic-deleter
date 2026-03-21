@@ -60,6 +60,10 @@ class InternalCommandWorker(QObject):
         super().__init__()
         self.ytmusic = ytmusic
         self.args = args
+        self.cancelled = False
+
+    def cancel(self):
+        self.cancelled = True
 
     @Slot()
     def run(self):
@@ -100,7 +104,7 @@ class InternalCommandWorker(QObject):
 
             progress_module.set_static_progress(False)  # Disable static progress logging since we have GUI
 
-            context = actions.ActionContext(self.ytmusic, static_progress=False)
+            context = actions.ActionContext(self.ytmusic, static_progress=False, cancelled=lambda: self.cancelled)
             command = self.args[0] if self.args else None
             cmd_args = self.args[1:]
 
