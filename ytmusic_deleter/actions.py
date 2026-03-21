@@ -14,11 +14,15 @@ from ytmusicapi.type_alias import JsonDict
 
 
 class ActionContext:
-    __slots__ = ("yt_auth", "static_progress")
+    __slots__ = ("yt_auth", "static_progress", "cancelled")
 
-    def __init__(self, yt_auth, static_progress=False):
+    def __init__(self, yt_auth, static_progress=False, cancelled=None):
         self.yt_auth = yt_auth
         self.static_progress = static_progress
+        self.cancelled = cancelled or (lambda: False)
+
+    def is_cancelled(self):
+        return self.cancelled()
 
 
 def delete_uploads(ctx: ActionContext, add_to_library=False, score_cutoff=90):
@@ -27,6 +31,7 @@ def delete_uploads(ctx: ActionContext, add_to_library=False, score_cutoff=90):
         add_to_library=add_to_library,
         score_cutoff=score_cutoff,
         static_progress=ctx.static_progress,
+        cancelled=ctx.is_cancelled,
     )
     logging.info(f"Deleted {albums_deleted} out of {albums_total} uploaded albums (or songs).")
     remaining_count = albums_total - albums_deleted
@@ -118,6 +123,9 @@ def remove_library_items(ctx: ActionContext, library_items):
     yt_auth = ctx.yt_auth
     items_removed = 0
     for item in library_items:
+        if ctx.is_cancelled():
+            logging.info("Operation cancelled by user.")
+            break
         logging.debug(f"Full album or song item: {item}")
         artist = item["artists"][0]["name"] if item.get("artists") else common.UNKNOWN_ARTIST
         title = item.get("title")
@@ -203,6 +211,9 @@ def unlike_all(ctx: ActionContext):
 
     songs_unliked = 0
     for track in your_likes["tracks"]:
+        if ctx.is_cancelled():
+            logging.info("Operation cancelled by user.")
+            break
         artist = track["artists"][0]["name"] if track.get("artists") else common.UNKNOWN_ARTIST
         title = track["title"]
         logging.info(f"Processing track: {artist} - {title!r}")
@@ -234,6 +245,9 @@ def delete_playlists(ctx: ActionContext):
 
     playlists_deleted = 0
     for playlist in library_playlists:
+        if ctx.is_cancelled():
+            logging.info("Operation cancelled by user.")
+            break
         logging.info(f"Processing playlist: {playlist['title']}")
         try:
             response = yt_auth.delete_playlist(playlist["playlistId"])
@@ -275,6 +289,9 @@ def delete_history(ctx: ActionContext, items_deleted=0):
 
     logging.info(f"Found {len(history_items)} history items to delete.")
     for item in history_items:
+        if ctx.is_cancelled():
+            logging.info("Operation cancelled by user.")
+            break
         artist = item["artists"][0]["name"] if item.get("artists") else common.UNKNOWN_ARTIST
         logging.info(f"\tProcessing history item: {artist} - {item['title']!r}")
         response = yt_auth.remove_history_items(item["feedbackToken"])
@@ -311,6 +328,9 @@ def sort_playlist(ctx: ActionContext, shuffle, playlist_titles, custom_sort, rev
     ]
 
     for selected_playlist in selected_playlist_list:
+        if ctx.is_cancelled():
+            logging.info("Operation cancelled by user.")
+            break
         logging.info(f"Processing playlist: {selected_playlist['title']}")
         playlist = yt_auth.get_playlist(selected_playlist["playlistId"], limit=None)
         if not common.can_edit_playlist(playlist):
@@ -479,6 +499,9 @@ def add_all_to_library(ctx: ActionContext, playlist_title_or_id):
 
     added_tracks_count = 0
     for track in playlist_tracks:
+        if ctx.is_cancelled():
+            logging.info("Operation cancelled by user.")
+            break
         track_str = f"{track['artists'][0]['name']} - {track['title']!r}"
         logging.info(f"Processing item: {track_str}")
         add_token = track.get("feedbackTokens", {}).get("add")
