@@ -38,13 +38,17 @@ line-length = 120
 [tool.pdm.scripts]
 # Seems redundant, but takes advantage of pdm's platform-agnostic venv activation
 ytmusic-deleter = "ytmusic-deleter"
+
 # Use this to run the GUI in development mode
 gui = "python gui/src/main/python/main.py"
+
 # Use this to generate the UI files (Windows only)
 generate = "bash gui/scripts/generate_ui_files.sh"
+
 # Use this to bump all the project versions
 version = "bash bump_versions.sh"
-freeze-prep = "bash gui/scripts/freeze_prep.sh"
+
+# Use this to run Qt Designer
 designer = ".venv/bin/pyside6-designer"
 
 [tool.pdm.build]
