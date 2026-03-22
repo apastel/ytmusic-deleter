@@ -57,12 +57,17 @@ YTMusic._send_request = logged_send_request
 
 
 def send_debug_report(
-    parent_widget: MainWindow, yt_auth: YTMusic, app_log: str, user_title=None, user_description=None, user_contact=None
+    parent_widget: MainWindow,
+    yt_auth: YTMusic | None,
+    app_log: str,
+    user_title=None,
+    user_description=None,
+    user_contact=None,
 ):
     """
     Send debug report to Sentry
     Args:
-        yt_auth: The YTMusic instance to get current state from
+        yt_auth: The YTMusic instance for the user (or none if they're not signed in)
         user_title: User-provided issue title (used as Sentry message)
         user_description: Optional user-provided description
         user_contact: Optional contact info for updates
@@ -85,10 +90,10 @@ def send_debug_report(
         except Exception as e:
             return f"Error: {e}"
 
-    playlist_count = safe_count(yt_auth.get_library_playlists, limit=None)
-    upload_count = safe_count(yt_auth.get_library_upload_songs, limit=None)
-    liked_count = safe_count(yt_auth.get_liked_songs, limit=None)
-    library_count = safe_count(yt_auth.get_library_songs, limit=None)
+    playlist_count = safe_count(yt_auth.get_library_playlists, limit=None) if yt_auth else "unknown"
+    upload_count = safe_count(yt_auth.get_library_upload_songs, limit=None) if yt_auth else "unknown"
+    liked_count = safe_count(yt_auth.get_liked_songs, limit=None) if yt_auth else "unknown"
+    library_count = safe_count(yt_auth.get_library_songs, limit=None) if yt_auth else "unknown"
 
     # Build the event payload manually
     event_id = uuid.uuid4().hex
@@ -112,9 +117,11 @@ def send_debug_report(
                 "library songs count": library_count,
             },
             "total_requests": len(request_logs),
-            "signin_type": yt_auth.auth_type.name if hasattr(yt_auth, "auth_type") else "unknown",
+            "signin_type": (
+                (yt_auth.auth_type.name if hasattr(yt_auth, "auth_type") else "unknown") if yt_auth else "Not signed in"
+            ),
             "os": platform.name(),
-            "account_info": yt_auth.get_account_info(),
+            "account_info": yt_auth.get_account_info() if yt_auth else "Not signed in",
             "description": user_description,
             "contact": user_contact,
         },

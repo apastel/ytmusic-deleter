@@ -554,7 +554,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             contact = dialog.get_user_contact()
             app_log = dialog.get_edited_logs()
 
-            event_id = error_reporter.send_debug_report(self, self.ytmusic, app_log, title, description, contact)
+            yt_auth: ytmusicapi.YTMusic | None = self.ytmusic if hasattr(self, "ytmusic") else None
+            event_id = error_reporter.send_debug_report(self, yt_auth, app_log, title, description, contact)
             QMessageBox.information(
                 self, "Report Sent", f"Thank you! Your report has been sent.\nReference ID: {event_id}"
             )
