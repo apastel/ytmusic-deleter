@@ -283,6 +283,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def sign_out(self):
         self.message(f"Deleting auth file at: {self.auth_file_path}")
         Path.unlink(self.auth_file_path)
+        del self.ytmusic
         self.message("Signed out of YTMusic Deleter.")
         self.accountWidget.hide()
         self.accountPhotoButton.hide()
@@ -555,10 +556,33 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             app_log = dialog.get_edited_logs()
 
             yt_auth: ytmusicapi.YTMusic | None = self.ytmusic if hasattr(self, "ytmusic") else None
-            event_id = error_reporter.send_debug_report(self, yt_auth, app_log, title, description, contact)
-            QMessageBox.information(
-                self, "Report Sent", f"Thank you! Your report has been sent.\nReference ID: {event_id}"
-            )
+
+            def send_report():
+                return error_reporter.send_debug_report(self, yt_auth, app_log, title, description, contact)
+
+            def on_report_sent(result):
+                if isinstance(result, Exception):
+                    logging.exception("Failed to send debug report", exc_info=result)
+                    QMessageBox.warning(
+                        self,
+                        "Report Failed",
+                        "Failed to send the debug report. Please copy the logs from the Console Log and report the"
+                        " issue on GitHub or Discord.",
+                    )
+                elif result:
+                    QMessageBox.information(
+                        self, "Report Sent", f"Thank you! Your report has been sent.\nReference ID: {result}"
+                    )
+                else:
+                    QMessageBox.warning(
+                        self,
+                        "Report Failed",
+                        "Failed to send the debug report. Please copy the logs from the Console Log and report the"
+                        " issue on GitHub or Discord.",
+                    )
+
+            progress = ProgressWorkerDialog("Building and sending debug report", self)
+            progress.run(send_report, on_report_sent)
 
 
 class AppContext(ApplicationContext):

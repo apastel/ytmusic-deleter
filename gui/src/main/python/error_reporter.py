@@ -178,13 +178,8 @@ def send_debug_report(
     }
 
     try:
-        parent_widget.message(f"Sending report {event_id} with attachments to Sentry error reporter...")
         response = requests.post(url, data=envelope.encode("utf-8"), headers=headers, timeout=10)
         response.raise_for_status()
-        parent_widget.message(f"Successfully sent error report to Sentry! Status code: {response.status_code}")
         return event_id
-    except Exception as e:
-        parent_widget.message(f"Failed to send error report to Sentry: {e}")
-        if "response" in locals():
-            parent_widget.message(f"Response: {response.text}")
+    except Exception:
         return None
