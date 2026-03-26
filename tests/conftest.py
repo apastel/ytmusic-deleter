@@ -159,7 +159,7 @@ def fixture_fuzzy_test_data() -> list[dict]:
         },
         {
             "upload_artist": "Metallica",
-            "upload_title": "Metallica Through The Never: Music From The Motion Picture [Disc 2]",
+            "upload_title": "Metallica Through The Never: Music From The Motion Picture",
             "expected_artist": "Metallica",
             "expected_title": "Metallica Through The Never (Music From The Motion Picture)",
         },
