@@ -37,7 +37,7 @@ jobs:
     runs-on: windows-latest
     timeout-minutes: 10
     outputs:
-      installer-version: ${{ steps.json-properties.outputs.version }}
+      installer-version: ${{ steps.create_installer.outputs.version }}
       cli-version: ${{ steps.run-cli.outputs.version }}
     steps:
     - uses: actions/checkout@v6
@@ -126,21 +126,18 @@ jobs:
     - name: Add NSIS to PATH
       run: echo "C:\Program Files (x86)\NSIS" >> $GITHUB_PATH
     - name: Create installer
+      id: create_installer
       run: |
         mkdir -p gui/target
         VERSION=$(python -c "from ytmusic_deleter._version import __version__; print(__version__)" )
         NUM_VERSION=$(python -c "import re; from ytmusic_deleter._version import __version__; version=__version__; m=re.match(r'^(\\d+)\\.(\\d+)\\.(\\d+)(?:[.-]dev(\\d+))?', version); print( f'{m.group(1)}.{m.group(2)}.{m.group(3)}.{m.group(4) or 0}' if m else '.'.join((re.findall(r'\\d+', version)+['0','0','0','0'])[:4]) )")
         makensis -DVERSION="$VERSION" -DNUM_VERSION="$NUM_VERSION" gui/src/installer/windows/Installer.nsi
-    - name: Get base.json file
-      id: json-properties
-      uses: zoexx/github-action-json-file-properties@1.0.6
-      with:
-        file_path: gui/src/build/settings/base.json
+        echo "version=$VERSION" >> $GITHUB_OUTPUT
     - name: Save .exe as artifact
       id: upload_exe
       uses: actions/upload-artifact@v7
       with:
-        path: ./gui/target/YTMusic_Deleter-${{ steps.json-properties.outputs.version }}-Windows-Installer.exe
+        path: ./gui/target/YTMusic_Deleter-${{ steps.create_installer.outputs.version }}-Windows-Installer.exe
         archive: false
 
   verify:
