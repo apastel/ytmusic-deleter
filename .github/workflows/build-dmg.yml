@@ -78,6 +78,18 @@ jobs:
     - name: Freeze exe
       run: |
         pdm run pyinstaller gui/src/main/python/gui.spec
+    - name: List dist
+      shell: pwsh
+      run: |
+        Get-ChildItem -Path ".\dist" -Recurse
+    - name: List build
+      shell: pwsh
+      run: |
+        Get-ChildItem -Path ".\build" -Recurse
+    - name: List gui
+      shell: pwsh
+      run: |
+        Get-ChildItem -Path ".\gui" -Recurse
     - name: Run frozen exe
       run: |
 
