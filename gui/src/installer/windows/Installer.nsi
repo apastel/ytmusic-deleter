@@ -6,15 +6,23 @@
 !define author "apastel"
 !define installer "YTMusic_Deleter-${VERSION}-Windows-Installer.exe"
 
-!define MUI_ICON "..\${app_name}\Icon.ico"
-!define MUI_UNICON "..\${app_name}\Icon.ico"
+!define MUI_ICON "..\..\..\..\gui\src\main\icons\Icon.ico"
+!define MUI_UNICON "..\..\..\..\gui\src\main\icons\Icon.ico"
 
-!getdllversion "..\..\target\${app_name}\${app_name}.exe" ver
-!define VERSION "${ver1}.${ver2}.${ver3}.${ver4}"
+!ifndef VERSION
+  !getdllversion "..\..\..\..\dist\YTMusic_Deleter\${app_name}.exe" ver
+  !define VERSION "${ver1}.${ver2}.${ver3}.${ver4}"
+!endif
 
-VIProductVersion "${VERSION}"
+!ifdef NUM_VERSION
+  !define USE_VERSION "${NUM_VERSION}"
+!else
+  !define USE_VERSION "${VERSION}"
+!endif
+
+VIProductVersion "${USE_VERSION}"
 VIAddVersionKey "ProductName" "${display_name}"
-VIAddVersionKey "FileVersion" "${VERSION}"
+VIAddVersionKey "FileVersion" "${USE_VERSION}"
 VIAddVersionKey "ProductVersion" "${VERSION}"
 VIAddVersionKey "LegalCopyright" "(C) ${author}"
 VIAddVersionKey "FileDescription" "${display_name}"
@@ -39,7 +47,7 @@ FunctionEnd
 ;General
 
   Name "${display_name}"
-  OutFile "..\..\target\${installer}"
+  OutFile "..\..\..\target\${installer}"
 
 ;--------------------------------
 ;Interface Settings
@@ -75,7 +83,7 @@ FunctionEnd
   "Software\Microsoft\Windows\CurrentVersion\Uninstall\${app_name}"
 Section
   SetOutPath "$InstDir"
-  File /r "..\..\target\${app_name}\*"
+  File /r "..\..\..\..\dist\YTMusic_Deleter\*"
   WriteRegStr SHCTX "Software\${app_name}" "" $InstDir
   WriteUninstaller "$InstDir\uninstall.exe"
   CreateShortCut "$SMPROGRAMS\${display_name}.lnk" "$InstDir\${app_name}.exe"
