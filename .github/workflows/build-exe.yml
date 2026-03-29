@@ -61,15 +61,14 @@ jobs:
         shell: bash
         command: |
 
-          # Store the version argument
-          version_str="${{ steps.run-cli.outputs.version }}"
-
           # Makes app run headless
           export QT_QPA_PLATFORM=offscreen
 
           # Launch the GUI app and kill it after 10 seconds
+          set +e
           timeout 10s pdm gui
           status=$?
+          set -e
           if [ "$status" = 124 ]; then
             echo "GUI started and was still running after 10s"
           else
@@ -105,15 +104,14 @@ jobs:
     - name: Run frozen exe
       run: |
 
-        # Store the version argument
-        version_str="${{ steps.run-cli.outputs.version }}"
-
         # Makes app run headless
         export QT_QPA_PLATFORM=offscreen
 
-        # Launch the fbs app and kill it after 10 seconds
+        # Launch frozen app and kill it after 10 seconds
+        set +e
         timeout 10s ./dist/YTMusic_Deleter/YTMusic_Deleter.exe
         status=$?
+        set -e
         if [ "$status" = 124 ]; then
           echo "GUI started and was still running after 10s"
         else
@@ -163,9 +161,12 @@ jobs:
           command: |
             # Makes app run headless
             export QT_QPA_PLATFORM=offscreen
-            logfile="$APPDATA\YTMusic_Deleter\logs\ytmusic-deleter-gui_$(date +%Y-%m-%d).log"
+
+            # Launch the installed app and kill it after 10s
+            set +e
             timeout 10s "$LOCALAPPDATA/YTMusic_Deleter/YTMusic_Deleter.exe"
             status=$?
+            set -e
             if [ "$status" = 124 ]; then
               echo "GUI started and was still running after 10s"
             else
