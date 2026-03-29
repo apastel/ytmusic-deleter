@@ -3,6 +3,8 @@
 import os
 import sysconfig
 
+here = os.path.abspath(os.getcwd())
+
 site_packages = sysconfig.get_paths()['purelib']
 
 datas = [
@@ -11,7 +13,7 @@ datas = [
         'ytmusicapi/locales'
     ),
     (
-        os.path.join(os.path.dirname(__file__), '..', 'icons', 'Icon.ico'),
+        os.path.join(here, 'gui', 'src', 'main', 'icons', 'Icon.ico'),
         'icons'
     )
 ]
@@ -41,7 +43,7 @@ exe = EXE(
     bootloader_ignore_signals=False,
     strip=False,
     upx=False,
-    icon=os.path.join(os.path.dirname(__file__), '..', 'icons', 'Icon.ico'),
+    icon=os.path.join(here, 'gui', 'src', 'main', 'icons', 'Icon.ico'),
     console=False,
     disable_windowed_traceback=False,
     argv_emulation=False,
