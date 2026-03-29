@@ -106,11 +106,10 @@ jobs:
             ./dist/YTMusic_Deleter/=/opt/YTMusic_Deleter/
         echo "version=$VERSION" >> $GITHUB_OUTPUT
     - name: Save .deb as artifact
-      id: upload_deb
       uses: actions/upload-artifact@v7
       with:
-        name: installer-deb
         path: ./ytmusic-deleter_${{ steps.create_installer.outputs.version }}_amd64.deb
+        archive: false
 
   verify:
     runs-on: ubuntu-22.04
@@ -119,7 +118,7 @@ jobs:
       - name: Download Artifact
         uses: actions/download-artifact@v8
         with:
-          name: installer-deb
+          name: ytmusic-deleter_${{ needs.build.outputs.installer-version }}_amd64.deb
       - name: Run installer
         run: |
           sudo dpkg -i ./ytmusic-deleter_${{ needs.build.outputs.installer-version }}_amd64.deb

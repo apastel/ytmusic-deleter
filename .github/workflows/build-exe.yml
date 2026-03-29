@@ -133,7 +133,6 @@ jobs:
         makensis -DVERSION="$VERSION" -DNUM_VERSION="$NUM_VERSION" gui/src/installer/windows/Installer.nsi
         echo "version=$VERSION" >> $GITHUB_OUTPUT
     - name: Save .exe as artifact
-      id: upload_exe
       uses: actions/upload-artifact@v7
       with:
         path: ./gui/target/YTMusic_Deleter-${{ steps.create_installer.outputs.version }}-Windows-Installer.exe
