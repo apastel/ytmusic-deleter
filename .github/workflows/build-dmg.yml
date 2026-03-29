@@ -97,7 +97,7 @@ jobs:
 
         # Launch the frozen app and kill it after 10 seconds
         set +e
-        timeout 10s ./dist/YTMusic_Deleter.app/Contents/MacOS/YTMusic_Deleter
+        timeout 10s ./dist/YTMusic_Deleter/YTMusic_Deleter
         status=$?
         set -e
         if [ "$status" = 124 ]; then
