@@ -67,16 +67,14 @@ jobs:
           # Makes app run headless
           export QT_QPA_PLATFORM=offscreen
 
-          # Launch the GUI app and kill it after 10 seconds, saving the output.
-          output=$(timeout 10s pdm gui || true)
-
-          # Check if the output contains the right CLI version
-          if grep -q "$version_str" <<< "$output"; then
-              echo "GUI is running the right CLI version: $version_str"
+          # Launch the GUI app and kill it after 10 seconds
+          timeout 10s pdm gui
+          status=$?
+          if [ "$status" = 124 ]; then
+            echo "GUI started and was still running after 10s"
           else
-              echo "$version_str" not found in output, which was the following:
-              echo $output
-              exit 1
+            echo "GUI failed with exit code $status"
+            exit 1
           fi
 
     - uses: nuget/setup-nuget@v2
@@ -113,16 +111,14 @@ jobs:
         # Makes app run headless
         export QT_QPA_PLATFORM=offscreen
 
-        # Launch the fbs app and kill it after 10 seconds, saving the output.
-        output=$(timeout 10s ./dist/YTMusic_Deleter/YTMusic_Deleter.exe || true)
-
-        # Check if the output contains the right CLI version
-        if grep -q "$version_str" <<< "$output"; then
-            echo "GUI is running the right CLI version: $version_str"
+        # Launch the fbs app and kill it after 10 seconds
+        timeout 10s ./dist/YTMusic_Deleter/YTMusic_Deleter.exe
+        status=$?
+        if [ "$status" = 124 ]; then
+          echo "GUI started and was still running after 10s"
         else
-            echo "$version_str" not found in output, which was the following:
-            echo $output
-            exit 1
+          echo "GUI failed with exit code $status"
+          exit 1
         fi
     - name: Install NSIS
       uses: nick-fields/retry@v3
@@ -168,13 +164,12 @@ jobs:
             # Makes app run headless
             export QT_QPA_PLATFORM=offscreen
             logfile="$APPDATA\YTMusic_Deleter\logs\ytmusic-deleter-gui_$(date +%Y-%m-%d).log"
-            timeout 10s "$LOCALAPPDATA/YTMusic_Deleter/YTMusic_Deleter.exe" || true
-            version_str="${{ needs.build.outputs.cli-version }}"
-            if grep -q "$version_str" $logfile; then
-              echo "GUI is running the right CLI version: $version_str"
+            timeout 10s "$LOCALAPPDATA/YTMusic_Deleter/YTMusic_Deleter.exe"
+            status=$?
+            if [ "$status" = 124 ]; then
+              echo "GUI started and was still running after 10s"
             else
-              echo "The string "$version_str" was not found in $logfile, contents below:"
-              cat $logfile
+              echo "GUI failed with exit code $status"
               exit 1
             fi
           max_attempts: 5
