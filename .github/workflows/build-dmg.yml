@@ -164,7 +164,7 @@ jobs:
       - name: List Volumes
         shell: pwsh
         run: |
-          Get-ChildItem -Path ".\Volumes" -Recurse
+          Get-ChildItem -Path "/Volumes" -Recurse
       - name: Run application
         run: |
 
@@ -173,7 +173,7 @@ jobs:
 
           # Launch the installed app and kill it after 10s
           set +e
-          timeout 10s "/Volumes/YTMusic Deleter/YTMusic_Deleter/YTMusic_Deleter"
+          timeout 10s "/Volumes/YTMusic Deleter/YTMusic_Deleter"
           status=$?
           set -e
           if [ "$status" = 124 ]; then
