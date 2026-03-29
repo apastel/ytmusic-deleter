@@ -9,6 +9,10 @@ datas = [
     (
         os.path.join(site_packages, 'ytmusicapi', 'locales'),
         'ytmusicapi/locales'
+    ),
+    (
+        os.path.join(os.path.dirname(__file__), '..', 'icons', 'Icon.ico'),
+        'icons'
     )
 ]
 
@@ -37,6 +41,7 @@ exe = EXE(
     bootloader_ignore_signals=False,
     strip=False,
     upx=False,
+    icon=os.path.join(os.path.dirname(__file__), '..', 'icons', 'Icon.ico'),
     console=False,
     disable_windowed_traceback=False,
     argv_emulation=False,
