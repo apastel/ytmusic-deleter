@@ -50,6 +50,14 @@ from ytmusicapi.auth.types import AuthType
 from common import APP_DATA_PATH
 
 
+def get_resource_path(relative_path):
+    if getattr(sys, "frozen", False):
+        base_path = Path(sys._MEIPASS)
+    else:
+        base_path = Path(__file__).resolve().parent.parent
+    return str(base_path / relative_path)
+
+
 class InternalCommandWorker(QObject):
     finished = Signal()
     error = Signal(str)
@@ -737,7 +745,12 @@ class AppContext:
     def __init__(self):
 
         self.app = QApplication(sys.argv)
+        icon_path = get_resource_path("icons/Icon.ico")
+        app_icon = QIcon(icon_path)
+        self.app.setWindowIcon(app_icon)
+
         self.window = MainWindow()
+        self.window.setWindowIcon(app_icon)
 
         # Setup Sentry if DSN is available and frozen
         if is_frozen() and PUBLIC_SETTINGS.sentry_dsn:
