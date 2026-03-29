@@ -38,7 +38,6 @@ jobs:
     timeout-minutes: 10
     outputs:
       installer-version: ${{ steps.create_installer.outputs.version }}
-      cli-version: ${{ steps.run-cli.outputs.version }}
     steps:
     - uses: actions/checkout@v6
       with:
@@ -51,7 +50,7 @@ jobs:
       id: run-cli
       run: |
         . .venv/Scripts/activate
-        echo "version=$(ytmusic-deleter --version)" >> $GITHUB_OUTPUT
+        echo "version=$(ytmusic-deleter --version)"
     - name: Run GUI app
       uses: nick-fields/retry@v3
       with:

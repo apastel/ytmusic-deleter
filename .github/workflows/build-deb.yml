@@ -36,8 +36,7 @@ jobs:
   build:
     runs-on: ubuntu-22.04
     outputs:
-      installer-version: ${{ steps.run-cli.outputs.version }}
-      cli-version: ${{ steps.run-cli.outputs.version }}
+      installer-version: ${{ steps.create_installer.outputs.version }}
     steps:
     - uses: actions/checkout@v6
       with:
@@ -51,27 +50,24 @@ jobs:
       id: run-cli
       run: |
         . .venv/bin/activate
-        echo "version=$(ytmusic-deleter --version)" >> $GITHUB_OUTPUT
+        echo "version=$(ytmusic-deleter --version)"
     - name: Run GUI app
       run: |
-
-        # Store the version argument
-        version_str="${{ steps.run-cli.outputs.version }}"
 
         # Makes app run headless
         export QT_QPA_PLATFORM=offscreen
 
         # Launch the GUI app and kill it after 10 seconds, saving the output.
-          set +e
-          timeout 10s pdm gui
-          status=$?
-          set -e
-          if [ "$status" = 124 ]; then
-            echo "GUI started and was still running after 10s"
-          else
-            echo "GUI failed with exit code $status"
-            exit 1
-          fi
+        set +e
+        timeout 10s pdm gui
+        status=$?
+        set -e
+        if [ "$status" = 124 ]; then
+          echo "GUI started and was still running after 10s"
+        else
+          echo "GUI failed with exit code $status"
+          exit 1
+        fi
     - name: Freeze exe
       run: |
         pdm run pyinstaller gui/src/main/python/gui.spec
@@ -99,20 +95,22 @@ jobs:
       run: |
         sudo gem install fpm
     - name: Create installer
+      id: create_installer
       run: |
         mkdir -p gui/target
         VERSION=$(python -c "from ytmusic_deleter._version import __version__; print(__version__)")
-        fpm -s dir -t deb -n YTMusic_Deleter -v "$VERSION" \
+        fpm -s dir -t deb -n ytmusic-deleter -v "$VERSION" \
             --deb-compression xz \
             --description "Easily delete your YouTube Music library" \
             --maintainer "apastel <alex.r.pastel@gmail.com>" \
             ./dist/YTMusic_Deleter/YTMusic_Deleter/=/opt/YTMusic_Deleter/
+        echo "version=$VERSION" >> $GITHUB_OUTPUT
     - name: Save .deb as artifact
       id: upload_deb
       uses: actions/upload-artifact@v7
       with:
         name: installer-deb
-        path: ./YTMusic_Deleter_*.deb
+        path: ./ytmusic-deleter_-${{ steps.create_installer.outputs.version }}_amd64.deb
 
   verify:
     runs-on: ubuntu-22.04
@@ -124,7 +122,7 @@ jobs:
           name: installer-deb
       - name: Run installer
         run: |
-          sudo dpkg -i ./YTMusic_Deleter_*.deb
+          sudo dpkg -i ./ytmusic-deleter_${{ needs.build.outputs.installer-version }}_amd64.deb
       - name: Install dependencies
         run: |
           sudo apt update && sudo apt install -y libegl1
