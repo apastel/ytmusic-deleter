@@ -127,8 +127,10 @@ jobs:
       run: echo "C:\Program Files (x86)\NSIS" >> $GITHUB_PATH
     - name: Create installer
       run: |
-        VERSION=$(python -c "from ytmusic_deleter._version import __version__; print(__version__)")
-        makensis -DVERSION="$VERSION" gui/src/installer/windows/Installer.nsi
+        mkdir -p gui/target
+        VERSION=$(python -c "from ytmusic_deleter._version import __version__; print(__version__)" )
+        NUM_VERSION=$(python -c "import re; from ytmusic_deleter._version import __version__; version=__version__; m=re.match(r'^(\\d+)\\.(\\d+)\\.(\\d+)(?:[.-]dev(\\d+))?', version); print( f'{m.group(1)}.{m.group(2)}.{m.group(3)}.{m.group(4) or 0}' if m else '.'.join((re.findall(r'\\d+', version)+['0','0','0','0'])[:4]) )")
+        makensis -DVERSION="$VERSION" -DNUM_VERSION="$NUM_VERSION" gui/src/installer/windows/Installer.nsi
     - name: Get base.json file
       id: json-properties
       uses: zoexx/github-action-json-file-properties@1.0.6
