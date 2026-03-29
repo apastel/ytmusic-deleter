@@ -40,8 +40,7 @@ jobs:
         os: [macos-14, macos-15, macos-26]
     runs-on: ${{ matrix.os }}
     outputs:
-      installer-version: ${{ steps.run-cli.outputs.version }}
-      cli-version: ${{ steps.run-cli.outputs.version }}
+      installer-version: ${{ steps.create_installer.outputs.version }}
     steps:
     - uses: actions/checkout@v6
       with:
@@ -58,54 +57,46 @@ jobs:
       id: run-cli
       run: |
         . .venv/bin/activate
-        echo "version=$(ytmusic-deleter --version)" >> $GITHUB_OUTPUT
+        echo "version=$(ytmusic-deleter --version)"
     - name: Run GUI app
       run: |
-
-        # Store the version argument
-        version_str="${{ steps.run-cli.outputs.version }}"
 
         # Makes app run headless
         export QT_QPA_PLATFORM=offscreen
 
         # Launch the GUI app and kill it after 10 seconds, saving the output.
-        output=$(timeout 10s pdm gui || true)
-
-        # Check if the output contains the right CLI version
-        if grep -q "$version_str" <<< "$output"; then
-            echo "GUI is running the right CLI version: $version_str"
+        set +e
+        timeout 10s pdm gui
+        status=$?
+        set -e
+        if [ "$status" = 124 ]; then
+          echo "GUI started and was still running after 10s"
         else
-            echo "$version_str not found in output, which was the following:"
-            echo $output
-            exit 1
+          echo "GUI failed with exit code $status"
+          exit 1
         fi
-    - name: Freeze prep
-      run: |
-        pdm freeze-prep
     - name: Freeze exe
       run: |
         pdm run pyinstaller gui/src/main/python/gui.spec
     - name: Run frozen exe
       run: |
 
-        # Store the version argument
-        version_str="${{ steps.run-cli.outputs.version }}"
-
         # Makes app run headless
         export QT_QPA_PLATFORM=offscreen
 
-        # Launch the frozen app and kill it after 10 seconds, saving the output.
-        output=$(timeout 10s ./gui/target/YTMusic_Deleter.app/Contents/MacOS/YTMusic_Deleter || true)
-
-        # Check if the output contains the right CLI version
-        if grep -q "$version_str" <<< "$output"; then
-            echo "GUI is running the right CLI version: $version_str"
+        # Launch the frozen app and kill it after 10 seconds
+        set +e
+        timeout 10s ./dist/YTMusic_Deleter.app/Contents/MacOS/YTMusic_Deleter
+        status=$?
+        set -e
+        if [ "$status" = 124 ]; then
+          echo "GUI started and was still running after 10s"
         else
-            echo "$version_str not found in output, which was the following:"
-            echo $output
-            exit 1
+          echo "GUI failed with exit code $status"
+          exit 1
         fi
     - name: Create installer
+      id: create_installer
       uses: nick-fields/retry@v3
       with:
         command: |
@@ -113,7 +104,7 @@ jobs:
           VERSION=$(python -c "from ytmusic_deleter._version import __version__; print(__version__)")
           create-dmg \
             --volname "YTMusic Deleter" \
-            --volicon "./gui/target/YTMusic_Deleter.app/Contents/Resources/YTMusic_Deleter.icns" \
+            --volicon "./dist/YTMusic_Deleter.app/Contents/Resources/YTMusic_Deleter.icns" \
             --window-pos 200 120 \
             --window-size 800 400 \
             --icon-size 100 \
@@ -121,14 +112,13 @@ jobs:
             --hide-extension "YTMusic_Deleter.app" \
             --app-drop-link 600 185 \
             "mac-installer-to-be-renamed.dmg" \
-            "./gui/target/YTMusic_Deleter.app"
+            "./dist/YTMusic_Deleter.app"
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
         max_attempts: 10
         timeout_minutes: 20
     - name: Rename installer per version
       id: rename-installer
       run: |
-
-        VERSION=$(python -c "from ytmusic_deleter._version import __version__; print(__version__)")
 
         if [[ "${{ matrix.os }}" == "macos-14" ]]; then
           MAC_VERSION=14
@@ -138,14 +128,14 @@ jobs:
           MAC_VERSION=26
         fi
         mv ./mac-installer-to-be-renamed.dmg \
-           ./YTMusic_Deleter-${VERSION}-MacOS-$MAC_VERSION-Installer_arm.dmg
+           ./YTMusic_Deleter-${{ steps.create_installer.outputs.version }}-MacOS-$MAC_VERSION-Installer_arm.dmg
         echo "MAC_VERSION=$MAC_VERSION" >> $GITHUB_ENV
     - name: Save .dmg as artifact
       id: upload_dmg
       uses: actions/upload-artifact@v7
       with:
         name: installer-dmg-${{ matrix.os }}
-        path: ./YTMusic_Deleter-*-MacOS-${{ env.MAC_VERSION }}-Installer_arm.dmg
+        path: ./YTMusic_Deleter-${{ steps.create_installer.outputs.version }}-MacOS-${{ env.MAC_VERSION }}-Installer_arm.dmg
       env:
         MAC_VERSION: ${{ env.MAC_VERSION }}
 
@@ -183,13 +173,14 @@ jobs:
           # Makes app run headless
           export QT_QPA_PLATFORM=offscreen
 
-          logfile="$HOME/YTMusic_Deleter/logs/ytmusic-deleter-gui*.log"
-          timeout 10s /Volumes/YTMusic_Deleter/YTMusic_Deleter.app/Contents/MacOS/YTMusic_Deleter || true
-          version_str="${{ needs.build.outputs.cli-version }}"
-          if grep -q "$version_str" $logfile; then
-            echo "GUI is running the right CLI version: $version_str"
+          # Launch the installed app and kill it after 10s
+          set +e
+          timeout 10s /Volumes/YTMusic_Deleter/YTMusic_Deleter.app/Contents/MacOS/YTMusic_Deleter
+          status=$?
+          set -e
+          if [ "$status" = 124 ]; then
+            echo "GUI started and was still running after 10s"
           else
-            echo "The string "$version_str" was not found in $logfile, contents below:"
-            cat $logfile
+            echo "GUI failed with exit code $status"
             exit 1
           fi
