@@ -110,7 +110,7 @@ jobs:
       uses: actions/upload-artifact@v7
       with:
         name: installer-deb
-        path: ./ytmusic-deleter_-${{ steps.create_installer.outputs.version }}_amd64.deb
+        path: ./ytmusic-deleter_${{ steps.create_installer.outputs.version }}_amd64.deb
 
   verify:
     runs-on: ubuntu-22.04
