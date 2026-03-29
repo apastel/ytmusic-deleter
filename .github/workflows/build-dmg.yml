@@ -108,25 +108,19 @@ jobs:
         fi
     - name: Create installer
       id: create_installer
-      uses: nick-fields/retry@v3
-      with:
-        command: |
-          brew install create-dmg
-          VERSION=$(python -c "from ytmusic_deleter._version import __version__; print(__version__)")
-          create-dmg \
-            --volname "YTMusic Deleter" \
-            --volicon "./dist/YTMusic_Deleter.app/Contents/Resources/YTMusic_Deleter.icns" \
-            --window-pos 200 120 \
-            --window-size 800 400 \
-            --icon-size 100 \
-            --icon "YTMusic_Deleter.app" 200 190 \
-            --hide-extension "YTMusic_Deleter.app" \
-            --app-drop-link 600 185 \
-            "mac-installer-to-be-renamed.dmg" \
-            "./dist/YTMusic_Deleter.app"
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
-        max_attempts: 10
-        timeout_minutes: 20
+      run: |
+        brew install create-dmg
+        VERSION=$(python -c "from ytmusic_deleter._version import __version__; print(__version__)")
+        create-dmg \
+          --volname "YTMusic Deleter" \
+          --window-pos 200 120 \
+          --window-size 800 400 \
+          --icon-size 100 \
+          --icon "YTMusic_Deleter" 200 190 \
+          --app-drop-link 600 185 \
+          "mac-installer-to-be-renamed.dmg" \
+          "./dist/YTMusic_Deleter"
+        echo "version=$VERSION" >> $GITHUB_OUTPUT
     - name: Rename installer per version
       id: rename-installer
       run: |
@@ -186,7 +180,7 @@ jobs:
 
           # Launch the installed app and kill it after 10s
           set +e
-          timeout 10s /Volumes/YTMusic_Deleter/YTMusic_Deleter.app/Contents/MacOS/YTMusic_Deleter
+          timeout 10s "/Volumes/YTMusic Deleter/YTMusic_Deleter/YTMusic_Deleter"
           status=$?
           set -e
           if [ "$status" = 124 ]; then
