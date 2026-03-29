@@ -106,7 +106,7 @@ jobs:
             --deb-compression xz \
             --description "Easily delete your YouTube Music library" \
             --maintainer "apastel <alex.r.pastel@gmail.com>" \
-            ./gui/target/YTMusic_Deleter/=/opt/YTMusic_Deleter/
+            ./dist/YTMusic_Deleter/YTMusic_Deleter/=/opt/YTMusic_Deleter/
     - name: Save .deb as artifact
       id: upload_deb
       uses: actions/upload-artifact@v7
