@@ -99,12 +99,12 @@ jobs:
       id: create_installer
       run: |
         mkdir -p gui/target
-        VERSION=$(python -c "from ytmusic_deleter._version import __version__; print(__version__)")
+        VERSION=$(python -c "from ytmusic_deleter._version import __version__; print(__version__)" )
         fpm -s dir -t deb -n ytmusic-deleter -v "$VERSION" \
             --deb-compression xz \
             --description "Easily delete your YouTube Music library" \
             --maintainer "apastel <alex.r.pastel@gmail.com>" \
-            ./dist/YTMusic_Deleter/YTMusic_Deleter/=/opt/YTMusic_Deleter/
+            ./dist/YTMusic_Deleter/=/opt/YTMusic_Deleter/
         echo "version=$VERSION" >> $GITHUB_OUTPUT
     - name: Save .deb as artifact
       id: upload_deb
