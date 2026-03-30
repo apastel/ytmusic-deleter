@@ -784,7 +784,6 @@ class ClickableLabel(QLabel):
 
 
 def flush_sentry():
-    """Necessary because fbs disables Sentry's Atexit handler"""
     sentry_sdk.flush()
 
 
