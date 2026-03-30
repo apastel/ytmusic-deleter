@@ -15,7 +15,8 @@ on:
       - '**/build-dmg.yml'
       - '**/pytest.yml'
       - '**/release.yml'
-  pull_request:
+  pull_request_target:
+    branches: [ main ]
   workflow_dispatch:
   workflow_call:
   schedule:
