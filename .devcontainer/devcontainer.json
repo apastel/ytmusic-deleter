@@ -1,5 +1,5 @@
 {
-  "name": "Ubuntu 22.04 Codespace (Optimized)",
+  "name": "GPU Container",
   "build": {
     "dockerfile": "Dockerfile"
   },
@@ -9,15 +9,18 @@
     },
     "ghcr.io/devcontainers-extra/features/pdm:2": {}
   },
+  "initializeCommand": "sh -c 'if [ -e /dev/dri ]; then echo \"GPU_DEVICE=/dev/dri\" > .devcontainer/gpu.env; elif [ -e /dev/dxg ]; then echo \"GPU_DEVICE=/dev/dxg\" > .devcontainer/gpu.env; else echo \"GPU_DEVICE=/dev/null\" > .devcontainer/gpu.env; fi'",
   "runArgs": [
     "--net=host",
     "-e", "DISPLAY=${localEnv:DISPLAY}",
-    // "--device=/dev/dri:/dev/dri",
-    "--device=/dev/dxg:/dev/dxg"  // Use dxg for WSL2
+    "--env-file", "${localWorkspaceFolder}/.devcontainer/gpu.env"
   ],
   "mounts": [
     "source=/tmp/.X11-unix,target=/tmp/.X11-unix,type=bind,consistency=cached"
   ],
+  "containerEnv": {
+    "LD_LIBRARY_PATH": "/usr/lib/wsl/lib"
+  },
   "remoteEnv": {
     "DISPLAY": "${localEnv:DISPLAY}"
   },
