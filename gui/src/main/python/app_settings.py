@@ -33,7 +33,6 @@ def is_frozen():
     return getattr(sys, "frozen", False)
 
 
-# App settings - replace FBS PUBLIC_SETTINGS
 class AppSettings:
     def __init__(self):
         self.app_name = "YTMusic_Deleter"
