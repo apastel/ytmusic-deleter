@@ -11,11 +11,12 @@
   },
   "runArgs": [
     "--net=host",
-    "-e", "DISPLAY=${localEnv:DISPLAY}"
+    "-e", "DISPLAY=${localEnv:DISPLAY}",
+    // "--device=/dev/dri:/dev/dri",
+    "--device=/dev/dxg:/dev/dxg"  // Use dxg for WSL2
   ],
   "mounts": [
-    "source=/tmp/.X11-unix,target=/tmp/.X11-unix,type=bind,consistency=cached",
-    "source=/dev/dri,target=/dev/dri,type=bind,consistency=cached"
+    "source=/tmp/.X11-unix,target=/tmp/.X11-unix,type=bind,consistency=cached"
   ],
   "remoteEnv": {
     "DISPLAY": "${localEnv:DISPLAY}"
