@@ -3,11 +3,10 @@ oauth.json*
 browser.json*
 fbs_pro-*
 ytmusic-deleter*
-secret.json
 cache/
-freeze/
 test.cfg
 *.mp3
+gpu.env
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
