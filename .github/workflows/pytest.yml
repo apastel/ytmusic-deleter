@@ -53,7 +53,7 @@ jobs:
         cat <<< "$TEST_CFG" > tests/resources/test.cfg
 
     - name: Run pytest
-      uses: nick-fields/retry@v3
+      uses: nick-fields/retry@v4
       with:
         command: pdm run pytest
         max_attempts: 2

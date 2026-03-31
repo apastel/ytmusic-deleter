@@ -58,7 +58,7 @@ jobs:
         echo "version=$(ytmusic-deleter --version)"
 
     - name: Run GUI app
-      uses: nick-fields/retry@v3
+      uses: nick-fields/retry@v4
       with:
         max_attempts: 3
         timeout_minutes: 1
@@ -206,7 +206,7 @@ jobs:
           .\YTMusic_Deleter-${{ needs.build.outputs.installer-version }}-Windows-Installer.exe /S
 
       - name: Run application
-        uses: nick-fields/retry@v3
+        uses: nick-fields/retry@v4
         with:
           shell: bash
           command: |
