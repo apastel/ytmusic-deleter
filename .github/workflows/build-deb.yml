@@ -39,19 +39,24 @@ jobs:
     outputs:
       installer-version: ${{ steps.create_installer.outputs.version }}
     steps:
+
     - uses: actions/checkout@v6
       with:
         fetch-depth: 0
+
     - uses: pdm-project/setup-pdm@v4
+
     - name: Install dependencies
       run: |
         sudo apt update && sudo apt install -y libegl1 libegl1-mesa
         pdm install --no-editable
+
     - name: Run CLI from venv
       id: run-cli
       run: |
         . .venv/bin/activate
         echo "version=$(ytmusic-deleter --version)"
+
     - name: Run GUI app
       run: |
 
@@ -69,9 +74,11 @@ jobs:
           echo "GUI failed with exit code $status"
           exit 1
         fi
+
     - name: Freeze exe
       run: |
         pdm run pyinstaller gui/src/main/python/gui.spec
+
     - name: Run frozen exe
       run: |
 
@@ -89,12 +96,15 @@ jobs:
           echo "GUI failed with exit code $status"
           exit 1
         fi
+
     - uses: ruby/setup-ruby@v1
       with:
         ruby-version: ruby
+
     - name: Install fpm
       run: |
         sudo gem install fpm
+
     - name: Create installer
       id: create_installer
       run: |
@@ -106,6 +116,7 @@ jobs:
             --maintainer "apastel <alex.r.pastel@gmail.com>" \
             ./dist/YTMusic_Deleter/=/opt/YTMusic_Deleter/
         echo "version=$VERSION" >> $GITHUB_OUTPUT
+
     - name: Save .deb as artifact
       uses: actions/upload-artifact@v7
       with:
@@ -117,16 +128,20 @@ jobs:
     runs-on: ubuntu-22.04
     needs: build
     steps:
+
       - name: Download Artifact
         uses: actions/download-artifact@v8
         with:
           name: ytmusic-deleter_${{ needs.build.outputs.installer-version }}_amd64.deb
+
       - name: Run installer
         run: |
           sudo dpkg -i ./ytmusic-deleter_${{ needs.build.outputs.installer-version }}_amd64.deb
+
       - name: Install dependencies
         run: |
           sudo apt update && sudo apt install -y libegl1
+
       - name: Run application
         run: |
 

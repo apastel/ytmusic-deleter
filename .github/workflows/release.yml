@@ -41,18 +41,22 @@ jobs:
       - build-exe
       - build-deb
       - build-dmg
-
     steps:
+
     - uses: actions/checkout@v6
       with:
         fetch-depth: 0
+
     - name: Set up Python
       uses: actions/setup-python@v6
       with:
         python-version: "3.x"
+
     - uses: pdm-project/setup-pdm@v4
+
     - name: Build a binary wheel and a source tarball
       run: pdm build
+
     - name: Store the distribution packages
       uses: actions/upload-artifact@v7
       with:
@@ -68,13 +72,14 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       id-token: write  # IMPORTANT: mandatory for trusted publishing
-
     steps:
+
     - name: Download all the dists
       uses: actions/download-artifact@v8
       with:
         name: python-package-distributions
         path: dist/
+
     - name: Publish distribution 📦 to PyPI
       uses: pypa/gh-action-pypi-publish@release/v1
 
@@ -108,22 +113,27 @@ jobs:
       uses: actions/download-artifact@v8
       with:
         name: YTMusic_Deleter-${{ steps.release-version.outputs.version }}-Windows-Installer.exe
+
     - name: Download Linux installer
       uses: actions/download-artifact@v8
       with:
         name: ytmusic-deleter_${{ steps.release-version.outputs.version }}_amd64.deb
+
     - name: Download macOS 14 installer
       uses: actions/download-artifact@v8
       with:
         name: YTMusic_Deleter-${{ steps.release-version.outputs.version }}-MacOS-14-Installer_arm.dmg
+
     - name: Download macOS 15 installer
       uses: actions/download-artifact@v8
       with:
         name: YTMusic_Deleter-${{ steps.release-version.outputs.version }}-MacOS-15-Installer_arm.dmg
+
     - name: Download macOS 26 installer
       uses: actions/download-artifact@v8
       with:
         name: YTMusic_Deleter-${{ steps.release-version.outputs.version }}-MacOS-26-Installer_arm.dmg
+
     - name: Upload executable installers to Github Release
       env:
         GITHUB_TOKEN: ${{ github.token }}

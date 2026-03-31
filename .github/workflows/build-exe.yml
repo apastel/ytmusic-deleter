@@ -40,18 +40,23 @@ jobs:
     outputs:
       installer-version: ${{ steps.create_installer.outputs.version }}
     steps:
+
     - uses: actions/checkout@v6
       with:
         fetch-depth: 0
+
     - uses: pdm-project/setup-pdm@v4
+
     - name: Install dependencies
       run: |
         pdm --no-cache install --no-editable
+
     - name: Run CLI from venv
       id: run-cli
       run: |
         . .venv/Scripts/activate
         echo "version=$(ytmusic-deleter --version)"
+
     - name: Run GUI app
       uses: nick-fields/retry@v3
       with:
@@ -95,6 +100,7 @@ jobs:
     - name: Freeze exe
       run: |
         pdm run pyinstaller gui/src/main/python/gui.spec
+
     - name: Run frozen exe
       run: |
 
@@ -112,6 +118,7 @@ jobs:
           echo "GUI failed with exit code $status"
           exit 1
         fi
+
     - name: Install NSIS (Winget with Choco fallback)
       shell: pwsh
       run: |
@@ -166,6 +173,7 @@ jobs:
 
         $nsisDir = Get-NSISDir
         $nsisDir | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+
     - name: Create installer
       id: create_installer
       run: |
@@ -174,6 +182,7 @@ jobs:
         NUM_VERSION=$(pdm run python -c "import re; from importlib.metadata import version as pkg_version; version=pkg_version('ytmusic-deleter'); m=re.match(r'^(\\d+)\\.(\\d+)\\.(\\d+)(?:[.-]dev(\\d+))?', version); print( f'{m.group(1)}.{m.group(2)}.{m.group(3)}.{m.group(4) or 0}' if m else '.'.join((re.findall(r'\\d+', version)+['0','0','0','0'])[:4]) )")
         makensis -DVERSION="$VERSION" -DNUM_VERSION="$NUM_VERSION" gui/src/installer/windows/Installer.nsi
         echo "version=$VERSION" >> $GITHUB_OUTPUT
+
     - name: Save .exe as artifact
       uses: actions/upload-artifact@v7
       with:
@@ -185,14 +194,17 @@ jobs:
     runs-on: windows-latest
     needs: build
     steps:
+
       - name: Download Artifact
         uses: actions/download-artifact@v8
         with:
           name: YTMusic_Deleter-${{ needs.build.outputs.installer-version }}-Windows-Installer.exe
+
       - name: Run installer
         shell: cmd
         run: |
           .\YTMusic_Deleter-${{ needs.build.outputs.installer-version }}-Windows-Installer.exe /S
+
       - name: Run application
         uses: nick-fields/retry@v3
         with:

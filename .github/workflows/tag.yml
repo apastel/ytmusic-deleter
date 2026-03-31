@@ -18,14 +18,17 @@ jobs:
       contents: write
       actions: write
     steps:
+
       - uses: actions/checkout@v6
         with:
           fetch-depth: 0
+
       - name: Create and push tag
         run: |
           TAG="${{ inputs.revision }}"
           git tag "$TAG"
           git push origin "$TAG"
+
       - name: Dispatch release workflow
         uses: actions/github-script@v8
         with:

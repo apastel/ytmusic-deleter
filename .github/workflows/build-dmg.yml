@@ -42,10 +42,13 @@ jobs:
     outputs:
       installer-version: ${{ steps.create_installer.outputs.version }}
     steps:
+
     - uses: actions/checkout@v6
       with:
         fetch-depth: 0
+
     - uses: pdm-project/setup-pdm@v4
+
     - name: Install dependencies
       run: |
 
@@ -53,11 +56,13 @@ jobs:
 
         # adds `timeout` command
         brew install coreutils
+
     - name: Run CLI from venv
       id: run-cli
       run: |
         . .venv/bin/activate
         echo "version=$(ytmusic-deleter --version)"
+
     - name: Run GUI app
       run: |
 
@@ -75,9 +80,11 @@ jobs:
           echo "GUI failed with exit code $status"
           exit 1
         fi
+
     - name: Freeze exe
       run: |
         pdm run pyinstaller gui/src/main/python/gui.spec
+
     - name: Run frozen exe
       run: |
 
@@ -95,6 +102,7 @@ jobs:
           echo "GUI failed with exit code $status"
           exit 1
         fi
+
     - name: Create installer
       id: create_installer
       run: |
@@ -110,6 +118,7 @@ jobs:
           "mac-installer-to-be-renamed.dmg" \
           "./dist/YTMusic_Deleter"
         echo "version=$VERSION" >> $GITHUB_OUTPUT
+
     - name: Rename installer per version
       id: rename-installer
       run: |
@@ -125,6 +134,7 @@ jobs:
         mv ./mac-installer-to-be-renamed.dmg "./$FILE_NAME"
 
         echo "file-name=$FILE_NAME" >> $GITHUB_OUTPUT
+
     - name: Save .dmg as artifact
       id: upload_dmg
       uses: actions/upload-artifact@v7
@@ -140,10 +150,12 @@ jobs:
     runs-on: ${{ matrix.os }}
     needs: build
     steps:
+
       - name: Download Artifact
         uses: actions/download-artifact@v8
         with:
           name: YTMusic_Deleter-${{ needs.build.outputs.installer-version }}-MacOS-${{ fromJson('{"macos-14":"14","macos-15":"15","macos-26":"26"}')[matrix.os] }}-Installer_arm.dmg
+
       - name: Attach app image
         run: |
 
@@ -156,15 +168,18 @@ jobs:
             MAC_VERSION=26
           fi
           hdiutil attach ./YTMusic_Deleter-${{ needs.build.outputs.installer-version }}-MacOS-$MAC_VERSION-Installer_arm.dmg
+
       - name: Install dependencies
         run: |
 
           # adds `timeout` command
           brew install coreutils
+
       - name: List Volumes
         shell: pwsh
         run: |
           Get-ChildItem -Path "/Volumes" -Recurse
+
       - name: Run application
         run: |
 
