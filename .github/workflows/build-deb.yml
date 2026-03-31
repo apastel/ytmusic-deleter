@@ -111,6 +111,7 @@ jobs:
       with:
         name: ytmusic-deleter_${{ steps.create_installer.outputs.version }}_amd64.deb
         path: ./ytmusic-deleter_${{ steps.create_installer.outputs.version }}_amd64.deb
+        archive: false
 
   verify:
     runs-on: ubuntu-22.04

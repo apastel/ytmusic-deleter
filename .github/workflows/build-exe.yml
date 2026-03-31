@@ -179,6 +179,7 @@ jobs:
       with:
         name: YTMusic_Deleter-${{ steps.create_installer.outputs.version }}-Windows-Installer.exe
         path: ./gui/target/YTMusic_Deleter-${{ steps.create_installer.outputs.version }}-Windows-Installer.exe
+        archive: false
 
   verify:
     runs-on: windows-latest
