@@ -117,8 +117,8 @@ jobs:
       id: create_installer
       run: |
         mkdir -p gui/target
-        VERSION=$(python -c "from importlib.metadata import version; print(version('ytmusic-deleter'))")
-        NUM_VERSION=$(python -c "import re; from importlib.metadata import version as pkg_version; version=pkg_version('ytmusic-deleter'); m=re.match(r'^(\\d+)\\.(\\d+)\\.(\\d+)(?:[.-]dev(\\d+))?', version); print( f'{m.group(1)}.{m.group(2)}.{m.group(3)}.{m.group(4) or 0}' if m else '.'.join((re.findall(r'\\d+', version)+['0','0','0','0'])[:4]) )")
+        VERSION=$(pdm run python -c "from importlib.metadata import version; print(version('ytmusic-deleter'))")
+        NUM_VERSION=$(pdm run python -c "import re; from importlib.metadata import version as pkg_version; version=pkg_version('ytmusic-deleter'); m=re.match(r'^(\\d+)\\.(\\d+)\\.(\\d+)(?:[.-]dev(\\d+))?', version); print( f'{m.group(1)}.{m.group(2)}.{m.group(3)}.{m.group(4) or 0}' if m else '.'.join((re.findall(r'\\d+', version)+['0','0','0','0'])[:4]) )")
         makensis -DVERSION="$VERSION" -DNUM_VERSION="$NUM_VERSION" gui/src/installer/windows/Installer.nsi
         echo "version=$VERSION" >> $GITHUB_OUTPUT
     - name: Save .exe as artifact
