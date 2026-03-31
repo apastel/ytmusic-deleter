@@ -563,7 +563,7 @@ def remove_duplicates(ctx: click.Context, playlist_title, exact, fuzzy, score_cu
             success = common.unlike_song(yt_auth, song)
             logging.info(song)
             if not success:
-                logging.error(f"\tFailed to unlike {song["artist"]} - {song["title"]!r}")
+                logging.error(f"\tFailed to unlike {song['artist']} - {song['title']!r}")
     else:
         for chunk in common.chunked(items_to_remove, 50):
             yt_auth.remove_playlist_items(playlist_id, chunk)
