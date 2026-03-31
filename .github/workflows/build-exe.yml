@@ -19,6 +19,10 @@ on:
     branches: [ main ]
   workflow_dispatch:
   workflow_call:
+    outputs:
+      installer-version:
+        description: Installer version from build job
+        value: ${{ jobs.build.outputs.installer-version }}
   schedule:
     - cron: '0 10 * * *'
 

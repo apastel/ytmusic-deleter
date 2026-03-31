@@ -85,6 +85,9 @@ jobs:
     name: Draft GitHub Release
     needs:
       - build-wheel
+      - build-exe
+      - build-deb
+      - build-dmg
     runs-on: ubuntu-latest
 
     permissions:
@@ -104,8 +107,24 @@ jobs:
     - name: Resolve release version
       id: release-version
       run: |
-        VERSION="${GITHUB_REF_NAME#v}"
-        echo "version=$VERSION" >> $GITHUB_OUTPUT
+        VERSION_EXE="${{ needs.build-exe.outputs.installer-version }}"
+        VERSION_DEB="${{ needs.build-deb.outputs.installer-version }}"
+        VERSION_DMG="${{ needs.build-dmg.outputs.installer-version }}"
+
+        if [ -z "$VERSION_EXE" ] || [ -z "$VERSION_DEB" ] || [ -z "$VERSION_DMG" ]; then
+          echo "Failed to resolve installer version from one or more build outputs"
+          exit 1
+        fi
+
+        if [ "$VERSION_EXE" != "$VERSION_DEB" ] || [ "$VERSION_EXE" != "$VERSION_DMG" ]; then
+          echo "Installer version mismatch across build workflows:"
+          echo "  build-exe: $VERSION_EXE"
+          echo "  build-deb: $VERSION_DEB"
+          echo "  build-dmg: $VERSION_DMG"
+          exit 1
+        fi
+
+        echo "version=$VERSION_EXE" >> $GITHUB_OUTPUT
 
     - name: Download Windows installer
       uses: actions/download-artifact@v8
