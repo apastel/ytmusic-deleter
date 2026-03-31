@@ -49,8 +49,19 @@ jobs:
 
     - uses: pdm-project/setup-pdm@main
       with:
-        cache: true
-        cache-dependency-path: "**/pdm.lock"
+        cache: false
+
+    - name: Resolve PDM cache dir
+      id: pdm-cache
+      run: echo "dir=$(pdm config cache_dir)" >> $GITHUB_OUTPUT
+
+    - name: Cache PDM
+      uses: actions/cache@v4
+      with:
+        path: ${{ steps.pdm-cache.outputs.dir }}
+        key: ${{ runner.os }}-${{ matrix.os }}-pdm-${{ hashFiles('**/pdm.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-${{ matrix.os }}-pdm-
 
     - name: Install dependencies
       run: |
