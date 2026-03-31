@@ -117,12 +117,30 @@ jobs:
       run: |
         $ErrorActionPreference = "Stop"
 
-        function Test-NSIS {
-          return [bool](Get-Command makensis -ErrorAction SilentlyContinue)
+        function Get-NSISDir {
+          $cmd = Get-Command makensis -ErrorAction SilentlyContinue
+          if ($cmd) {
+            return (Split-Path $cmd.Source -Parent)
+          }
+
+          $candidates = @(
+            "C:\Program Files (x86)\NSIS",
+            "$env:ProgramData\chocolatey\lib\nsis\tools"
+          )
+
+          foreach ($dir in $candidates) {
+            if (Test-Path (Join-Path $dir "makensis.exe")) {
+              return $dir
+            }
+          }
+
+          return $null
         }
 
-        if (Test-NSIS) {
+        $nsisDir = Get-NSISDir
+        if ($nsisDir) {
           Write-Host "NSIS already available on runner."
+          $nsisDir | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
           exit 0
         }
 
@@ -133,7 +151,7 @@ jobs:
           Write-Warning "Winget install failed: $($_.Exception.Message)"
         }
 
-        if (-not (Test-NSIS)) {
+        if (-not (Get-NSISDir)) {
           try {
             choco install nsis -y --no-progress
           }
@@ -142,11 +160,11 @@ jobs:
           }
         }
 
-        if (-not (Test-NSIS)) {
+        if (-not (Get-NSISDir)) {
           throw "Failed to install NSIS using both Chocolatey and Winget."
         }
 
-        $nsisDir = Split-Path (Get-Command makensis).Source -Parent
+        $nsisDir = Get-NSISDir
         $nsisDir | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
     - name: Create installer
       id: create_installer
@@ -159,8 +177,8 @@ jobs:
     - name: Save .exe as artifact
       uses: actions/upload-artifact@v7
       with:
+        name: YTMusic_Deleter-${{ steps.create_installer.outputs.version }}-Windows-Installer.exe
         path: ./gui/target/YTMusic_Deleter-${{ steps.create_installer.outputs.version }}-Windows-Installer.exe
-        archive: false
 
   verify:
     runs-on: windows-latest

@@ -109,8 +109,8 @@ jobs:
     - name: Save .deb as artifact
       uses: actions/upload-artifact@v7
       with:
+        name: ytmusic-deleter_${{ steps.create_installer.outputs.version }}_amd64.deb
         path: ./ytmusic-deleter_${{ steps.create_installer.outputs.version }}_amd64.deb
-        archive: false
 
   verify:
     runs-on: ubuntu-22.04
