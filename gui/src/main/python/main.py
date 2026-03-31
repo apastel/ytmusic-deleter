@@ -1,9 +1,6 @@
 import atexit
 import logging
-import os
 import re
-import shutil
-import subprocess
 import sys
 import webbrowser
 from pathlib import Path
@@ -11,14 +8,12 @@ from time import strftime
 
 import error_reporter
 import requests
+import sentry_sdk
+import ytmusic_deleter.actions as actions
 import ytmusicapi.auth.oauth.exceptions
 import ytmusicapi.exceptions
+from app_settings import PUBLIC_SETTINGS
 from browser_auth_dialog import BrowserAuthDialog
-from fbs_runtime import PUBLIC_SETTINGS
-from fbs_runtime.application_context import cached_property
-from fbs_runtime.application_context import is_frozen
-from fbs_runtime.application_context.PySide6 import ApplicationContext
-from fbs_runtime.excepthook.sentry import SentryExceptionHandler
 from generated.ui_main_window import Ui_MainWindow
 from library_dialogs.delete_uploads_dialog import DeleteUploadsDialog
 from playlist_dialogs.add_all_to_library_dialog import AddAllToLibraryDialog
@@ -29,14 +24,18 @@ from progress_dialog import ProgressDialog
 from progress_worker_dialog import ProgressWorkerDialog
 from PySide6.QtCore import QCoreApplication
 from PySide6.QtCore import QEvent
+from PySide6.QtCore import QObject
 from PySide6.QtCore import QProcess
 from PySide6.QtCore import QRect
 from PySide6.QtCore import QSettings
 from PySide6.QtCore import Qt
+from PySide6.QtCore import QThread
+from PySide6.QtCore import Signal
 from PySide6.QtCore import Slot
 from PySide6.QtGui import QIcon
 from PySide6.QtGui import QImage
 from PySide6.QtGui import QPixmap
+from PySide6.QtWidgets import QApplication
 from PySide6.QtWidgets import QDialog
 from PySide6.QtWidgets import QLabel
 from PySide6.QtWidgets import QMainWindow
@@ -51,8 +50,154 @@ from ytmusicapi.auth.types import AuthType
 from common import APP_DATA_PATH
 
 
-internal_directory = os.path.dirname(os.path.abspath(__file__))
-CLI_EXECUTABLE = f"{internal_directory}/ytmusic-deleter" if is_frozen() else "ytmusic-deleter"
+def get_resource_path(relative_path):
+    if getattr(sys, "frozen", False):
+        base_path = Path(sys._MEIPASS)
+    else:
+        base_path = Path(__file__).resolve().parent.parent
+    return str(base_path / relative_path)
+
+
+class InternalCommandWorker(QObject):
+    finished = Signal()
+    error = Signal(str)
+    output = Signal(str)
+    progress_changed = Signal(int, str)  # (percent, description)
+
+    def __init__(self, ytmusic, args):
+        super().__init__()
+        self.ytmusic = ytmusic
+        self.args = args
+        self.cancelled = False
+
+    def cancel(self):
+        self.cancelled = True
+
+    @Slot()
+    def run(self):
+        try:
+            import logging as logging_module
+
+            # Create a custom logging handler to emit log messages as signals
+            class SignalHandler(logging_module.Handler):
+                def __init__(self, worker):
+                    super().__init__()
+                    self.worker = worker
+
+                def emit(self, record):
+                    try:
+                        msg = self.format(record)
+                        self.worker.output.emit(msg)
+                    except Exception:
+                        pass
+
+            # Add signal handler to root logger
+            signal_handler = SignalHandler(self)
+            signal_handler.setFormatter(logging_module.Formatter("[%(levelname)s] %(message)s"))
+            root_logger = logging_module.getLogger()
+            root_logger.addHandler(signal_handler)
+            self._signal_handler = signal_handler  # Save reference for cleanup
+
+            # Set up progress callback to emit signals
+            def on_progress(percent, desc):
+                self.progress_changed.emit(percent, desc)
+                self.output.emit(f"[PROGRESS] {desc} ({percent}%)")
+
+            from ytmusic_deleter.progress import set_progress_callback
+
+            set_progress_callback(on_progress)
+
+            # Set up logging to capture messages
+            from ytmusic_deleter import progress as progress_module
+
+            progress_module.set_static_progress(False)  # Disable static progress logging since we have GUI
+
+            context = actions.ActionContext(self.ytmusic, static_progress=False, cancelled=lambda: self.cancelled)
+            command = self.args[0] if self.args else None
+            cmd_args = self.args[1:]
+
+            if command == "delete-uploads":
+                add_to_library = "-a" in cmd_args or "--add-to-library" in cmd_args
+                score_cutoff = 90
+                for i, arg in enumerate(cmd_args):
+                    if arg in ["-s", "--score-cutoff"] and i + 1 < len(cmd_args):
+                        try:
+                            score_cutoff = int(cmd_args[i + 1])
+                        except ValueError:
+                            pass
+                actions.delete_uploads(context, add_to_library=add_to_library, score_cutoff=score_cutoff)
+            elif command == "remove-library":
+                actions.remove_library(context)
+            elif command == "delete-playlists":
+                actions.delete_playlists(context)
+            elif command == "unlike-all":
+                actions.unlike_all(context)
+            elif command == "delete-history":
+                actions.delete_history(context)
+            elif command == "delete-all":
+                actions.delete_all(context)
+            elif command == "sort-playlist":
+                # sort-playlist expects: ['sort-playlist', playlist_title,
+                # '--shuffle' or '--reverse' or '--custom-sort attr1 attr2']
+                if len(cmd_args) < 1:
+                    raise ValueError("sort-playlist requires a playlist title")
+                playlist_titles = [cmd_args[0]]
+                shuffle = "--shuffle" in cmd_args or "-s" in cmd_args
+                reverse = "--reverse" in cmd_args or "-r" in cmd_args
+                custom_sort = []
+                for i, arg in enumerate(cmd_args):
+                    if arg in ["--custom-sort", "-c"] and i + 1 < len(cmd_args):
+                        custom_sort.append(cmd_args[i + 1])
+                actions.sort_playlist(context, shuffle, tuple(playlist_titles), tuple(custom_sort), reverse)
+            elif command == "remove-duplicates":
+                # remove-duplicates expects: ['remove-duplicates', playlist_title, '--exact' or '--fuzzy', '--score-cutoff N']
+                if len(cmd_args) < 1:
+                    raise ValueError("remove-duplicates requires a playlist title")
+                playlist_title = cmd_args[0]
+                exact = "--exact" in cmd_args or "-e" in cmd_args
+                fuzzy = "--fuzzy" in cmd_args or "-f" in cmd_args
+                score_cutoff = 80
+                for i, arg in enumerate(cmd_args):
+                    if arg in ["--score-cutoff", "-s"] and i + 1 < len(cmd_args):
+                        try:
+                            score_cutoff = int(cmd_args[i + 1])
+                        except ValueError:
+                            pass
+                actions.remove_duplicates(context, playlist_title, exact, fuzzy, score_cutoff)
+            elif command == "add-all-to-playlist":
+                # add-all-to-playlist expects: ['add-all-to-playlist', playlist_title, '--library' or '--uploads']
+                if len(cmd_args) < 1:
+                    raise ValueError("add-all-to-playlist requires a playlist title")
+                playlist_title = cmd_args[0]
+                library = "--library" in cmd_args or "-l" in cmd_args
+                uploads = "--uploads" in cmd_args or "-u" in cmd_args
+                actions.add_all_to_playlist(context, playlist_title, library, uploads)
+            elif command == "add-all-to-library":
+                # add-all-to-library expects: ['add-all-to-library', playlist_title_or_id]
+                if len(cmd_args) < 1:
+                    raise ValueError("add-all-to-library requires a playlist title or ID")
+                playlist_title_or_id = cmd_args[0]
+                actions.add_all_to_library(context, playlist_title_or_id)
+            else:
+                raise ValueError(f"Unknown internal command: {command}")
+        except Exception as e:
+            self.error.emit(str(e))
+            logging.exception(f"Error running internal command: {e}")
+        finally:
+            # Clean up logging handler
+            import logging as logging_module
+
+            if hasattr(self, "_signal_handler"):
+                root_logger = logging_module.getLogger()
+                root_logger.removeHandler(self._signal_handler)
+                self._signal_handler = None
+            self.finished.emit()
+
+
+def is_frozen():
+    return getattr(sys, "frozen", False)
+
+
 progress_re = re.compile(r"Total complete: (\d+)%")
 item_processing_re = re.compile(r"(Processing .+)")
 
@@ -62,7 +207,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         super().__init__()
 
         # Initialize settings
-        self.settings = QSettings(PUBLIC_SETTINGS["app_name"], PUBLIC_SETTINGS["app_name"])
+        self.settings = QSettings(PUBLIC_SETTINGS.app_name, PUBLIC_SETTINGS.app_name)
         try:
             self.resize(self.settings.value("mainwindow/size"))
             self.move(self.settings.value("mainwindow/pos"))
@@ -154,25 +299,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
         self.update_buttons()
 
-        self.message(f"GUI version: {PUBLIC_SETTINGS['version']}")
-        cli_path = shutil.which(CLI_EXECUTABLE)
-        if cli_path:
-            self.message(f"CLI path: {cli_path}")
-            try:
-                p = subprocess.Popen(
-                    [CLI_EXECUTABLE, "-n", "--version"],
-                    stdin=subprocess.PIPE,
-                    stdout=subprocess.PIPE,
-                    stderr=subprocess.STDOUT,
-                )
-                version_str = p.stdout.read().decode("UTF-8")
-                self.message(f"CLI version: {version_str}")
-            except subprocess.CalledProcessError as e:
-                self.message(f"Error getting the version of the CLI executable, {e}")
-        else:
-            self.message(
-                f"{CLI_EXECUTABLE!r} executable not found. It's possible that it's not installed and none of the functions will work."  # noqa
-            )
+        self.message(f"GUI version: {PUBLIC_SETTINGS.version}")
         self.message(f"Log file path: {self.log_file_path}")
 
     def eventFilter(self, obj, event):
@@ -425,29 +552,49 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         return confirmation_dialog.exec()
 
     def launch_process(self, args: list[str]):
-        self.p = QProcess()
-        self.p.readyReadStandardError.connect(self.handle_stderr)
-        self.p.stateChanged.connect(self.handle_state)
-        self.p.finished.connect(self.process_finished)
-        cli_args: list[str] = (
-            [
-                "-l",
-                str(self.log_dir),
-                "-c",
-                str(self.credential_dir),
-                "-p",
-                "-n",
-            ]
-            + (["-v"] if self.verbose_logging else [])
-            + (["-o"] if self.oauth_enabled else [])
-            + args
-        )
-        self.message(f"Executing process: {CLI_EXECUTABLE} {' '.join(cli_args)}")
-        self.p.start(CLI_EXECUTABLE, cli_args)
+        # Try internal command execution first
+        if self.launch_internal(args):
+            return
+
+    def launch_internal(self, args: list[str]) -> bool:
+        if not args:
+            return False
+
         self.progress_dialog = ProgressDialog(self)
         self.progress_dialog.show()
-        if not self.p.waitForStarted():
-            self.message(self.p.errorString())
+
+        self._internal_thread = QThread()
+        self._internal_worker = InternalCommandWorker(self.ytmusic, args)
+        self._internal_worker.moveToThread(self._internal_thread)
+        self._internal_thread.started.connect(self._internal_worker.run)
+        self._internal_worker.finished.connect(self._internal_thread.quit)
+        self._internal_worker.finished.connect(self.process_finished)
+        self._internal_worker.error.connect(self._on_internal_error)
+        self._internal_worker.output.connect(self.message)
+        self._internal_worker.progress_changed.connect(self._on_internal_progress)
+        self._internal_thread.finished.connect(self._internal_thread.deleteLater)
+        self._internal_thread.start()
+
+        self.message(f"Executing internal command: {args[0]}")
+        return True
+
+    @Slot(int, str)
+    @Slot(int, str)
+    def _on_internal_progress(self, percent: int, desc: str):
+        """Update progress bar from worker thread signals."""
+        if hasattr(self, "progress_dialog") and self.progress_dialog is not None:
+            try:
+                if hasattr(self.progress_dialog, "progressBar"):
+                    self.progress_dialog.progressBar.setValue(percent)
+                if hasattr(self.progress_dialog, "itemLine"):
+                    self.progress_dialog.itemLine.setText(desc)
+            except Exception:
+                pass
+
+    @Slot(str)
+    def _on_internal_error(self, err_msg: str):
+        self.message(f"Internal command error: {err_msg}")
+        self.progress_dialog.close()
 
     @Slot()
     def add_to_library_checked(self, is_checked):
@@ -455,6 +602,14 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.add_to_library = True
         else:
             self.add_to_library = False
+
+    def _on_action_progress(self, percent, desc):
+        if hasattr(self, "progress_dialog") and self.progress_dialog is not None:
+            try:
+                self.progress_dialog.progressBar.setValue(percent)
+                self.progress_dialog.itemLine.setText(desc)
+            except Exception:
+                pass
 
     @Slot()
     def handle_stderr(self):
@@ -487,7 +642,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def message(self, msg, exc_info=None):
         msg = msg.rstrip()  # Remove extra newlines
         self.consoleTextArea.appendPlainText(msg)
-        logging.exception("Unhandled exception occurred", exc_info=exc_info) if exc_info else logging.info(msg)
+        if exc_info:
+            logging.exception("Unhandled exception occurred", exc_info=exc_info)
 
     def get_percent_complete(self, output):
         """
@@ -585,39 +741,24 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             progress.run(send_report, on_report_sent)
 
 
-class AppContext(ApplicationContext):
-    _instance = None
+class AppContext:
+    def __init__(self):
 
-    def __new__(cls, *args, **kwargs):
-        if cls._instance is None:
-            cls._instance = super().__new__(cls)
-        return cls._instance
+        self.app = QApplication(sys.argv)
+        icon_path = get_resource_path("icons/Icon.ico")
+        app_icon = QIcon(icon_path)
+        self.app.setWindowIcon(app_icon)
 
-    @cached_property
-    def window(self):
-        return MainWindow()
+        self.window = MainWindow()
+        self.window.setWindowIcon(app_icon)
 
-    @cached_property
-    def exception_handlers(self):
-        result = super().exception_handlers
-        if is_frozen():
-            result.append(self.sentry_exception_handler)
-        return result
-
-    @cached_property
-    def sentry_exception_handler(self):
-        return SentryExceptionHandler(
-            PUBLIC_SETTINGS["sentry_dsn"],
-            PUBLIC_SETTINGS["version"],
-            PUBLIC_SETTINGS["environment"],
-            callback=self._on_sentry_init,
-        )
-
-    def _on_sentry_init(self):
-        scope = self.sentry_exception_handler.scope
-        from fbs_runtime import platform
-
-        scope.set_extra("os", platform.name())
+        # Setup Sentry if DSN is available and frozen
+        if is_frozen() and PUBLIC_SETTINGS.sentry_dsn:
+            sentry_sdk.init(
+                dsn=PUBLIC_SETTINGS.sentry_dsn,
+                release=PUBLIC_SETTINGS.version,
+                environment="production",
+            )
 
     def run(self):
         self.app.setStyle("Fusion")
@@ -643,9 +784,6 @@ class ClickableLabel(QLabel):
 
 
 def flush_sentry():
-    """Necessary because fbs disables Sentry's Atexit handler"""
-    import sentry_sdk
-
     sentry_sdk.flush()
 
 

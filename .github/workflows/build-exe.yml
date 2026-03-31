@@ -3,25 +3,12 @@
 name: Build and Verify (Windows)
 
 on:
-  push:
-    branches: # prevent push on tags since that's handled by another workflow
-      - '**'
-    paths-ignore:
-      - '**.md'
-      - '.flake8'
-      - '.gitignore'
-      - '.pre-commit-comfig.yaml'
-      - '**/build-deb.yml'
-      - '**/build-dmg.yml'
-      - '**/pytest.yml'
-      - '**/release.yml'
-  pull_request_target:
-    branches: [ main ]
   workflow_dispatch:
   workflow_call:
-  schedule:
-    - cron: '0 10 * * *'
-
+    outputs:
+      installer-version:
+        description: Installer version from build job
+        value: ${{ jobs.build.outputs.installer-version }}
 concurrency:
   group: build-exe-${{ github.ref_name }}
   cancel-in-progress: true
@@ -38,139 +25,193 @@ jobs:
     runs-on: windows-latest
     timeout-minutes: 10
     outputs:
-      installer-version: ${{ steps.json-properties.outputs.version }}
-      cli-version: ${{ steps.run-cli.outputs.version }}
+      installer-version: ${{ steps.create_installer.outputs.version }}
     steps:
+
     - uses: actions/checkout@v6
       with:
         fetch-depth: 0
-    - uses: pdm-project/setup-pdm@v4
-    - name: Download fbs
-      env:
-        FBS_URL_ID: ${{ secrets.FBS_URL_ID }}
-      run: |
-        curl -L https://drive.google.com/uc?id=$FBS_URL_ID --output fbs_pro-1.2.1.tar.gz
+
+    - uses: pdm-project/setup-pdm@main
+      with:
+        cache: true
+        cache-dependency-path: "**/pdm.lock"
+
     - name: Install dependencies
       run: |
-        pdm --no-cache install -dG gui --no-editable
+        pdm --no-cache install --no-editable
+
     - name: Run CLI from venv
       id: run-cli
       run: |
         . .venv/Scripts/activate
-        echo "version=$(ytmusic-deleter --version)" >> $GITHUB_OUTPUT
-    - name: Run fbs app
-      uses: nick-fields/retry@v3
+        echo "version=$(ytmusic-deleter --version)"
+
+    - name: Run GUI app
+      uses: nick-fields/retry@v4
       with:
         max_attempts: 3
         timeout_minutes: 1
         shell: bash
         command: |
 
-          # Store the version argument
-          version_str="${{ steps.run-cli.outputs.version }}"
-
           # Makes app run headless
           export QT_QPA_PLATFORM=offscreen
 
-          # Launch the fbs app and kill it after 10 seconds, saving the output.
-          # We don't want the timing out to fail the job. Normally using `timeout --preserve-status` would handle this but
-          # still getting exit code "241" which is an unknown code. Alternatively, running the entire step in a separate
-          # script file allows using just `timeout 10s pdm fbs run` but would rather not do that.
-          output=$(timeout 10s pdm fbs run || true)
-
-          # Check if the output contains the right CLI version
-          if grep -q "$version_str" <<< "$output"; then
-              echo "GUI is running the right CLI version: $version_str"
+          # Launch the GUI app and kill it after 10 seconds
+          set +e
+          timeout 10s pdm gui
+          status=$?
+          set -e
+          if [ "$status" = 124 ]; then
+            echo "GUI started and was still running after 10s"
           else
-              echo "$version_str" not found in output, which was the following:
-              echo $output
-              exit 1
+            echo "GUI failed with exit code $status"
+            exit 1
           fi
-    - name: Freeze prep
-      run: |
-        pdm freeze-prep
-    - uses: nuget/setup-nuget@v2
-    - name: Install C++ Redist
+
+    - name: Install Microsoft VC++ Redistributable (2015-2022 x64)
       shell: pwsh
       run: |
-        Install-Module -Name VcRedist -Force
-        New-Item -Path C:\Temp\VcRedist -ItemType Directory
-        $VcList = Get-VcList -Export All | Where-Object { $_.Release -in "2010","2012" -and $_.Architecture -eq "x64" }
-        Save-VcRedist -VcList $VcList -Path C:\Temp\VcRedist
-        Install-VcRedist -VcList $VcList -Silent
+        $ErrorActionPreference = "Stop"
+        $installerPath = Join-Path $env:RUNNER_TEMP "vc_redist.x64.exe"
+
+        Invoke-WebRequest -Uri "https://aka.ms/vs/17/release/vc_redist.x64.exe" -OutFile $installerPath
+        $proc = Start-Process -FilePath $installerPath -ArgumentList "/install", "/quiet", "/norestart" -Wait -PassThru
+
+        # Success/acceptable codes:
+        # 0    = success
+        # 1638 = another version already installed
+        # 3010 = success, reboot required
+        if ($proc.ExitCode -notin 0, 1638, 3010) {
+          throw "vc_redist installer failed with exit code $($proc.ExitCode)"
+        }
+
     - name: Freeze exe
       run: |
-        pdm fbs freeze
+        pdm run pyinstaller gui/src/main/python/gui.spec
+
     - name: Run frozen exe
       run: |
-
-        # Store the version argument
-        version_str="${{ steps.run-cli.outputs.version }}"
 
         # Makes app run headless
         export QT_QPA_PLATFORM=offscreen
 
-        # Launch the fbs app and kill it after 10 seconds, saving the output.
-        output=$(timeout 10s ./gui/target/YTMusic_Deleter/YTMusic_Deleter.exe || true)
-
-        # Check if the output contains the right CLI version
-        if grep -q "$version_str" <<< "$output"; then
-            echo "GUI is running the right CLI version: $version_str"
+        # Launch frozen app and kill it after 10 seconds
+        set +e
+        timeout 10s ./dist/YTMusic_Deleter/YTMusic_Deleter.exe
+        status=$?
+        set -e
+        if [ "$status" = 124 ]; then
+          echo "GUI started and was still running after 10s"
         else
-            echo "$version_str" not found in output, which was the following:
-            echo $output
-            exit 1
+          echo "GUI failed with exit code $status"
+          exit 1
         fi
-    - name: Install NSIS
-      uses: nick-fields/retry@v3
-      with:
-        command: choco install nsis -y
-        max_attempts: 3
-        timeout_minutes: 1
-    - name: Add NSIS to PATH
-      run: echo "C:\Program Files (x86)\NSIS" >> $GITHUB_PATH
-    - name: Create installer
+
+    - name: Install NSIS (Winget with Choco fallback)
+      shell: pwsh
       run: |
-        pdm fbs installer
-    - name: Get base.json file
-      id: json-properties
-      uses: zoexx/github-action-json-file-properties@1.0.6
-      with:
-        file_path: gui/src/build/settings/base.json
+        $ErrorActionPreference = "Stop"
+
+        function Get-NSISDir {
+          $cmd = Get-Command makensis -ErrorAction SilentlyContinue
+          if ($cmd) {
+            return (Split-Path $cmd.Source -Parent)
+          }
+
+          $candidates = @(
+            "C:\Program Files (x86)\NSIS",
+            "$env:ProgramData\chocolatey\lib\nsis\tools"
+          )
+
+          foreach ($dir in $candidates) {
+            if (Test-Path (Join-Path $dir "makensis.exe")) {
+              return $dir
+            }
+          }
+
+          return $null
+        }
+
+        $nsisDir = Get-NSISDir
+        if ($nsisDir) {
+          Write-Host "NSIS already available on runner."
+          $nsisDir | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+          exit 0
+        }
+
+        try {
+          winget install --id NSIS.NSIS --exact --accept-source-agreements --accept-package-agreements
+        }
+        catch {
+          Write-Warning "Winget install failed: $($_.Exception.Message)"
+        }
+
+        if (-not (Get-NSISDir)) {
+          try {
+            choco install nsis -y --no-progress
+          }
+          catch {
+            Write-Warning "Chocolatey install failed: $($_.Exception.Message)"
+          }
+        }
+
+        if (-not (Get-NSISDir)) {
+          throw "Failed to install NSIS using both Chocolatey and Winget."
+        }
+
+        $nsisDir = Get-NSISDir
+        $nsisDir | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+
+    - name: Create installer
+      id: create_installer
+      run: |
+        mkdir -p gui/target
+        VERSION=$(pdm run python -c "from importlib.metadata import version; print(version('ytmusic-deleter'))")
+        NUM_VERSION=$(pdm run python -c "import re; from importlib.metadata import version as pkg_version; version=pkg_version('ytmusic-deleter'); m=re.match(r'^(\\d+)\\.(\\d+)\\.(\\d+)(?:[.-]dev(\\d+))?', version); print( f'{m.group(1)}.{m.group(2)}.{m.group(3)}.{m.group(4) or 0}' if m else '.'.join((re.findall(r'\\d+', version)+['0','0','0','0'])[:4]) )")
+        makensis -DVERSION="$VERSION" -DNUM_VERSION="$NUM_VERSION" gui/src/installer/windows/Installer.nsi
+        echo "version=$VERSION" >> $GITHUB_OUTPUT
+
     - name: Save .exe as artifact
-      id: upload_exe
       uses: actions/upload-artifact@v7
       with:
-        path: ./gui/target/YTMusic_Deleter-${{ steps.json-properties.outputs.version }}-Windows-Installer.exe
+        name: YTMusic_Deleter-${{ steps.create_installer.outputs.version }}-Windows-Installer.exe
+        path: ./gui/target/YTMusic_Deleter-${{ steps.create_installer.outputs.version }}-Windows-Installer.exe
         archive: false
 
   verify:
     runs-on: windows-latest
     needs: build
     steps:
+
       - name: Download Artifact
         uses: actions/download-artifact@v8
         with:
           name: YTMusic_Deleter-${{ needs.build.outputs.installer-version }}-Windows-Installer.exe
+
       - name: Run installer
         shell: cmd
         run: |
           .\YTMusic_Deleter-${{ needs.build.outputs.installer-version }}-Windows-Installer.exe /S
+
       - name: Run application
-        uses: nick-fields/retry@v3
+        uses: nick-fields/retry@v4
         with:
           shell: bash
           command: |
             # Makes app run headless
             export QT_QPA_PLATFORM=offscreen
-            logfile="$APPDATA\YTMusic_Deleter\logs\ytmusic-deleter-gui_$(date +%Y-%m-%d).log"
-            timeout 10s "$LOCALAPPDATA/YTMusic_Deleter/YTMusic_Deleter.exe" || true
-            version_str="${{ needs.build.outputs.cli-version }}"
-            if grep -q "$version_str" $logfile; then
-              echo "GUI is running the right CLI version: $version_str"
+
+            # Launch the installed app and kill it after 10s
+            set +e
+            timeout 10s "$LOCALAPPDATA/YTMusic_Deleter/YTMusic_Deleter.exe"
+            status=$?
+            set -e
+            if [ "$status" = 124 ]; then
+              echo "GUI started and was still running after 10s"
             else
-              echo "The string "$version_str" was not found in $logfile, contents below:"
-              cat $logfile
+              echo "GUI failed with exit code $status"
               exit 1
             fi
           max_attempts: 5

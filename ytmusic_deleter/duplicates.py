@@ -16,7 +16,12 @@ from ytmusicapi.models.content.enums import VideoType
 def check_for_duplicates(playlist: dict, yt_auth: YTMusic = None, fuzzy: bool = False, score_cutoff: int = 80):
     # Allow passing in yt_auth from pytest
     if not yt_auth:
-        yt_auth: YTMusic = get_current_context().obj["YT_AUTH"]
+        try:
+            from click import get_current_context
+
+            yt_auth: YTMusic = get_current_context().obj["YT_AUTH"]
+        except Exception as err:
+            raise ValueError("yt_auth must be provided when not running in Click context") from err
     logging.info(f"Checking for duplicates in playlist {playlist.get('title')!r}")
     tracks = playlist.get("tracks")
 

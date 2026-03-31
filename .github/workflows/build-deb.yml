@@ -3,25 +3,12 @@
 name: Build and Verify (Linux)
 
 on:
-  push:
-    branches: # prevent push on tags since that's handled by another workflow
-      - '**'
-    paths-ignore:
-      - '**.md'
-      - '.flake8'
-      - '.gitignore'
-      - '.pre-commit-comfig.yaml'
-      - '**/build-exe.yml'
-      - '**/build-dmg.yml'
-      - '**/pytest.yml'
-      - '**/release.yml'
-  pull_request_target:
-    branches: [ main ]
   workflow_dispatch:
   workflow_call:
-  schedule:
-    - cron: '0 10 * * *'
-
+    outputs:
+      installer-version:
+        description: Installer version from build job
+        value: ${{ jobs.build.outputs.installer-version }}
 concurrency:
   group: build-deb-${{ github.ref_name }}
   cancel-in-progress: true
@@ -37,123 +24,128 @@ jobs:
   build:
     runs-on: ubuntu-22.04
     outputs:
-      installer-version: ${{ steps.json-properties.outputs.version }}
-      cli-version: ${{ steps.run-cli.outputs.version }}
+      installer-version: ${{ steps.create_installer.outputs.version }}
     steps:
+
     - uses: actions/checkout@v6
       with:
         fetch-depth: 0
-    - uses: pdm-project/setup-pdm@v4
-    - name: Download fbs
-      env:
-        FBS_URL_ID: ${{ secrets.FBS_URL_ID }}
-      run: |
-        curl -L https://drive.google.com/uc?id=$FBS_URL_ID --output fbs_pro-1.2.1.tar.gz
+
+    - uses: pdm-project/setup-pdm@main
+      with:
+        cache: true
+        cache-dependency-path: "**/pdm.lock"
+
     - name: Install dependencies
       run: |
         sudo apt update && sudo apt install -y libegl1 libegl1-mesa
-        pdm install -dG gui --no-editable
+        pdm install --no-editable
+
     - name: Run CLI from venv
       id: run-cli
       run: |
         . .venv/bin/activate
-        echo "version=$(ytmusic-deleter --version)" >> $GITHUB_OUTPUT
-    - name: Run fbs app
-      run: |
+        echo "version=$(ytmusic-deleter --version)"
 
-        # Store the version argument
-        version_str="${{ steps.run-cli.outputs.version }}"
+    - name: Run GUI app
+      run: |
 
         # Makes app run headless
         export QT_QPA_PLATFORM=offscreen
 
-        # Launch the fbs app and kill it after 10 seconds, saving the output.
-        # We don't want the timing out to fail the job. Normally using `timeout --preserve-status` would handle this but
-        # still getting exit code "241" which is an unknown code. Alternatively, running the entire step in a separate
-        # script file allows using just `timeout 10s pdm fbs run` but would rather not do that.
-        output=$(timeout 10s pdm fbs run || true)
-
-        # Check if the output contains the right CLI version
-        if grep -q "$version_str" <<< "$output"; then
-            echo "GUI is running the right CLI version: $version_str"
+        # Launch the GUI app and kill it after 10 seconds, saving the output.
+        set +e
+        timeout 10s pdm gui
+        status=$?
+        set -e
+        if [ "$status" = 124 ]; then
+          echo "GUI started and was still running after 10s"
         else
-            echo "$version_str not found in output, which was the following:"
-            echo $output
-            exit 1
+          echo "GUI failed with exit code $status"
+          exit 1
         fi
-    - name: Freeze prep
-      run: |
-        pdm freeze-prep
+
     - name: Freeze exe
       run: |
-        pdm fbs freeze
+        pdm run pyinstaller gui/src/main/python/gui.spec
+
     - name: Run frozen exe
       run: |
 
-        # Store the version argument
-        version_str="${{ steps.run-cli.outputs.version }}"
-
         # Makes app run headless
         export QT_QPA_PLATFORM=offscreen
 
-        # Launch the fbs app and kill it after 10 seconds, saving the output.
-        output=$(timeout 10s ./gui/target/YTMusic_Deleter/YTMusic_Deleter || true)
-
-        # Check if the output contains the right CLI version
-        if grep -q "$version_str" <<< "$output"; then
-            echo "GUI is running the right CLI version: $version_str"
+        # Launch frozen app and kill it after 10 seconds
+        set +e
+        timeout 10s ./dist/YTMusic_Deleter/YTMusic_Deleter
+        status=$?
+        set -e
+        if [ "$status" = 124 ]; then
+          echo "GUI started and was still running after 10s"
         else
-            echo "$version_str not found in output, which was the following:"
-            echo $output
-            exit 1
+          echo "GUI failed with exit code $status"
+          exit 1
         fi
+
     - uses: ruby/setup-ruby@v1
       with:
         ruby-version: ruby
+
     - name: Install fpm
       run: |
         sudo gem install fpm
+
     - name: Create installer
+      id: create_installer
       run: |
-        pdm fbs installer
-    - name: Get base.json file
-      id: json-properties
-      uses: zoexx/github-action-json-file-properties@1.0.6
-      with:
-        file_path: gui/src/build/settings/base.json
+        mkdir -p gui/target
+        VERSION=$(pdm run python -c "from importlib.metadata import version; print(version('ytmusic-deleter'))")
+        fpm -s dir -t deb -n ytmusic-deleter -v "$VERSION" \
+            --deb-compression xz \
+            --description "Easily delete your YouTube Music library" \
+            --maintainer "apastel <alex.r.pastel@gmail.com>" \
+            ./dist/YTMusic_Deleter/=/opt/YTMusic_Deleter/
+        echo "version=$VERSION" >> $GITHUB_OUTPUT
+
     - name: Save .deb as artifact
-      id: upload_deb
       uses: actions/upload-artifact@v7
       with:
-        name: installer-deb
-        path: ./gui/target/YTMusic_Deleter-${{ steps.json-properties.outputs.version }}-Linux-Installer.deb
+        name: ytmusic-deleter_${{ steps.create_installer.outputs.version }}_amd64.deb
+        path: ./ytmusic-deleter_${{ steps.create_installer.outputs.version }}_amd64.deb
+        archive: false
 
   verify:
     runs-on: ubuntu-22.04
     needs: build
     steps:
+
       - name: Download Artifact
         uses: actions/download-artifact@v8
         with:
-          name: installer-deb
+          name: ytmusic-deleter_${{ needs.build.outputs.installer-version }}_amd64.deb
+
       - name: Run installer
         run: |
-          sudo dpkg -i ./YTMusic_Deleter-${{ needs.build.outputs.installer-version }}-Linux-Installer.deb
+          sudo dpkg -i ./ytmusic-deleter_${{ needs.build.outputs.installer-version }}_amd64.deb
+
       - name: Install dependencies
         run: |
           sudo apt update && sudo apt install -y libegl1
+
       - name: Run application
         run: |
 
           # Makes app run headless
           export QT_QPA_PLATFORM=offscreen
-          logfile="$HOME/YTMusic_Deleter/logs/ytmusic-deleter-gui*.log"
-          timeout 10s /opt/YTMusic_Deleter/YTMusic_Deleter || true
-          version_str="${{ needs.build.outputs.cli-version }}"
-          if grep -q "$version_str" $logfile; then
-            echo "GUI is running the right CLI version: $version_str"
+
+          # Launch the installed app and kill it after 10s
+          set +e
+          timeout 10s /opt/YTMusic_Deleter/YTMusic_Deleter
+          status=$?
+          set -e
+          if [ "$status" = 124 ]; then
+            echo "GUI started and was still running after 10s"
           else
-            echo "The string "$version_str" was not found in $logfile, contents below:"
-            cat $logfile
+            echo "GUI failed with exit code $status"
             exit 1
           fi

@@ -1,7 +1,6 @@
 import logging
 import re
 
-import click
 from retry import retry
 from ytmusicapi import YTMusic
 from ytmusicapi.models.content.enums import LikeStatus
@@ -90,7 +89,12 @@ def get_album_audio_playlist_id(browse_id: str, yt_auth: YTMusic = None) -> str 
     """
     # Allow passing in yt_auth from pytest
     if not yt_auth:
-        yt_auth: YTMusic = click.get_current_context().obj["YT_AUTH"]
+        try:
+            import click
+
+            yt_auth: YTMusic = click.get_current_context().obj["YT_AUTH"]
+        except Exception as err:
+            raise ValueError("yt_auth must be provided when not running in Click context") from err
     library_album = yt_auth.get_album(browse_id)
     audio_playlist_id = library_album.get("audioPlaylistId")
     if not audio_playlist_id:

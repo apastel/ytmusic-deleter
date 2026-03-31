@@ -14,4 +14,10 @@ class ProgressDialog(QDialog, Ui_ProgressDialog):
     @Slot()
     def abort(self):
         self.parentWidget().message("Abort button clicked!")
-        self.parentWidget().p.kill()
+        if hasattr(self.parentWidget(), "p") and self.parentWidget().p is not None:
+            self.parentWidget().p.kill()
+        elif hasattr(self.parentWidget(), "_internal_worker"):
+            self.parentWidget()._internal_worker.cancel()
+            self.parentWidget().message("Cancelling operation...")
+        else:
+            self.parentWidget().message("Abort not supported for this operation.")

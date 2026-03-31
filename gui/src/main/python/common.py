@@ -1,8 +1,8 @@
 import os
 import pathlib
 
-import fbs_runtime
+from app_settings import PUBLIC_SETTINGS
 
 APP_DATA_PATH: pathlib.Path = (
-    pathlib.Path(os.getenv("APPDATA" if os.name == "nt" else "HOME")) / fbs_runtime.PUBLIC_SETTINGS["app_name"]
+    pathlib.Path(os.getenv("APPDATA" if os.name == "nt" else "HOME")) / PUBLIC_SETTINGS.app_name
 )

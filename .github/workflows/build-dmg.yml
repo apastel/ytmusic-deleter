@@ -3,25 +3,12 @@
 name: Build and Verify (macOS)
 
 on:
-  push:
-    branches: # prevent push on tags since that's handled by another workflow
-      - '**'
-    paths-ignore:
-      - '**.md'
-      - '.flake8'
-      - '.gitignore'
-      - '.pre-commit-comfig.yaml'
-      - '**/build-exe.yml'
-      - '**/build-deb.yml'
-      - '**/pytest.yml'
-      - '**/release.yml'
-  pull_request_target:
-    branches: [ main ]
   workflow_dispatch:
   workflow_call:
-  schedule:
-    - cron: '0 10 * * *'
-
+    outputs:
+      installer-version:
+        description: Installer version from build job
+        value: ${{ jobs.build.outputs.installer-version }}
 concurrency:
   group: build-dmg-${{ github.ref_name }}
   cancel-in-progress: true
@@ -40,90 +27,99 @@ jobs:
         os: [macos-14, macos-15, macos-26]
     runs-on: ${{ matrix.os }}
     outputs:
-      installer-version: ${{ steps.json-properties.outputs.version }}
-      cli-version: ${{ steps.run-cli.outputs.version }}
+      installer-version: ${{ steps.create_installer.outputs.version }}
     steps:
+
     - uses: actions/checkout@v6
       with:
         fetch-depth: 0
-    - uses: pdm-project/setup-pdm@v4
-    - name: Download fbs
-      env:
-        FBS_URL_ID: ${{ secrets.FBS_URL_ID }}
-      run: |
-        curl -L https://drive.google.com/uc?id=$FBS_URL_ID --output fbs_pro-1.2.1.tar.gz
+
+    - uses: pdm-project/setup-pdm@main
+      with:
+        cache: false
+
+    - name: Resolve PDM cache dir
+      id: pdm-cache
+      run: echo "dir=$(pdm config cache_dir)" >> $GITHUB_OUTPUT
+
+    - name: Cache PDM
+      uses: actions/cache@v5
+      with:
+        path: ${{ steps.pdm-cache.outputs.dir }}
+        key: ${{ runner.os }}-${{ matrix.os }}-pdm-${{ hashFiles('**/pdm.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-${{ matrix.os }}-pdm-
+
     - name: Install dependencies
       run: |
 
-        pdm install -dG gui --no-editable
+        pdm install --no-editable
 
         # adds `timeout` command
         brew install coreutils
+
     - name: Run CLI from venv
       id: run-cli
       run: |
         . .venv/bin/activate
-        echo "version=$(ytmusic-deleter --version)" >> $GITHUB_OUTPUT
-    - name: Run fbs app
-      run: |
+        echo "version=$(ytmusic-deleter --version)"
 
-        # Store the version argument
-        version_str="${{ steps.run-cli.outputs.version }}"
+    - name: Run GUI app
+      run: |
 
         # Makes app run headless
         export QT_QPA_PLATFORM=offscreen
 
-        # Launch the fbs app and kill it after 10 seconds, saving the output.
-        # We don't want the timing out to fail the job. Normally using `timeout --preserve-status` would handle this but
-        # still getting exit code "241" which is an unknown code. Alternatively, running the entire step in a separate
-        # script file allows using just `timeout 10s pdm fbs run` but would rather not do that.
-        output=$(timeout 10s pdm fbs run || true)
-
-        # Check if the output contains the right CLI version
-        if grep -q "$version_str" <<< "$output"; then
-            echo "GUI is running the right CLI version: $version_str"
+        # Launch the GUI app and kill it after 10 seconds, saving the output.
+        set +e
+        timeout 10s pdm gui
+        status=$?
+        set -e
+        if [ "$status" = 124 ]; then
+          echo "GUI started and was still running after 10s"
         else
-            echo "$version_str not found in output, which was the following:"
-            echo $output
-            exit 1
+          echo "GUI failed with exit code $status"
+          exit 1
         fi
-    - name: Freeze prep
-      run: |
-        pdm freeze-prep
+
     - name: Freeze exe
       run: |
-        pdm fbs freeze
+        pdm run pyinstaller gui/src/main/python/gui.spec
+
     - name: Run frozen exe
       run: |
 
-        # Store the version argument
-        version_str="${{ steps.run-cli.outputs.version }}"
-
         # Makes app run headless
         export QT_QPA_PLATFORM=offscreen
 
-        # Launch the fbs app and kill it after 10 seconds, saving the output.
-        output=$(timeout 10s ./gui/target/YTMusic_Deleter.app/Contents/MacOS/YTMusic_Deleter || true)
-
-        # Check if the output contains the right CLI version
-        if grep -q "$version_str" <<< "$output"; then
-            echo "GUI is running the right CLI version: $version_str"
+        # Launch the frozen app and kill it after 10 seconds
+        set +e
+        timeout 10s ./dist/YTMusic_Deleter/YTMusic_Deleter
+        status=$?
+        set -e
+        if [ "$status" = 124 ]; then
+          echo "GUI started and was still running after 10s"
         else
-            echo "$version_str not found in output, which was the following:"
-            echo $output
-            exit 1
+          echo "GUI failed with exit code $status"
+          exit 1
         fi
+
     - name: Create installer
-      uses: nick-fields/retry@v3
-      with:
-        command: pdm fbs installer
-        max_attempts: 10
-        timeout_minutes: 20
-    - name: Get base.json file
-      id: json-properties
-      uses: zoexx/github-action-json-file-properties@1.0.6
-      with:
-        file_path: gui/src/build/settings/base.json
+      id: create_installer
+      run: |
+        brew install create-dmg
+        VERSION=$(pdm run python -c "from importlib.metadata import version; print(version('ytmusic-deleter'))")
+        create-dmg \
+          --volname "YTMusic Deleter" \
+          --window-pos 200 120 \
+          --window-size 800 400 \
+          --icon-size 100 \
+          --icon "YTMusic_Deleter" 200 190 \
+          --app-drop-link 600 185 \
+          "mac-installer-to-be-renamed.dmg" \
+          "./dist/YTMusic_Deleter"
+        echo "version=$VERSION" >> $GITHUB_OUTPUT
+
     - name: Rename installer per version
       id: rename-installer
       run: |
@@ -135,17 +131,18 @@ jobs:
         elif [[ "${{ matrix.os }}" == "macos-26" ]]; then
           MAC_VERSION=26
         fi
-        mv ./gui/target/mac-installer-to-be-renamed.dmg \
-           ./gui/target/YTMusic_Deleter-${{ steps.json-properties.outputs.version }}-MacOS-$MAC_VERSION-Installer_arm.dmg
-        echo "MAC_VERSION=$MAC_VERSION" >> $GITHUB_ENV
+        FILE_NAME="YTMusic_Deleter-${{ steps.create_installer.outputs.version }}-MacOS-$MAC_VERSION-Installer_arm.dmg"
+        mv ./mac-installer-to-be-renamed.dmg "./$FILE_NAME"
+
+        echo "file-name=$FILE_NAME" >> $GITHUB_OUTPUT
+
     - name: Save .dmg as artifact
       id: upload_dmg
       uses: actions/upload-artifact@v7
       with:
-        name: installer-dmg-${{ matrix.os }}
-        path: ./gui/target/YTMusic_Deleter-${{ steps.json-properties.outputs.version }}-MacOS-${{ env.MAC_VERSION }}-Installer_arm.dmg
-      env:
-        MAC_VERSION: ${{ env.MAC_VERSION }}
+        name: ${{ steps.rename-installer.outputs.file-name }}
+        path: ./${{ steps.rename-installer.outputs.file-name }}
+        archive: false
 
   verify:
     strategy:
@@ -154,10 +151,12 @@ jobs:
     runs-on: ${{ matrix.os }}
     needs: build
     steps:
+
       - name: Download Artifact
         uses: actions/download-artifact@v8
         with:
-          name: installer-dmg-${{ matrix.os }}
+          name: YTMusic_Deleter-${{ needs.build.outputs.installer-version }}-MacOS-${{ fromJson('{"macos-14":"14","macos-15":"15","macos-26":"26"}')[matrix.os] }}-Installer_arm.dmg
+
       - name: Attach app image
         run: |
 
@@ -170,24 +169,32 @@ jobs:
             MAC_VERSION=26
           fi
           hdiutil attach ./YTMusic_Deleter-${{ needs.build.outputs.installer-version }}-MacOS-$MAC_VERSION-Installer_arm.dmg
+
       - name: Install dependencies
         run: |
 
           # adds `timeout` command
           brew install coreutils
+
+      - name: List Volumes
+        shell: pwsh
+        run: |
+          Get-ChildItem -Path "/Volumes" -Recurse
+
       - name: Run application
         run: |
 
           # Makes app run headless
           export QT_QPA_PLATFORM=offscreen
 
-          logfile="$HOME/YTMusic_Deleter/logs/ytmusic-deleter-gui*.log"
-          timeout 10s /Volumes/YTMusic_Deleter/YTMusic_Deleter.app/Contents/MacOS/YTMusic_Deleter || true
-          version_str="${{ needs.build.outputs.cli-version }}"
-          if grep -q "$version_str" $logfile; then
-            echo "GUI is running the right CLI version: $version_str"
+          # Launch the installed app and kill it after 10s
+          set +e
+          timeout 10s "/Volumes/YTMusic Deleter/YTMusic_Deleter"
+          status=$?
+          set -e
+          if [ "$status" = 124 ]; then
+            echo "GUI started and was still running after 10s"
           else
-            echo "The string "$version_str" was not found in $logfile, contents below:"
-            cat $logfile
+            echo "GUI failed with exit code $status"
             exit 1
           fi
