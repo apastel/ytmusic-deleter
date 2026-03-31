@@ -3,29 +3,12 @@
 name: Build and Verify (macOS)
 
 on:
-  push:
-    branches: # prevent push on tags since that's handled by another workflow
-      - '**'
-    paths-ignore:
-      - '**.md'
-      - '.flake8'
-      - '.gitignore'
-      - '.pre-commit-comfig.yaml'
-      - '**/build-exe.yml'
-      - '**/build-deb.yml'
-      - '**/pytest.yml'
-      - '**/release.yml'
-  pull_request_target:
-    branches: [ main ]
   workflow_dispatch:
   workflow_call:
     outputs:
       installer-version:
         description: Installer version from build job
         value: ${{ jobs.build.outputs.installer-version }}
-  schedule:
-    - cron: '0 10 * * *'
-
 concurrency:
   group: build-dmg-${{ github.ref_name }}
   cancel-in-progress: true

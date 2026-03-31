@@ -1,0 +1,37 @@
+# This workflow orchestrates platform installer builds in a single parent run.
+
+name: Build and Verify
+
+on:
+  push:
+    branches: # prevent push on tags since that's handled by another workflow
+      - '**'
+    paths-ignore:
+      - '**.md'
+      - '.flake8'
+      - '.gitignore'
+      - '.pre-commit-comfig.yaml'
+      - '**/pytest.yml'
+      - '**/release.yml'
+  pull_request_target:
+    branches: [ main ]
+  workflow_dispatch:
+  schedule:
+    - cron: '0 10 * * *'
+
+concurrency:
+  group: build-and-verify-${{ github.ref_name }}
+  cancel-in-progress: true
+
+jobs:
+  build-exe:
+    uses: ./.github/workflows/build-exe.yml
+    secrets: inherit
+
+  build-deb:
+    uses: ./.github/workflows/build-deb.yml
+    secrets: inherit
+
+  build-dmg:
+    uses: ./.github/workflows/build-dmg.yml
+    secrets: inherit
