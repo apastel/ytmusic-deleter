@@ -45,9 +45,6 @@ gui = "python gui/src/main/python/main.py"
 # Use this to generate the UI files (Windows only)
 generate = "bash gui/scripts/generate_ui_files.sh"
 
-# Use this to bump all the project versions
-version = "bash bump_versions.sh"
-
 # Use this to run Qt Designer
 designer = ".venv/bin/pyside6-designer"
 
@@ -56,8 +53,6 @@ includes = ["ytmusic_deleter/**/*.py"]
 
 [tool.pdm.version]
 source = "scm"
-write_to = "ytmusic_deleter/_version.py"
-write_template = "__version__ = \"{}\"\n"
 
 [dependency-groups]
 gui = [

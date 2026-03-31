@@ -1,5 +1,7 @@
 import sys
 
+from ytmusic_deleter.version import get_version
+
 
 # Platform detection
 class Platform:
@@ -36,13 +38,7 @@ def is_frozen():
 class AppSettings:
     def __init__(self):
         self.app_name = "YTMusic_Deleter"
-        # Version is managed by pdm and written to ytmusic_deleter/_version.py
-        try:
-            from ytmusic_deleter._version import __version__ as version
-
-            self.version = version
-        except ImportError:
-            self.version = "dev"
+        self.version = get_version()
 
         # Sentry DSN - hardcoded since it's not sensitive
         self.sentry_dsn = "https://8cecdde1e7344deda25e39924c01a73c@o1393803.ingest.sentry.io/6715501"

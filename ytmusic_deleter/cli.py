@@ -8,9 +8,9 @@ from time import strftime
 import click
 import ytmusic_deleter.actions as actions
 import ytmusicapi
-from ytmusic_deleter._version import __version__
 from ytmusic_deleter.auth import do_auth
 from ytmusic_deleter.progress import set_static_progress
+from ytmusic_deleter.version import get_version
 from ytmusicapi import YTMusic
 
 
@@ -45,7 +45,7 @@ def main():
 
 
 @click.group()
-@click.version_option(f"{__version__}, ytmusicapi version: {ytmusicapi.__version__}")
+@click.version_option(f"{get_version()}, ytmusicapi version: {ytmusicapi.__version__}")
 @click.option(
     "--credential-dir",
     "-c",
