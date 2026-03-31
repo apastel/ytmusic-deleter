@@ -52,7 +52,10 @@ jobs:
       with:
         python-version: "3.x"
 
-    - uses: pdm-project/setup-pdm@v4
+    - uses: pdm-project/setup-pdm@main
+      with:
+        cache: true
+        cache-dependency-path: "**/pdm.lock"
 
     - name: Build a binary wheel and a source tarball
       run: pdm build

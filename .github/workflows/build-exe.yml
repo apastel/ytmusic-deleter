@@ -45,7 +45,10 @@ jobs:
       with:
         fetch-depth: 0
 
-    - uses: pdm-project/setup-pdm@v4
+    - uses: pdm-project/setup-pdm@main
+      with:
+        cache: true
+        cache-dependency-path: "**/pdm.lock"
 
     - name: Install dependencies
       run: |
