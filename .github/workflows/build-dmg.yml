@@ -56,7 +56,7 @@ jobs:
       run: echo "dir=$(pdm config cache_dir)" >> $GITHUB_OUTPUT
 
     - name: Cache PDM
-      uses: actions/cache@v4
+      uses: actions/cache@v5
       with:
         path: ${{ steps.pdm-cache.outputs.dir }}
         key: ${{ runner.os }}-${{ matrix.os }}-pdm-${{ hashFiles('**/pdm.lock') }}
