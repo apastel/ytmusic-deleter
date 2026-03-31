@@ -75,15 +75,22 @@ jobs:
             exit 1
           fi
 
-    - uses: nuget/setup-nuget@v2
-    - name: Install C++ Redist
+    - name: Install Microsoft VC++ Redistributable (2015-2022 x64)
       shell: pwsh
       run: |
-        Install-Module -Name VcRedist -Force
-        New-Item -Path C:\Temp\VcRedist -ItemType Directory
-        $VcList = Get-VcList -Export All | Where-Object { $_.Release -in "2010","2012" -and $_.Architecture -eq "x64" }
-        Save-VcRedist -VcList $VcList -Path C:\Temp\VcRedist
-        Install-VcRedist -VcList $VcList -Silent
+        $ErrorActionPreference = "Stop"
+        $installerPath = Join-Path $env:RUNNER_TEMP "vc_redist.x64.exe"
+
+        Invoke-WebRequest -Uri "https://aka.ms/vs/17/release/vc_redist.x64.exe" -OutFile $installerPath
+        $proc = Start-Process -FilePath $installerPath -ArgumentList "/install", "/quiet", "/norestart" -Wait -PassThru
+
+        # Success/acceptable codes:
+        # 0    = success
+        # 1638 = another version already installed
+        # 3010 = success, reboot required
+        if ($proc.ExitCode -notin 0, 1638, 3010) {
+          throw "vc_redist installer failed with exit code $($proc.ExitCode)"
+        }
 
     - name: Freeze exe
       run: |
@@ -105,14 +112,42 @@ jobs:
           echo "GUI failed with exit code $status"
           exit 1
         fi
-    - name: Install NSIS
-      uses: nick-fields/retry@v3
-      with:
-        command: choco install nsis -y
-        max_attempts: 3
-        timeout_minutes: 1
-    - name: Add NSIS to PATH
-      run: echo "C:\Program Files (x86)\NSIS" >> $GITHUB_PATH
+    - name: Install NSIS (Winget with Choco fallback)
+      shell: pwsh
+      run: |
+        $ErrorActionPreference = "Stop"
+
+        function Test-NSIS {
+          return [bool](Get-Command makensis -ErrorAction SilentlyContinue)
+        }
+
+        if (Test-NSIS) {
+          Write-Host "NSIS already available on runner."
+          exit 0
+        }
+
+        try {
+          winget install --id NSIS.NSIS --exact --accept-source-agreements --accept-package-agreements
+        }
+        catch {
+          Write-Warning "Winget install failed: $($_.Exception.Message)"
+        }
+
+        if (-not (Test-NSIS)) {
+          try {
+            choco install nsis -y --no-progress
+          }
+          catch {
+            Write-Warning "Chocolatey install failed: $($_.Exception.Message)"
+          }
+        }
+
+        if (-not (Test-NSIS)) {
+          throw "Failed to install NSIS using both Chocolatey and Winget."
+        }
+
+        $nsisDir = Split-Path (Get-Command makensis).Source -Parent
+        $nsisDir | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
     - name: Create installer
       id: create_installer
       run: |
