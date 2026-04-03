@@ -149,7 +149,7 @@ class HeaderCleanup:
             else:
                 # Chrome copies header names as strictly lowercase alphanumeric/hyphens.
                 # If a line has uppercase, semicolons, etc., it's a wrapped fragment of the previous value!
-                is_header_format = bool(line and re.match(r"^[a-z0-9\-]+$", line) and len(line) < 50)
+                is_header_format = bool(line and re.match(r"^[A-Za-z0-9\-]+$", line) and len(line) < 50)
 
                 if is_header_format:
                     result.append(f"{current_header}: {''.join(current_value)}")
