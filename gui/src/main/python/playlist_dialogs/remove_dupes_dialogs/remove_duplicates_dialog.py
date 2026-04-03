@@ -1,6 +1,7 @@
 import ytmusicapi
 from generated.ui_playlist_selection_dialog import Ui_PlaylistSelectionDialog
 from progress_worker_dialog import ProgressWorkerDialog
+from PySide6.QtWidgets import QAbstractItemView
 from PySide6.QtWidgets import QDialog
 from PySide6.QtWidgets import QDialogButtonBox
 from PySide6.QtWidgets import QMessageBox
@@ -19,8 +20,12 @@ class RemoveDuplicatesDialog(QDialog, Ui_PlaylistSelectionDialog):
         super().__init__(parent)
         self.setupUi(self)
 
-        self.setWindowTitle("Select Playlist to De-dupe")
+        self.setWindowTitle("Select Playlist(s) to De-dupe")
         self.buttonBox.button(QDialogButtonBox.StandardButton.Ok).setText("Next")
+
+        # Enable multiple selection in the list widget
+        self.playlistList.setSelectionMode(QAbstractItemView.SelectionMode.ExtendedSelection)
+
         self.enable_ok_button()
         self.enable_score_cutoff()
         self.radioButtonLabel.setText("Matching Algorithm:")
@@ -52,11 +57,13 @@ class RemoveDuplicatesDialog(QDialog, Ui_PlaylistSelectionDialog):
         self.playlistList.insertItems(0, [playlist["title"] for playlist in self.all_playlists])
 
     def accept(self):
-        selected_playlist = self.playlistList.selectedItems()
-        if not selected_playlist:
+        selected_items = self.playlistList.selectedItems()
+        if not selected_items:
             QMessageBox.critical(self, "Error", "No playlist selected!")
             return
-        self.launch_remove_dupes(selected_playlist[0].text())
+
+        selected_titles = [item.text() for item in selected_items]
+        self.launch_remove_dupes(selected_titles)
 
     def enable_ok_button(self):
         self.buttonBox.button(QDialogButtonBox.StandardButton.Ok).setEnabled(len(self.playlistList.selectedItems()) > 0)
@@ -86,45 +93,52 @@ class RemoveDuplicatesDialog(QDialog, Ui_PlaylistSelectionDialog):
             "In both cases, tracks that are *exact* duplicates (same ID) will be de-duped.",
         )
 
-    def launch_remove_dupes(self, selected_playlist_title):
-        self.selected_playlist_title = selected_playlist_title
-        ProgressWorkerDialog("Loading playlist", self).run(self._get_playlist, on_done=self._handle_playlist_result)
-
-    def _get_playlist(self):
-        selected_playlist_id = next(
-            (
-                playlist["playlistId"]
-                for playlist in self.all_playlists
-                if playlist.get("title").lower() == self.selected_playlist_title.lower()
-            ),
-            None,
+    def launch_remove_dupes(self, selected_playlist_titles):
+        self.selected_playlist_titles = selected_playlist_titles
+        ProgressWorkerDialog("Loading playlist(s)", self).run(
+            self._get_playlists, on_done=self._handle_playlists_result
         )
-        if not selected_playlist_id:
-            raise Exception("Playlist not found")
-        yt_auth: YTMusic = self.parent().ytmusic
-        playlist = yt_auth.get_playlist(selected_playlist_id, limit=None)
-        if not common.can_edit_playlist(playlist):
-            raise Exception(
-                f"Cannot modify playlist {self.selected_playlist_title!r}. You are not the owner of this playlist."
-            )
-        return (playlist, yt_auth, selected_playlist_id)
 
-    def _handle_playlist_result(self, result):
+    def _get_playlists(self):
+        yt_auth: YTMusic = self.parent().ytmusic
+        playlists = []
+
+        for title in self.selected_playlist_titles:
+            selected_playlist_id = next(
+                (
+                    playlist["playlistId"]
+                    for playlist in self.all_playlists
+                    if playlist.get("title").lower() == title.lower()
+                ),
+                None,
+            )
+            if not selected_playlist_id:
+                raise Exception(f"Playlist {title!r} not found")
+
+            playlist = yt_auth.get_playlist(selected_playlist_id, limit=None)
+            if not common.can_edit_playlist(playlist):
+                raise Exception(f"Cannot modify playlist {title!r}. You are not the owner of this playlist.")
+            playlists.append(playlist)
+
+        return (playlists, yt_auth)
+
+    def _handle_playlists_result(self, result):
         if isinstance(result, Exception):
             QMessageBox.critical(self, "Error", str(result), QMessageBox.StandardButton.Ok)
             return
-        self.playlist, self.yt_auth, self.selected_playlist_id = result
+        self.playlists, self.yt_auth = result
         ProgressWorkerDialog("Checking for duplicates", self).run(
             self._calculate_dupes, on_done=self._handle_dupe_result
         )
 
     def _calculate_dupes(self):
         duplicates = check_for_duplicates(
-            self.playlist, self.yt_auth, self.radioButtonB.isChecked(), self.scoreCutoffInput.value()
+            self.playlists, self.yt_auth, self.radioButtonB.isChecked(), self.scoreCutoffInput.value()
         )
         if not duplicates:
+            titles_str = ", ".join(self.selected_playlist_titles)
             raise Exception(
-                f"No duplicates found in playlist {self.selected_playlist_title!r}. "
+                f"No duplicates found in selected playlist(s): {titles_str}. "
                 "If you think this is an error, open an issue on GitHub or message on Discord"
             )
         return determine_tracks_to_remove(duplicates)
@@ -160,19 +174,40 @@ class RemoveDuplicatesDialog(QDialog, Ui_PlaylistSelectionDialog):
             if not items_to_remove:
                 return "No duplicate tracks were marked for deletion."
             total = len(items_to_remove)
-            if self.playlist.get("id") == "LM":
-                for i, song in enumerate(items_to_remove, 1):
-                    success = common.unlike_song(self.yt_auth, song)
-                    if success:
-                        dialog.set_progress(i, f"Removed {i} out of {total} duplicates...")
-                    else:
-                        self.parentWidget().message(f"Failed to unlike {song['artist']} - {song['title']!r}")
-            else:
-                for i, chunk in enumerate(common.chunked(items_to_remove, 50), 1):
-                    self.yt_auth.remove_playlist_items(self.selected_playlist_id, chunk)
-                    removed = min(i * 50, total)
-                    dialog.set_progress(removed, f"Removed {removed} out of {total} duplicates...")
-            return f"{total} tracks were removed from {self.selected_playlist_title!r}"
+
+            # Group items by playlist_id for removal
+            items_by_playlist = {}
+            for item in items_to_remove:
+                pid = item.get("_playlist_id")
+                if pid:
+                    items_by_playlist.setdefault(pid, []).append(item)
+                else:
+                    self.parentWidget().message(f"Playlist ID is missing for track {item.get('title')}.")
+
+            removed_count = 0
+            for playlist_id, items in items_by_playlist.items():
+                if playlist_id == "LM":
+                    for song in items:
+                        success = common.unlike_song(self.yt_auth, song)
+                        if success:
+                            removed_count += 1
+                            dialog.set_progress(removed_count, f"Removed {removed_count} out of {total} duplicates...")
+                        else:
+                            self.parentWidget().message(
+                                f"Failed to unlike {song.get('artist')} - {song.get('title')!r}"
+                            )
+                else:
+                    for chunk in common.chunked(items, 50):
+                        try:
+                            self.yt_auth.remove_playlist_items(playlist_id, chunk)
+                            removed_count += len(chunk)
+                            display_count = min(removed_count, total)
+                            dialog.set_progress(display_count, f"Removed {display_count} out of {total} duplicates...")
+                        except Exception as e:
+                            self.parentWidget().message(f"Failed to remove batch from {playlist_id}: {e}")
+
+            titles_str = ", ".join(self.selected_playlist_titles)
+            return f"{removed_count} tracks were removed from {titles_str}"
 
         def run_deletion():
             dialog = ProgressWorkerDialog("Removing duplicates", self, maximum=len(items_to_remove))
