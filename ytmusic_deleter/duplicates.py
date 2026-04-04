@@ -13,17 +13,22 @@ from ytmusicapi import YTMusic
 from ytmusicapi.models.content.enums import VideoType
 
 
-def check_for_duplicates(playlist: dict, yt_auth: YTMusic = None, fuzzy: bool = False, score_cutoff: int = 80):
+def check_for_duplicates(playlists: list[dict], yt_auth: YTMusic = None, fuzzy: bool = False, score_cutoff: int = 80):
     # Allow passing in yt_auth from pytest
     if not yt_auth:
         try:
             from click import get_current_context
-
             yt_auth: YTMusic = get_current_context().obj["YT_AUTH"]
         except Exception as err:
             raise ValueError("yt_auth must be provided when not running in Click context") from err
-    logging.info(f"Checking for duplicates in playlist {playlist.get('title')!r}")
-    tracks = playlist.get("tracks")
+
+    all_tracks = []
+    for playlist in playlists:
+        logging.info(f"Checking for duplicates in playlist {playlist.get('title')!r}")
+        for track in playlist.get("tracks", []):
+            track["_playlist_id"] = playlist.get("id")
+            track["_playlist_title"] = playlist.get("title")
+            all_tracks.append(track)
 
     def get_artist_name(track):
         # If this is user-generated content on YouTube, then the actual artist name is usually
@@ -61,12 +66,14 @@ def check_for_duplicates(playlist: dict, yt_auth: YTMusic = None, fuzzy: bool = 
             "title": get_title_name(track),
             "album": track.get("album").get("name") if track.get("album") else UNKNOWN_ALBUM,
             "duration": track.get("duration"),
-            "thumbnail": track.get("thumbnails")[0].get("url"),
+            "thumbnail": track.get("thumbnails")[0].get("url") if track.get("thumbnails") else None,
             "videoId": track.get("videoId"),
             "setVideoId": track.get("setVideoId"),
             "videoType": track.get("videoType"),
+            "_playlist_id": track.get("_playlist_id"),
+            "_playlist_title": track.get("_playlist_title"),
         }
-        for track in tracks
+        for track in all_tracks
     ]
     duplicate_groups = _group_duplicate_tracks(tracks, fuzzy, score_cutoff)
 
@@ -114,10 +121,10 @@ def _get_matching_algorithm(track, group, fuzzy: bool, score_cutoff: int):
 
 
 def determine_tracks_to_remove(duplicate_groups: list[list[dict]]) -> tuple[list[dict], list[list[dict]] | None]:
-    logging.info(f"There are {len(duplicate_groups)} sets of duplicates in your playlist.")
+    logging.info(f"There are {len(duplicate_groups)} sets of duplicates across your playlists.")
 
     # Automatically mark exact dupes for deletion
-    logging.info("Automatically deleting tracks that are exact duplicates of other tracks in the playlist.")
+    logging.info("Automatically deleting tracks that are exact duplicates of other tracks.")
     remaining_dupe_groups, tracks_to_remove = _remove_exact_dupes(duplicate_groups)
 
     ctx = get_current_context(silent=True)
@@ -132,7 +139,10 @@ def determine_tracks_to_remove(duplicate_groups: list[list[dict]]) -> tuple[list
             choices=[
                 Choice(
                     track,
-                    name=f"{track.get('artist')} - {track.get('title')!r} - {track.get('album')}. Length: {track.get('duration')}",
+                    name=(
+                        f"[{track.get('_playlist_title')}] {track.get('artist')} - "
+                        f"{track.get('title')!r} - {track.get('album')}. Length: {track.get('duration')}"
+                    ),
                 )
                 for track in group
             ],
@@ -170,7 +180,8 @@ def _remove_exact_dupes(duplicate_groups) -> tuple[list[list[dict]], list[dict]]
             else:
                 tracks_to_remove.append(track)
                 logging.info(
-                    f"\tWill delete {track.get('artist')} - {track.get('title')!r} as it is an exact duplicate."
+                    f"\tWill delete [{track.get('_playlist_title')}] {track.get('artist')} - "
+                    f"{track.get('title')!r} as it is an exact duplicate."
                 )
         if len(unique_group) > 1:
             unique_groups.append(unique_group)

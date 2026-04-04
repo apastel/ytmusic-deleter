@@ -409,33 +409,81 @@ def sort_playlist(ctx: ActionContext, shuffle, playlist_titles, custom_sort, rev
         )
 
 
-def remove_duplicates(ctx: ActionContext, playlist_title, exact, fuzzy, score_cutoff):
+def remove_duplicates(ctx: ActionContext, playlist_titles, exact, fuzzy, score_cutoff):
     yt_auth = ctx.yt_auth
-    playlist = get_library_playlist_from_title(yt_auth, playlist_title)
 
-    duplicates = check_for_duplicates(playlist, yt_auth, fuzzy, score_cutoff)
+    playlists = []
+    # Fetch all requested playlists
+    for title in playlist_titles:
+        # We set fail_if_not_exist=False so one bad name doesn't crash the whole batch
+        playlist = get_library_playlist_from_title(yt_auth, title, fail_if_not_exist=False)
+        if playlist:
+            playlists.append(playlist)
+        else:
+            logging.warning(f"Playlist {title!r} not found or you don't have permission.")
+
+    if not playlists:
+        logging.error("No valid playlists found.")
+        return
+
+    # Get a list of all the sets of duplicates across all provided playlists
+    duplicates = check_for_duplicates(playlists, yt_auth, fuzzy, score_cutoff)
     if not duplicates:
         logging.info("No duplicates found. If you think this is an error open an issue on GitHub or message on Discord")
         return
 
+    # For each dupe group, remove all but the first song
     items_to_remove, _ = determine_tracks_to_remove(duplicates)
     if not items_to_remove:
         logging.info("Finished: No duplicate tracks were marked for deletion.")
         return
+
     logging.info(f"Removing {len(items_to_remove)} tracks total.")
-    playlist_id = playlist.get("id")
-    if not isinstance(playlist_id, str) or not playlist_id:
-        logging.error("Playlist ID is missing or invalid. Cannot remove duplicates.")
-        return
-    if playlist_id == "LM":
-        for song in items_to_remove:
-            success = common.unlike_song(yt_auth, song)
-            logging.info(song)
-            if not success:
-                logging.error(f"\tFailed to unlike {song['artist']} - {song['title']!r}")
-    else:
-        for chunk in common.chunked(items_to_remove, 50):
-            yt_auth.remove_playlist_items(playlist_id, chunk)
+
+    # Group items by playlist_id for removal
+    items_by_playlist = {}
+    for item in items_to_remove:
+        pid = item.get("_playlist_id")
+        if not isinstance(pid, str) or not pid:
+            logging.error(f"Playlist ID is missing or invalid for track {item.get('title')}. Cannot remove duplicates.")
+            continue
+        items_by_playlist.setdefault(pid, []).append(item)
+
+    # Remove items from each respective playlist
+    for playlist_id, items in items_by_playlist.items():
+        logging.info(f"Removing {len(items)} duplicates from playlist ID {playlist_id}...")
+        if playlist_id == "LM":
+            for song in items:
+                success = common.unlike_song(yt_auth, song)
+                if not success:
+                    logging.error(f"\tFailed to unlike {song.get('artist')} - {song.get('title')!r}")
+        else:
+            for chunk in common.chunked(items, 50):
+                max_retries = 5
+                for attempt in range(max_retries):
+                    try:
+                        yt_auth.remove_playlist_items(playlist_id, chunk)
+                        break  # Break the retry loop and proceed to the next chunk
+                    except Exception as e:
+                        error_msg = str(e)
+                        # Handle sync conflict (409) or service unavailable (503)
+                        if "409" in error_msg or "503" in error_msg:
+                            if attempt < max_retries - 1:
+                                wait_time = 2**attempt  # Wait 1s, 2s, 4s, 8s...
+                                logging.warning(
+                                    f"\tSync conflict or unavailable. "
+                                    f"Waiting {wait_time}s to retry (Attempt {attempt + 1}/{max_retries})..."
+                                )
+                                time.sleep(wait_time)
+                            else:
+                                logging.error(
+                                    f"\tFailed to remove this batch after {max_retries} attempts: {error_msg}"
+                                )
+                        else:
+                            # For any other unexpected error, log and skip the batch
+                            logging.error(f"\tUnexpected API error: {error_msg}")
+                            break
+
     logging.info("Finished removing duplicate tracks.")
 
 
