@@ -48,11 +48,13 @@ def string_exists_in_dict(data: dict, search_string: str) -> bool:
 def like_many_songs(yt_browser: ytmusicapi.YTMusic, long_song_list):
     total_songs_to_like = len(long_song_list)
 
-    @retry(AssertionError, tries=500, delay=0.1)
+    @retry(AssertionError, tries=500, delay=1)
     def _like_song(song):
         response = yt_browser.rate_song(song, LikeStatus.LIKE)
-        assert string_exists_in_dict(response, "consistencyTokenJar")
-        assert string_exists_in_dict(response, "Saved to liked music")
+        if not string_exists_in_dict(response, "consistencyTokenJar"):
+            raise AssertionError("Did not find 'consistencyTokenJar' in response")
+        if not string_exists_in_dict(response, "Saved to liked music"):
+            raise AssertionError("Did not find 'Saved to liked music' in response")
 
     for idx, song in enumerate(long_song_list):
         print(f"liking song {idx + 1} out of {total_songs_to_like}")

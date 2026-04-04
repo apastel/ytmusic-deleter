@@ -19,14 +19,17 @@ SORTABLE_ATTRIBUTES = ["artist", "album_title", "track_title", "duration"]
 
 def unlike_song(yt_auth, track) -> bool:
 
-    @retry(AssertionError, tries=500, delay=0.1)
+    @retry(AssertionError, tries=10, delay=1)
     def _unlike_song(song):
         try:
             response = yt_auth.rate_song(song, LikeStatus.INDIFFERENT)
         except Exception as e:
             logging.exception(e)
-        assert string_exists_in_dict(response, "Removed from liked music")
-        assert string_exists_in_dict(response, "consistencyTokenJar")
+            raise AssertionError(f"rate_song failed for {song!r}: {e}") from e
+        if not string_exists_in_dict(response, "Removed from liked music"):
+            raise AssertionError("Did not find 'Removed from liked music' in response")
+        if not string_exists_in_dict(response, "consistencyTokenJar"):
+            raise AssertionError("Did not find consistencyTokenJar in response")
 
     try:
         _unlike_song(track["videoId"])
