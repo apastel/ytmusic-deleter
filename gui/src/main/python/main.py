@@ -533,12 +533,17 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         elif args[0] == "delete-playlists":
             text = "This will delete all your playlists, which may also include playlists in regular YouTube.com that have music."
         elif args[0] == "unlike-all":
-            text = "This will reset all your Liked songs back to neutral."
+            text = (
+                "This will reset all your liked songs back to neutral.\n\n"
+                "You will see many [WARNING] messages in the log as it takes several "
+                "retries for the API to unlike a song."
+            )
         elif args[0] == "delete-history":
-            text = """
-            This will delete your play history. This does not currently work with brand accounts.
-            Note that the API can only retrieve 200 history items at a time, so the process will appear to start over and repeat multiple times as necessary until all history is deleted."
-            """  # noqa
+            text = (
+                "This will delete your play history. This does not currently work with brand accounts.\n\n"
+                "Note that the API can only retrieve 200 history items at a time, so the process "
+                "will appear to start over and repeat multiple times as necessary until all history is deleted."
+            )
         elif args[0] == "delete-all":
             text = (
                 "This will run Remove Library, Delete Uploads, Delete Playlists, Unlike All Songs, and Delete History."
