@@ -19,7 +19,7 @@ SORTABLE_ATTRIBUTES = ["artist", "album_title", "track_title", "duration"]
 
 def unlike_song(yt_auth, track) -> bool:
 
-    @retry(AssertionError, tries=10, delay=1)
+    @retry(AssertionError)
     def _unlike_song(song):
         try:
             response = yt_auth.rate_song(song, LikeStatus.INDIFFERENT)
