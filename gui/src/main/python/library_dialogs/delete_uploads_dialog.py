@@ -18,7 +18,7 @@ class DeleteUploadsDialog(QDialog, ui_delete_uploads_dialog.Ui_DeleteUploadsDial
     def accept(self):
         delete_uploads_args = ["delete-uploads"]
         if self.addUploadsCheckBox.isChecked():
-            delete_uploads_args += ["-as", str(self.scoreCutoffInput.value())]
+            delete_uploads_args += ["-a", "-s", str(self.scoreCutoffInput.value())]
         self.parentWidget().launch_process(delete_uploads_args)
         super().accept()
 
