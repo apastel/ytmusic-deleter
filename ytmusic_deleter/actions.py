@@ -560,7 +560,7 @@ def make_sort_key(track, sort_attributes):
     album_title = album["name"].lower() if album else "z"
     album_title = re.sub(r"^(the |a )", "", album_title)
     track_title = track["title"].lower()
-    # duration = track.get("duration_seconds", 0)  # unused
+    duration = track.get("duration_seconds", 0)  # noqa: F841
 
     if sort_attributes:
         return tuple([locals()[attr] for attr in sort_attributes])
