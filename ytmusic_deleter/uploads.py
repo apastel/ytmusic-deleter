@@ -184,8 +184,7 @@ def simplify_album_results(album_results: list[dict]) -> list[SearchResult]:
             if not search_result_artist:
                 missing_metadata_count += 1
                 continue
-        if album_result.get("title"):
-            search_result_title = album_result.get("title")
+        search_result_title = album_result.get("title")
         if not search_result_title:
             missing_metadata_count += 1
             continue

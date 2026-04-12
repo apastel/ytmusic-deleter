@@ -49,6 +49,10 @@ from ytmusicapi.auth.types import AuthType
 
 from common import APP_DATA_PATH
 
+AUTH_INVALID_MESSAGE = "Auth file is invalid or expired. Please sign in again."
+PLAYLIST_LOADING_MESSAGE = "Loading your playlists"
+NETWORK_TIMEOUT_SECONDS = 8
+
 
 def get_resource_path(relative_path):
     if getattr(sys, "frozen", False):
@@ -73,124 +77,133 @@ class InternalCommandWorker(QObject):
     def cancel(self):
         self.cancelled = True
 
+    def _build_context(self):
+        return actions.ActionContext(self.ytmusic, static_progress=False, cancelled=lambda: self.cancelled)
+
+    def _parse_int_flag(self, cmd_args, flags, default):
+        for i, arg in enumerate(cmd_args):
+            if arg in flags and i + 1 < len(cmd_args):
+                try:
+                    return int(cmd_args[i + 1])
+                except ValueError:
+                    return default
+        return default
+
+    def _setup_signal_logging(self):
+        import logging as logging_module
+
+        class SignalHandler(logging_module.Handler):
+            def __init__(self, worker):
+                super().__init__()
+                self.worker = worker
+
+            def emit(self, record):
+                try:
+                    msg = self.format(record)
+                    self.worker.output.emit(msg)
+                except Exception:
+                    pass
+
+        signal_handler = SignalHandler(self)
+        signal_handler.setFormatter(logging_module.Formatter("[%(levelname)s] %(message)s"))
+        root_logger = logging_module.getLogger()
+        root_logger.addHandler(signal_handler)
+        self._signal_handler = signal_handler
+
+    def _teardown_signal_logging(self):
+        import logging as logging_module
+
+        if hasattr(self, "_signal_handler"):
+            root_logger = logging_module.getLogger()
+            root_logger.removeHandler(self._signal_handler)
+            self._signal_handler = None
+
+    def _setup_progress_callback(self):
+        def on_progress(percent, desc):
+            self.progress_changed.emit(percent, desc)
+            self.output.emit(f"[PROGRESS] {desc} ({percent}%)")
+
+        from ytmusic_deleter.progress import set_progress_callback
+
+        set_progress_callback(on_progress)
+
+    def _execute_delete_uploads(self, context, cmd_args):
+        add_to_library = "-a" in cmd_args or "--add-to-library" in cmd_args
+        score_cutoff = self._parse_int_flag(cmd_args, ["-s", "--score-cutoff"], 90)
+        actions.delete_uploads(context, add_to_library=add_to_library, score_cutoff=score_cutoff)
+
+    def _execute_sort_playlist(self, context, cmd_args):
+        if len(cmd_args) < 1:
+            raise ValueError("sort-playlist requires a playlist title")
+        playlist_titles = [cmd_args[0]]
+        shuffle = "--shuffle" in cmd_args or "-s" in cmd_args
+        reverse = "--reverse" in cmd_args or "-r" in cmd_args
+        custom_sort = []
+        for i, arg in enumerate(cmd_args):
+            if arg in ["--custom-sort", "-c"] and i + 1 < len(cmd_args):
+                custom_sort.append(cmd_args[i + 1])
+        actions.sort_playlist(context, shuffle, tuple(playlist_titles), tuple(custom_sort), reverse)
+
+    def _execute_remove_duplicates(self, context, cmd_args):
+        if len(cmd_args) < 1:
+            raise ValueError("remove-duplicates requires a playlist title")
+        playlist_title = cmd_args[0]
+        exact = "--exact" in cmd_args or "-e" in cmd_args
+        fuzzy = "--fuzzy" in cmd_args or "-f" in cmd_args
+        score_cutoff = self._parse_int_flag(cmd_args, ["--score-cutoff", "-s"], 80)
+        actions.remove_duplicates(context, playlist_title, exact, fuzzy, score_cutoff)
+
+    def _execute_add_all_to_playlist(self, context, cmd_args):
+        if len(cmd_args) < 1:
+            raise ValueError("add-all-to-playlist requires a playlist title")
+        playlist_title = cmd_args[0]
+        library = "--library" in cmd_args or "-l" in cmd_args
+        uploads = "--uploads" in cmd_args or "-u" in cmd_args
+        actions.add_all_to_playlist(context, playlist_title, library, uploads)
+
+    def _execute_add_all_to_library(self, context, cmd_args):
+        if len(cmd_args) < 1:
+            raise ValueError("add-all-to-library requires a playlist title or ID")
+        playlist_title_or_id = cmd_args[0]
+        actions.add_all_to_library(context, playlist_title_or_id)
+
+    def _dispatch_command(self, context, command, cmd_args):
+        command_handlers = {
+            "remove-library": lambda: actions.remove_library(context),
+            "delete-playlists": lambda: actions.delete_playlists(context),
+            "unlike-all": lambda: actions.unlike_all(context),
+            "delete-history": lambda: actions.delete_history(context),
+            "delete-all": lambda: actions.delete_all(context),
+            "delete-uploads": lambda: self._execute_delete_uploads(context, cmd_args),
+            "sort-playlist": lambda: self._execute_sort_playlist(context, cmd_args),
+            "remove-duplicates": lambda: self._execute_remove_duplicates(context, cmd_args),
+            "add-all-to-playlist": lambda: self._execute_add_all_to_playlist(context, cmd_args),
+            "add-all-to-library": lambda: self._execute_add_all_to_library(context, cmd_args),
+        }
+        handler = command_handlers.get(command)
+        if not handler:
+            raise ValueError(f"Unknown internal command: {command}")
+        handler()
+
     @Slot()
     def run(self):
         try:
-            import logging as logging_module
+            self._setup_signal_logging()
+            self._setup_progress_callback()
 
-            # Create a custom logging handler to emit log messages as signals
-            class SignalHandler(logging_module.Handler):
-                def __init__(self, worker):
-                    super().__init__()
-                    self.worker = worker
-
-                def emit(self, record):
-                    try:
-                        msg = self.format(record)
-                        self.worker.output.emit(msg)
-                    except Exception:
-                        pass
-
-            # Add signal handler to root logger
-            signal_handler = SignalHandler(self)
-            signal_handler.setFormatter(logging_module.Formatter("[%(levelname)s] %(message)s"))
-            root_logger = logging_module.getLogger()
-            root_logger.addHandler(signal_handler)
-            self._signal_handler = signal_handler  # Save reference for cleanup
-
-            # Set up progress callback to emit signals
-            def on_progress(percent, desc):
-                self.progress_changed.emit(percent, desc)
-                self.output.emit(f"[PROGRESS] {desc} ({percent}%)")
-
-            from ytmusic_deleter.progress import set_progress_callback
-
-            set_progress_callback(on_progress)
-
-            # Set up logging to capture messages
             from ytmusic_deleter import progress as progress_module
 
             progress_module.set_static_progress(False)  # Disable static progress logging since we have GUI
 
-            context = actions.ActionContext(self.ytmusic, static_progress=False, cancelled=lambda: self.cancelled)
+            context = self._build_context()
             command = self.args[0] if self.args else None
             cmd_args = self.args[1:]
-
-            if command == "delete-uploads":
-                add_to_library = "-a" in cmd_args or "--add-to-library" in cmd_args
-                score_cutoff = 90
-                for i, arg in enumerate(cmd_args):
-                    if arg in ["-s", "--score-cutoff"] and i + 1 < len(cmd_args):
-                        try:
-                            score_cutoff = int(cmd_args[i + 1])
-                        except ValueError:
-                            pass
-                actions.delete_uploads(context, add_to_library=add_to_library, score_cutoff=score_cutoff)
-            elif command == "remove-library":
-                actions.remove_library(context)
-            elif command == "delete-playlists":
-                actions.delete_playlists(context)
-            elif command == "unlike-all":
-                actions.unlike_all(context)
-            elif command == "delete-history":
-                actions.delete_history(context)
-            elif command == "delete-all":
-                actions.delete_all(context)
-            elif command == "sort-playlist":
-                # sort-playlist expects: ['sort-playlist', playlist_title,
-                # '--shuffle' or '--reverse' or '--custom-sort attr1 attr2']
-                if len(cmd_args) < 1:
-                    raise ValueError("sort-playlist requires a playlist title")
-                playlist_titles = [cmd_args[0]]
-                shuffle = "--shuffle" in cmd_args or "-s" in cmd_args
-                reverse = "--reverse" in cmd_args or "-r" in cmd_args
-                custom_sort = []
-                for i, arg in enumerate(cmd_args):
-                    if arg in ["--custom-sort", "-c"] and i + 1 < len(cmd_args):
-                        custom_sort.append(cmd_args[i + 1])
-                actions.sort_playlist(context, shuffle, tuple(playlist_titles), tuple(custom_sort), reverse)
-            elif command == "remove-duplicates":
-                # remove-duplicates expects: ['remove-duplicates', playlist_title, '--exact' or '--fuzzy', '--score-cutoff N']
-                if len(cmd_args) < 1:
-                    raise ValueError("remove-duplicates requires a playlist title")
-                playlist_title = cmd_args[0]
-                exact = "--exact" in cmd_args or "-e" in cmd_args
-                fuzzy = "--fuzzy" in cmd_args or "-f" in cmd_args
-                score_cutoff = 80
-                for i, arg in enumerate(cmd_args):
-                    if arg in ["--score-cutoff", "-s"] and i + 1 < len(cmd_args):
-                        try:
-                            score_cutoff = int(cmd_args[i + 1])
-                        except ValueError:
-                            pass
-                actions.remove_duplicates(context, playlist_title, exact, fuzzy, score_cutoff)
-            elif command == "add-all-to-playlist":
-                # add-all-to-playlist expects: ['add-all-to-playlist', playlist_title, '--library' or '--uploads']
-                if len(cmd_args) < 1:
-                    raise ValueError("add-all-to-playlist requires a playlist title")
-                playlist_title = cmd_args[0]
-                library = "--library" in cmd_args or "-l" in cmd_args
-                uploads = "--uploads" in cmd_args or "-u" in cmd_args
-                actions.add_all_to_playlist(context, playlist_title, library, uploads)
-            elif command == "add-all-to-library":
-                # add-all-to-library expects: ['add-all-to-library', playlist_title_or_id]
-                if len(cmd_args) < 1:
-                    raise ValueError("add-all-to-library requires a playlist title or ID")
-                playlist_title_or_id = cmd_args[0]
-                actions.add_all_to_library(context, playlist_title_or_id)
-            else:
-                raise ValueError(f"Unknown internal command: {command}")
+            self._dispatch_command(context, command, cmd_args)
         except Exception as e:
             self.error.emit(str(e))
             logging.exception(f"Error running internal command: {e}")
         finally:
-            # Clean up logging handler
-            import logging as logging_module
-
-            if hasattr(self, "_signal_handler"):
-                root_logger = logging_module.getLogger()
-                root_logger.removeHandler(self._signal_handler)
-                self._signal_handler = None
+            self._teardown_signal_logging()
             self.finished.emit()
 
 
@@ -237,17 +250,19 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         # Initailize UI from generated files
         self.setupUi(self)
         self.p = None
+        self._is_running = False
         self.remove_duplicates_dialog = None
+        self.apply_visual_theme()
 
         self.centralWidget.installEventFilter(self)
         self.photo_button_stylesheet = self.accountPhotoButton.styleSheet()
         self.signOutButton.setStyleSheet(
-            "QPushButton { background-color: #666666; border-radius: 20px; border: 1px solid; }"
+            "QPushButton { background-color: #585b70; border-radius: 20px; border: 1px solid #45475a; color: #cdd6f4; }"
         )
-        self.accountNameLabel.setStyleSheet("QLabel { border: none; color: black; }")
-        self.channelHandleLabel.setStyleSheet("QLabel { border: none; color: black; }")
+        self.accountNameLabel.setStyleSheet("QLabel { border: none; color: #cdd6f4; }")
+        self.channelHandleLabel.setStyleSheet("QLabel { border: none; color: #a6adc8; }")
         self.accountWidgetCloseButton.setStyleSheet(
-            "QPushButton { border: none; background-color: none; color: black; }"
+            "QPushButton { border: none; background-color: none; color: #a6adc8; }"
         )
         self.accountPhotoButton.clicked.connect(self.account_button_clicked)
         self.signOutButton.clicked.connect(self.sign_out)
@@ -282,7 +297,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             "coffee_colour": "ffffff",
         }
         try:
-            r = requests.get(base_url, params=params)
+            r = requests.get(base_url, params=params, timeout=NETWORK_TIMEOUT_SECONDS)
             r.raise_for_status()
             img = QImage()
             img.loadFromData(r.content)
@@ -327,16 +342,16 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             try:
                 self.ytmusic.get_library_playlists(limit=1)
             except TypeError as e:
-                self.message("Auth file is invalid or expired. Please sign in again.")
+                self.message(AUTH_INVALID_MESSAGE)
                 # Show error dialog to the user
                 QMessageBox.critical(
                     self,
                     "Authentication Error",
-                    "Auth file is invalid or expired. Please sign in again.",
+                    AUTH_INVALID_MESSAGE,
                 )
                 self.sign_out()
                 raise ytmusicapi.exceptions.YTMusicUserError(
-                    "Auth file is invalid or expired. Please sign in again."
+                    AUTH_INVALID_MESSAGE
                 ) from e
         except ytmusicapi.exceptions.YTMusicUserError:
             # User is not signed in
@@ -362,19 +377,24 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.channelHandleLabel.setText("")
 
         # Display account photo
-        response = requests.get(account_info["accountPhotoUrl"])
-        pixmap = QPixmap()
-        pixmap.loadFromData(response.content)
-        pixmap = pixmap.scaled(
-            self.accountPhotoButton.size(),
-            Qt.AspectRatioMode.KeepAspectRatio,
-            Qt.TransformationMode.SmoothTransformation,
-        )
-        photo_path: Path = self.account_photo_dir / "account_photo.jpg"
-        pixmap.save(str(photo_path))
-        background_photo_style = f"\nQPushButton {{ background-image: url({photo_path.as_posix()}); }}"
-        self.accountPhotoButton.setIcon(QIcon())
-        self.accountPhotoButton.setStyleSheet(self.photo_button_stylesheet + background_photo_style)
+        try:
+            response = requests.get(account_info["accountPhotoUrl"], timeout=NETWORK_TIMEOUT_SECONDS)
+            response.raise_for_status()
+            pixmap = QPixmap()
+            pixmap.loadFromData(response.content)
+            pixmap = pixmap.scaled(
+                self.accountPhotoButton.size(),
+                Qt.AspectRatioMode.KeepAspectRatio,
+                Qt.TransformationMode.SmoothTransformation,
+            )
+            photo_path: Path = self.account_photo_dir / "account_photo.jpg"
+            pixmap.save(str(photo_path))
+            background_photo_style = f"\nQPushButton {{ background-image: url({photo_path.as_posix()}); }}"
+            self.accountPhotoButton.setIcon(QIcon())
+            self.accountPhotoButton.setStyleSheet(self.photo_button_stylesheet + background_photo_style)
+        except requests.exceptions.RequestException as err:
+            self.message(f"Failed to load account photo: {err}")
+            self.accountPhotoButton.setStyleSheet(self.photo_button_stylesheet)
 
         if display_message:
             auth_str = "OAuth" if self.ytmusic.auth_type == AuthType.OAUTH_CUSTOM_CLIENT else "browser authentication"
@@ -409,7 +429,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     @Slot()
     def sign_out(self):
         self.message(f"Deleting auth file at: {self.auth_file_path}")
-        Path.unlink(self.auth_file_path)
+        Path.unlink(self.auth_file_path, missing_ok=True)
         del self.ytmusic
         self.message("Signed out of YTMusic Deleter.")
         self.accountWidget.hide()
@@ -469,6 +489,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     @Slot()
     def prepare_to_invoke(self):
+        if self._is_running:
+            self.message("An operation is already running. Please wait for it to finish.")
+            return
         button_text = self.sender().text()
         self.message(f"{button_text} clicked.")
         # Turn "Remove Library" into "remove-library" for example
@@ -482,7 +505,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                     self.delete_uploads_dialog.show()
 
                 case "sort-playlist":
-                    please_wait_dialog = ProgressWorkerDialog("Loading your playlists", self)
+                    please_wait_dialog = ProgressWorkerDialog(PLAYLIST_LOADING_MESSAGE, self)
 
                     def load_window():
                         self.remove_duplicates_dialog = SortPlaylistsDialog(self)
@@ -491,7 +514,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                     please_wait_dialog.run(load_window)
 
                 case "remove-duplicates":
-                    please_wait_dialog = ProgressWorkerDialog("Loading your playlists", self)
+                    please_wait_dialog = ProgressWorkerDialog(PLAYLIST_LOADING_MESSAGE, self)
 
                     def load_window():
                         self.remove_duplicates_dialog = RemoveDuplicatesDialog(self)
@@ -500,7 +523,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                     please_wait_dialog.run(load_window)
 
                 case "add-all-to-playlist":
-                    please_wait_dialog = ProgressWorkerDialog("Loading your playlists", self)
+                    please_wait_dialog = ProgressWorkerDialog(PLAYLIST_LOADING_MESSAGE, self)
 
                     def load_window():
                         self.remove_duplicates_dialog = AddAllToPlaylistDialog(self)
@@ -509,7 +532,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                     please_wait_dialog.run(load_window)
 
                 case "add-all-to-library":
-                    please_wait_dialog = ProgressWorkerDialog("Loading your playlists", self)
+                    please_wait_dialog = ProgressWorkerDialog(PLAYLIST_LOADING_MESSAGE, self)
 
                     def load_window():
                         self.remove_duplicates_dialog = AddAllToLibraryDialog(self)
@@ -565,6 +588,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         if not args:
             return False
 
+        self._set_busy_state(True, args[0])
         self.progress_dialog = ProgressDialog(self)
         self.progress_dialog.show()
 
@@ -584,7 +608,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         return True
 
     @Slot(int, str)
-    @Slot(int, str)
     def _on_internal_progress(self, percent: int, desc: str):
         """Update progress bar from worker thread signals."""
         if hasattr(self, "progress_dialog") and self.progress_dialog is not None:
@@ -600,6 +623,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def _on_internal_error(self, err_msg: str):
         self.message(f"Internal command error: {err_msg}")
         self.progress_dialog.close()
+        self._set_busy_state(False)
 
     @Slot()
     def add_to_library_checked(self, is_checked):
@@ -642,7 +666,138 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def process_finished(self):
         self.progress_dialog.close()
         self.message("Process finished.")
+        self._set_busy_state(False)
         self.p = None
+
+    def _set_busy_state(self, busy: bool, action_name: str = ""):
+        self._is_running = busy
+        buttons = [
+            self.removeLibraryButton,
+            self.deleteUploadsButton,
+            self.deletePlaylistsButton,
+            self.unlikeAllButton,
+            self.deleteHistoryButton,
+            self.deleteAllButton,
+            self.sortPlaylistButton,
+            self.removeDupesButton,
+            self.addAllToPlaylistButton,
+            self.addAllToLibraryButton,
+            self.signInButton,
+            self.signOutButton,
+            self.accountPhotoButton,
+        ]
+        for button in buttons:
+            button.setEnabled(not busy)
+
+        if busy and action_name:
+            self.message(f"Running {action_name}...")
+        elif not busy:
+            self.update_buttons(display_message=False)
+
+    def apply_visual_theme(self):
+        self.setStyleSheet(
+            """
+            QMainWindow { background: #1e1e2e; }
+            QWidget { background: #1e1e2e; color: #cdd6f4; }
+            QLabel { color: #cdd6f4; }
+            QLabel#accountNameLabel { font-weight: 700; color: #cdd6f4; }
+            QLabel#channelHandleLabel { color: #a6adc8; }
+            QLabel#playlistFunctionsLabel { color: #a6adc8; }
+            QLabel#consoleLabel { color: #a6adc8; }
+            QLabel#orLabel { color: #a6adc8; }
+            QPushButton {
+                background: #1f6a5a;
+                color: #ffffff;
+                border: 1px solid #155043;
+                border-radius: 10px;
+                padding: 8px 14px;
+                font-weight: 600;
+                font-size: 13px;
+            }
+            QPushButton:hover { background: #25806c; }
+            QPushButton:pressed { background: #155043; }
+            QPushButton:disabled {
+                background: #3b3b4f;
+                color: #6c7086;
+                border-color: #45475a;
+            }
+            QPlainTextEdit {
+                background: #181825;
+                color: #cdd6f4;
+                border: 1px solid #45475a;
+                border-radius: 8px;
+                font-family: 'Menlo', 'Consolas', monospace;
+                font-size: 12px;
+            }
+            QMenuBar {
+                background: #181825;
+                color: #cdd6f4;
+                border-bottom: 1px solid #45475a;
+            }
+            QMenuBar::item:selected { background: #313244; }
+            QMenu {
+                background: #1e1e2e;
+                color: #cdd6f4;
+                border: 1px solid #45475a;
+            }
+            QMenu::item:selected { background: #313244; }
+            QStatusBar { background: #181825; color: #a6adc8; }
+            QMessageBox { background: #1e1e2e; color: #cdd6f4; }
+            QDialog { background: #1e1e2e; color: #cdd6f4; }
+            QProgressBar {
+                background: #313244;
+                border: 1px solid #45475a;
+                border-radius: 5px;
+                text-align: center;
+                color: #cdd6f4;
+            }
+            QProgressBar::chunk {
+                background: #1f6a5a;
+                border-radius: 4px;
+            }
+            QLineEdit, QTextEdit {
+                background: #181825;
+                color: #cdd6f4;
+                border: 1px solid #45475a;
+                border-radius: 6px;
+                padding: 4px 8px;
+            }
+            QCheckBox { color: #cdd6f4; }
+            QCheckBox::indicator {
+                border: 1px solid #45475a;
+                border-radius: 3px;
+                background: #181825;
+            }
+            QCheckBox::indicator:checked {
+                background: #1f6a5a;
+                border-color: #155043;
+            }
+            QComboBox {
+                background: #313244;
+                color: #cdd6f4;
+                border: 1px solid #45475a;
+                border-radius: 6px;
+                padding: 4px 8px;
+            }
+            QComboBox QAbstractItemView {
+                background: #1e1e2e;
+                color: #cdd6f4;
+                selection-background-color: #313244;
+            }
+            QScrollBar:vertical {
+                background: #181825;
+                width: 10px;
+                border-radius: 5px;
+            }
+            QScrollBar::handle:vertical {
+                background: #45475a;
+                border-radius: 5px;
+                min-height: 20px;
+            }
+            QScrollBar::handle:vertical:hover { background: #585b70; }
+            QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical { height: 0; }
+            """
+        )
 
     def message(self, msg, exc_info=None):
         msg = msg.rstrip()  # Remove extra newlines
@@ -773,10 +928,10 @@ class AppContext:
 
 
 class InstantToolTipStyle(QProxyStyle):
-    def styleHint(self, hint, option=None, widget=None, returnData=None):
+    def styleHint(self, hint, option=None, widget=None, return_data=None):
         if hint == QStyle.StyleHint.SH_ToolTip_WakeUpDelay:
             return 0
-        return super().styleHint(hint, option, widget, returnData)
+        return super().styleHint(hint, option, widget, return_data)
 
 
 class ClickableLabel(QLabel):

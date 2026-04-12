@@ -177,7 +177,7 @@ def sort_playlist(ctx: click.Context, shuffle, playlist_titles, custom_sort, rev
     "--score-cutoff",
     "-s",
     default=80,
-    help="When combined with the --fuzzy flag, this optional integer argument between 0 and 100 is used when finding matches in the YTM online catalog. No matches with a score less than this number will be added to your library. Defaults to 90",  # noqa: B950
+    help="When combined with the --fuzzy flag, this optional integer argument between 0 and 100 is used when finding matches in the YTM online catalog. No matches with a score less than this number will be added to your library. Defaults to 80",  # noqa: B950
 )
 @click.pass_context
 def remove_duplicates(ctx: click.Context, playlist_title, exact, fuzzy, score_cutoff):
@@ -186,7 +186,7 @@ def remove_duplicates(ctx: click.Context, playlist_title, exact, fuzzy, score_cu
     return actions.remove_duplicates(context, playlist_title, exact, fuzzy, score_cutoff)
 
 
-@cli.command
+@cli.command()
 @click.argument("playlist_title")
 @click.option("--library", "-l", is_flag=True, help="Add all library songs to a playlist")
 @click.option("--uploads", "-u", is_flag=True, help="Add all uploaded songs to a playlist")
@@ -197,7 +197,7 @@ def add_all_to_playlist(ctx: click.Context, playlist_title, library, uploads):
     return actions.add_all_to_playlist(context, playlist_title, library, uploads)
 
 
-@cli.command
+@cli.command()
 @click.argument("playlist_title_or_id")
 @click.pass_context
 def add_all_to_library(ctx: click.Context, playlist_title_or_id):

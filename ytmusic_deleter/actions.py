@@ -12,6 +12,182 @@ from ytmusic_deleter.uploads import maybe_delete_uploaded_albums
 from ytmusicapi.models.content.enums import LikeStatus
 from ytmusicapi.type_alias import JsonDict
 
+CANCELLED_MESSAGE = "Operation cancelled by user."
+
+
+def _is_history_empty_error(err: Exception) -> bool:
+    return str(err) == "None"
+
+
+def _get_history_items(yt_auth):
+    try:
+        return yt_auth.get_history()
+    except Exception as err:
+        if _is_history_empty_error(err):
+            return None
+        raise
+
+
+def _create_history_progress_bar(total: int, static_progress: bool):
+    return manager.counter(
+        total=total,
+        desc="History Items Deleted",
+        unit="items",
+        enabled=not static_progress,
+    )
+
+
+def _delete_history_item(yt_auth, item) -> bool:
+    artist = item["artists"][0]["name"] if item.get("artists") else common.UNKNOWN_ARTIST
+    logging.info(f"\tProcessing history item: {artist} - {item['title']!r}")
+    response = yt_auth.remove_history_items(item["feedbackToken"])
+    processed = response.get("feedbackResponses")[0].get("isProcessed")
+    if processed:
+        logging.info(f"\tDeleted history item: {artist} - {item['title']!r}")
+        return True
+    logging.info(f"\tFailed to delete history item: {response}")
+    return False
+
+
+def _process_history_batch(ctx: "ActionContext", history_items) -> int:
+    yt_auth = ctx.yt_auth
+    progress_bar = _create_history_progress_bar(len(history_items), ctx.static_progress)
+    logging.info(f"Found {len(history_items)} history items to delete.")
+    deleted_this_round = 0
+    for item in history_items:
+        if ctx.is_cancelled():
+            logging.info(CANCELLED_MESSAGE)
+            return deleted_this_round
+        if _delete_history_item(yt_auth, item):
+            deleted_this_round += 1
+        update_progress(progress_bar)
+    return deleted_this_round
+
+
+def _playlist_artist(track):
+    return track["artists"][0]["name"] if track.get("artists") else common.UNKNOWN_ARTIST
+
+
+def _validate_sort_attributes(custom_sort):
+    invalid_keys = [attr for attr in custom_sort if attr not in common.SORTABLE_ATTRIBUTES]
+    if invalid_keys:
+        raise ValueError(f"Invalid sort option(s): {', '.join(invalid_keys)}")
+
+
+def _get_selected_playlists(all_playlists, playlist_titles):
+    lowercase_playlist_titles = [title.lower() for title in playlist_titles]
+    selected_playlist_list = [
+        playlist for playlist in all_playlists if playlist["title"].lower() in lowercase_playlist_titles
+    ]
+    return lowercase_playlist_titles, selected_playlist_list
+
+
+def _build_desired_tracklist(playlist_tracks, shuffle, custom_sort, reverse, playlist_title):
+    if shuffle:
+        logging.info(f"\tPlaylist: {playlist_title} will be shuffled")
+        desired_tracklist = list(playlist_tracks)
+        unsort(desired_tracklist)
+        return desired_tracklist
+    return sorted(playlist_tracks, key=lambda t: make_sort_key(t, custom_sort), reverse=reverse)
+
+
+def _log_missing_set_video_ids(cur_track, track_after):
+    logging.error("Encountered track(s) with missing 'setVideoId'. Cannot sort the following track(s):")
+    if "setVideoId" not in cur_track:
+        logging.error(f"setVideoId attribute not in cur_track: {cur_track}")
+    if "setVideoId" not in track_after:
+        logging.error(f"setVideoId attribute not in track_after: {track_after}")
+
+
+def _move_playlist_track(yt_auth, playlist_id, cur_track, track_after, cur_artist, track_after_artist):
+    if "setVideoId" not in cur_track or "setVideoId" not in track_after:
+        _log_missing_set_video_ids(cur_track, track_after)
+        return False
+
+    response = yt_auth.edit_playlist(
+        playlist_id,
+        moveItem=(
+            cur_track["setVideoId"],
+            track_after["setVideoId"],
+        ),
+    )
+    if not response:
+        logging.error(
+            f"Failed to move {cur_artist} - {cur_track['title']!r} "
+            f"before {track_after_artist} - {track_after['title']!r}"
+        )
+    return True
+
+
+def _update_current_tracklist(current_tracklist, cur_track, cur_idx):
+    moving_set_video_id = cur_track.get("setVideoId")
+    current_idx = next(
+        (i for i, track in enumerate(current_tracklist) if track.get("setVideoId") == moving_set_video_id),
+        None,
+    )
+    if current_idx is None:
+        try:
+            current_idx = current_tracklist.index(cur_track)
+        except ValueError:
+            current_idx = None
+
+    if current_idx is not None:
+        moved_track = current_tracklist.pop(current_idx)
+        current_tracklist.insert(cur_idx, moved_track)
+
+
+def _sort_single_playlist(ctx: "ActionContext", selected_playlist, shuffle, custom_sort, reverse):
+    yt_auth = ctx.yt_auth
+    logging.info(f"Processing playlist: {selected_playlist['title']}")
+    playlist = yt_auth.get_playlist(selected_playlist["playlistId"], limit=None)
+    if not common.can_edit_playlist(playlist):
+        logging.error(f"Cannot modify playlist {playlist.get('title')!r}. You are not the owner of this playlist.")
+        return
+
+    current_tracklist = list(playlist["tracks"])
+    desired_tracklist = _build_desired_tracklist(
+        playlist["tracks"], shuffle, custom_sort, reverse, selected_playlist["title"]
+    )
+
+    progress_bar = manager.counter(
+        total=len(desired_tracklist),
+        desc=f"{selected_playlist['title']!r} Tracks {'Shuffled' if shuffle else 'Sorted'}",
+        unit="tracks",
+        enabled=not ctx.static_progress,
+    )
+
+    for cur_idx, cur_track in enumerate(desired_tracklist):
+        track_after = current_tracklist[cur_idx]
+        cur_artist = _playlist_artist(cur_track)
+        track_after_artist = _playlist_artist(track_after)
+        if cur_track != track_after:
+            logging.debug(
+                f"Moving {cur_artist} - {cur_track['title']!r} before {track_after_artist} - {track_after['title']!r}"
+            )
+            try:
+                moved = _move_playlist_track(
+                    yt_auth,
+                    playlist["id"],
+                    cur_track,
+                    track_after,
+                    cur_artist,
+                    track_after_artist,
+                )
+                if moved:
+                    _update_current_tracklist(current_tracklist, cur_track, cur_idx)
+            except Exception:
+                logging.error(
+                    f"Failed to move {cur_artist} - {cur_track['title']!r} "
+                    f"before {track_after_artist} - {track_after['title']!r}"
+                )
+                _update_current_tracklist(current_tracklist, cur_track, cur_idx)
+        update_progress(progress_bar)
+
+
+def _get_not_found_playlists(lowercase_playlist_titles, selected_playlist_list):
+    selected_titles = [x["title"].lower() for x in selected_playlist_list]
+    return [title for title in lowercase_playlist_titles if title not in selected_titles]
+
 
 class ActionContext:
     __slots__ = ("yt_auth", "static_progress", "cancelled")
@@ -124,7 +300,7 @@ def remove_library_items(ctx: ActionContext, library_items):
     items_removed = 0
     for item in library_items:
         if ctx.is_cancelled():
-            logging.info("Operation cancelled by user.")
+            logging.info(CANCELLED_MESSAGE)
             break
         logging.debug(f"Full album or song item: {item}")
         artist = item["artists"][0]["name"] if item.get("artists") else common.UNKNOWN_ARTIST
@@ -212,7 +388,7 @@ def unlike_all(ctx: ActionContext):
     songs_unliked = 0
     for track in your_likes["tracks"]:
         if ctx.is_cancelled():
-            logging.info("Operation cancelled by user.")
+            logging.info(CANCELLED_MESSAGE)
             break
         artist = track["artists"][0]["name"] if track.get("artists") else common.UNKNOWN_ARTIST
         title = track["title"]
@@ -246,7 +422,7 @@ def delete_playlists(ctx: ActionContext):
     playlists_deleted = 0
     for playlist in library_playlists:
         if ctx.is_cancelled():
-            logging.info("Operation cancelled by user.")
+            logging.info(CANCELLED_MESSAGE)
             break
         logging.info(f"Processing playlist: {playlist['title']}")
         try:
@@ -270,41 +446,31 @@ def delete_playlists(ctx: ActionContext):
 def delete_history(ctx: ActionContext, items_deleted=0):
     yt_auth = ctx.yt_auth
     logging.info("Begin deleting history...")
-    try:
-        history_items = yt_auth.get_history()
-    except Exception as e:
-        if str(e) == "None":
-            logging.info("History is empty, nothing left to delete.")
-        else:
+    while True:
+        try:
+            history_items = _get_history_items(yt_auth)
+        except Exception as e:
             logging.exception(e)
-        logging.info(f"Deleted {items_deleted} history items.")
-        return items_deleted
+            logging.info(f"Deleted {items_deleted} history items.")
+            return items_deleted
 
-    progress_bar = manager.counter(
-        total=len(history_items),
-        desc="History Items Deleted",
-        unit="items",
-        enabled=not ctx.static_progress,
-    )
+        if not history_items:
+            logging.info("History is empty, nothing left to delete.")
+            logging.info(f"Deleted {items_deleted} history items.")
+            return items_deleted
 
-    logging.info(f"Found {len(history_items)} history items to delete.")
-    for item in history_items:
+        deleted_this_round = _process_history_batch(ctx, history_items)
+        items_deleted += deleted_this_round
         if ctx.is_cancelled():
-            logging.info("Operation cancelled by user.")
-            break
-        artist = item["artists"][0]["name"] if item.get("artists") else common.UNKNOWN_ARTIST
-        logging.info(f"\tProcessing history item: {artist} - {item['title']!r}")
-        response = yt_auth.remove_history_items(item["feedbackToken"])
-        if response.get("feedbackResponses")[0].get("isProcessed"):
-            logging.info(f"\tDeleted history item: {artist} - {item['title']!r}")
-            items_deleted += 1
-        else:
-            logging.info(f"\tFailed to delete history item: {response}")
-        update_progress(progress_bar)
+            return items_deleted
 
-    logging.info("Restarting history deletion to ensure all songs are deleted.")
-    time.sleep(5)
-    return delete_history(ctx, items_deleted)
+        if deleted_this_round == 0:
+            logging.warning("No additional history items were deleted in the last pass. Stopping retries.")
+            logging.info(f"Deleted {items_deleted} history items.")
+            return items_deleted
+
+        logging.info("Refreshing history list to continue deletion...")
+        time.sleep(1)
 
 
 def delete_all(ctx: ActionContext):
@@ -317,91 +483,18 @@ def delete_all(ctx: ActionContext):
 
 def sort_playlist(ctx: ActionContext, shuffle, playlist_titles, custom_sort, reverse):
     yt_auth = ctx.yt_auth
-    invalid_keys = [attr for attr in custom_sort if attr not in common.SORTABLE_ATTRIBUTES]
-    if invalid_keys:
-        raise ValueError(f"Invalid sort option(s): {', '.join(invalid_keys)}")
+    _validate_sort_attributes(custom_sort)
 
     all_playlists = yt_auth.get_library_playlists(limit=None)
-    lowercase_playlist_titles = [title.lower() for title in playlist_titles]
-    selected_playlist_list = [
-        playlist for playlist in all_playlists if playlist["title"].lower() in lowercase_playlist_titles
-    ]
+    lowercase_playlist_titles, selected_playlist_list = _get_selected_playlists(all_playlists, playlist_titles)
 
     for selected_playlist in selected_playlist_list:
         if ctx.is_cancelled():
-            logging.info("Operation cancelled by user.")
+            logging.info(CANCELLED_MESSAGE)
             break
-        logging.info(f"Processing playlist: {selected_playlist['title']}")
-        playlist = yt_auth.get_playlist(selected_playlist["playlistId"], limit=None)
-        if not common.can_edit_playlist(playlist):
-            logging.error(f"Cannot modify playlist {playlist.get('title')!r}. You are not the owner of this playlist.")
-            continue
-        current_tracklist = [t for t in playlist["tracks"]]
-        if shuffle:
-            logging.info(f"\tPlaylist: {selected_playlist['title']} will be shuffled")
-            desired_tracklist = [t for t in playlist["tracks"]]
-            unsort(desired_tracklist)
-        else:
-            desired_tracklist = [
-                t for t in sorted(playlist["tracks"], key=lambda t: make_sort_key(t, custom_sort), reverse=reverse)
-            ]
+        _sort_single_playlist(ctx, selected_playlist, shuffle, custom_sort, reverse)
 
-        progress_bar = manager.counter(
-            total=len(desired_tracklist),
-            desc=f"{selected_playlist['title']!r} Tracks {'Shuffled' if shuffle else 'Sorted'}",
-            unit="tracks",
-            enabled=not ctx.static_progress,
-        )
-
-        for cur_track in desired_tracklist:
-            cur_idx = desired_tracklist.index(cur_track)
-            track_after = current_tracklist[cur_idx]
-
-            cur_artist = cur_track["artists"][0]["name"] if cur_track.get("artists") else common.UNKNOWN_ARTIST
-            track_after_artist = (
-                track_after["artists"][0]["name"] if track_after.get("artists") else common.UNKNOWN_ARTIST
-            )
-            if cur_track != track_after:
-                logging.debug(
-                    f"Moving {cur_artist} - {cur_track['title']!r} before {track_after_artist} - {track_after['title']!r}"
-                )
-                try:
-                    if "setVideoId" not in cur_track or "setVideoId" not in track_after:
-                        logging.error(
-                            "Encountered track(s) with missing 'setVideoId'. Cannot sort the following track(s):"
-                        )
-                        if "setVideoId" not in cur_track:
-                            logging.error(f"setVideoId attribute not in cur_track: {cur_track}")
-                        if "setVideoId" not in track_after:
-                            logging.error(f"setVideoId attribute not in track_after: {track_after}")
-                        continue
-
-                    response = yt_auth.edit_playlist(
-                        playlist["id"],
-                        moveItem=(
-                            cur_track["setVideoId"],
-                            track_after["setVideoId"],
-                        ),
-                    )
-                    if not response:
-                        logging.error(
-                            f"Failed to move {cur_artist} - {cur_track['title']!r} "
-                            f"before {track_after_artist} - {track_after['title']!r}"
-                        )
-                except Exception:
-                    logging.error(
-                        f"Failed to move {cur_artist} - {cur_track['title']!r} "
-                        f"before {track_after_artist} - {track_after['title']!r}"
-                    )
-
-                current_tracklist.remove(cur_track)
-                current_tracklist.insert(cur_idx, cur_track)
-            update_progress(progress_bar)
-
-    not_found_playlists = []
-    for title in lowercase_playlist_titles:
-        if title not in [x["title"].lower() for x in selected_playlist_list]:
-            not_found_playlists.append(title)
+    not_found_playlists = _get_not_found_playlists(lowercase_playlist_titles, selected_playlist_list)
     if not_found_playlists:
         raise ValueError(
             f"No playlists found named {', '.join(not_found_playlists)!r}. Double-check your playlist name(s) "
@@ -409,7 +502,7 @@ def sort_playlist(ctx: ActionContext, shuffle, playlist_titles, custom_sort, rev
         )
 
 
-def remove_duplicates(ctx: ActionContext, playlist_title, exact, fuzzy, score_cutoff):
+def remove_duplicates(ctx: ActionContext, playlist_title, _exact, fuzzy, score_cutoff):
     yt_auth = ctx.yt_auth
     playlist = get_library_playlist_from_title(yt_auth, playlist_title)
 
@@ -563,6 +656,12 @@ def make_sort_key(track, sort_attributes):
     duration = track.get("duration_seconds", 0)  # noqa: F841
 
     if sort_attributes:
-        return tuple([locals()[attr] for attr in sort_attributes])
+        sort_values = {
+            "artist": artist,
+            "album_title": album_title,
+            "track_title": track_title,
+            "duration": duration,
+        }
+        return tuple(sort_values[attr] for attr in sort_attributes)
     else:
         return artist, album_title, track_title

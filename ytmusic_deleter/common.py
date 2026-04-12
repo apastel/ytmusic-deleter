@@ -75,6 +75,13 @@ def string_exists_in_dict(data: dict, search_string: str) -> bool:
         if isinstance(value, dict):
             if string_exists_in_dict(value, search_string):
                 return True
+        elif isinstance(value, list):
+            for item in value:
+                if isinstance(item, dict):
+                    if string_exists_in_dict(item, search_string):
+                        return True
+                elif search_string.lower() in str(item).lower():
+                    return True
         elif search_string.lower() in str(value).lower():
             return True
     return False
@@ -117,7 +124,7 @@ def chunked(iterable, size):
         generator: A generator that yields chunks of the specified size.
     """
     for i in range(0, len(iterable), size):
-        yield iterable[i : i + size]
+        yield iterable[i: i + size]
 
 
 class HeaderCleanup:

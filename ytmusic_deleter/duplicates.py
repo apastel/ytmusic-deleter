@@ -13,64 +13,132 @@ from ytmusicapi import YTMusic
 from ytmusicapi.models.content.enums import VideoType
 
 
+def _first_thumbnail_url(track: dict) -> str | None:
+    thumbnails = track.get("thumbnails") or []
+    if thumbnails:
+        return thumbnails[0].get("url")
+    return None
+
+
+def _normalize_title(title: str | None) -> str:
+    return strip_parentheticals((title or "")).lower()
+
+
+def _resolve_yt_auth(yt_auth: YTMusic | None) -> YTMusic:
+    if yt_auth:
+        return yt_auth
+    try:
+        return get_current_context().obj["YT_AUTH"]
+    except Exception as err:
+        raise ValueError("yt_auth must be provided when not running in Click context") from err
+
+
+def _artist_from_track(track: dict, fuzzy: bool):
+    title = track.get("title")
+    if not fuzzy and track.get("videoType") == VideoType.UGC and title:
+        parts = title.split("-")
+        if len(parts) > 1:
+            return parts[0].strip()
+
+    if track.get("artists"):
+        return track.get("artists")[0].get("name")
+    if track.get("artist"):
+        return track.get("artist").get("name")
+    return UNKNOWN_ARTIST
+
+
+def _title_from_track(track: dict, fuzzy: bool):
+    title = track.get("title")
+    if fuzzy:
+        return title
+
+    if track.get("videoType") == VideoType.UGC and title:
+        parts = title.split("-")
+        if len(parts) > 1:
+            return parts[1].strip()
+    return title
+
+
+def _compact_track(track: dict, fuzzy: bool) -> dict:
+    return {
+        "artist": _artist_from_track(track, fuzzy),
+        "title": _title_from_track(track, fuzzy),
+        "album": track.get("album").get("name") if track.get("album") else UNKNOWN_ALBUM,
+        "duration": track.get("duration"),
+        "thumbnail": _first_thumbnail_url(track),
+        "videoId": track.get("videoId"),
+        "setVideoId": track.get("setVideoId"),
+        "videoType": track.get("videoType"),
+    }
+
+
+def _compact_tracks(tracks: list[dict], fuzzy: bool) -> list[dict]:
+    return [_compact_track(track, fuzzy) for track in tracks]
+
+
 def check_for_duplicates(playlist: dict, yt_auth: YTMusic = None, fuzzy: bool = False, score_cutoff: int = 80):
-    # Allow passing in yt_auth from pytest
-    if not yt_auth:
-        try:
-            from click import get_current_context
-
-            yt_auth: YTMusic = get_current_context().obj["YT_AUTH"]
-        except Exception as err:
-            raise ValueError("yt_auth must be provided when not running in Click context") from err
+    yt_auth = _resolve_yt_auth(yt_auth)
     logging.info(f"Checking for duplicates in playlist {playlist.get('title')!r}")
-    tracks = playlist.get("tracks")
-
-    def get_artist_name(track):
-        # If this is user-generated content on YouTube, then the actual artist name is usually
-        # the first part of the title, like "Avenged Sevenfold - Nobody"
-        # Note: Fuzzy matching will do this separately
-        if not fuzzy and track.get("videoType") == VideoType.UGC:
-            parts = track.get("title").split("-")
-            if len(parts) > 1:
-                return parts[0].strip()
-
-        artist = UNKNOWN_ARTIST
-        if track.get("artists"):
-            artist = track.get("artists")[0].get("name")
-        elif track.get("artist"):
-            artist = track.get("artist").get("name")
-        return artist
-
-    def get_title_name(track):
-        if fuzzy:
-            # strip parens otherwise everything with (Remix) will be considered same
-            return track.get("title")
-
-        # If this is user-generated content on YouTube, then the actual title is usually the
-        # second part of the title field, like "Avenged Sevenfold - Nobody"
-        if track.get("videoType") == VideoType.UGC:
-            parts = track.get("title").split("-")
-            if len(parts) > 1:
-                return parts[1].strip()
-        return track.get("title")
-
-    # Trim the fat of the tracks object
-    tracks = [
-        {
-            "artist": get_artist_name(track),
-            "title": get_title_name(track),
-            "album": track.get("album").get("name") if track.get("album") else UNKNOWN_ALBUM,
-            "duration": track.get("duration"),
-            "thumbnail": track.get("thumbnails")[0].get("url"),
-            "videoId": track.get("videoId"),
-            "setVideoId": track.get("setVideoId"),
-            "videoType": track.get("videoType"),
-        }
-        for track in tracks
-    ]
+    tracks = _compact_tracks(playlist.get("tracks"), fuzzy)
     duplicate_groups = _group_duplicate_tracks(tracks, fuzzy, score_cutoff)
 
     return duplicate_groups
+
+
+def _group_duplicate_tracks_exact(tracks: list[dict]) -> list[list[dict]]:
+    groups: list[list[dict]] = []
+    group_by_video_id: dict[str, int] = {}
+    group_by_artist_title: dict[tuple[str, str], int] = {}
+
+    for track in tracks:
+        video_id = track.get("videoId")
+        artist = track.get("artist") or UNKNOWN_ARTIST
+        title_key = _normalize_title(track.get("title"))
+        artist_title_key = (artist, title_key)
+
+        group_idx = None
+        if video_id:
+            group_idx = group_by_video_id.get(video_id)
+        if group_idx is None:
+            group_idx = group_by_artist_title.get(artist_title_key)
+
+        if group_idx is None:
+            group_idx = len(groups)
+            groups.append([track])
+            group_by_artist_title[artist_title_key] = group_idx
+            if video_id:
+                group_by_video_id[video_id] = group_idx
+            continue
+
+        groups[group_idx].append(track)
+        if video_id:
+            group_by_video_id[video_id] = group_idx
+
+    return [group for group in groups if len(group) > 1]
+
+
+def _group_duplicate_tracks_fuzzy(tracks: list[dict], score_cutoff: int) -> list[list[dict]]:
+    groups = defaultdict(list)
+    for track in tracks:
+        video_id = track.get("videoId")
+        # Check for existing group with same videoId or similar title and artist
+        matched_key = None
+        for key, group in groups.items():
+            if (video_id and any(t["videoId"] == video_id for t in group)) or _get_matching_algorithm(
+                track, group, True, score_cutoff
+            ):
+                matched_key = key
+                break
+
+        if matched_key is not None:
+            groups[matched_key].append(track)
+        else:
+            # No matching group found, create a new group
+            # Use id(track) as key to avoid None videoId collisions
+            group_key = video_id if video_id else id(track)
+            groups[group_key].append(track)
+
+    return [group for group in groups.values() if len(group) > 1]
 
 
 def _group_duplicate_tracks(tracks: list[dict], fuzzy: bool, score_cutoff: int) -> list[list[dict]]:
@@ -83,33 +151,22 @@ def _group_duplicate_tracks(tracks: list[dict], fuzzy: bool, score_cutoff: int) 
     Returns:
       A list of lists, where each inner list contains duplicate tracks.
     """
-    groups = defaultdict(list)
-    for track in tracks:
-        # Check for existing group with same videoId or similar title and artist
-        for group in groups.values():
-            if any(t["videoId"] == track["videoId"] for t in group) or _get_matching_algorithm(
-                track, group, fuzzy, score_cutoff
-            ):
-                groups[group[0]["videoId"]].append(track)
-                break  # Exit loop after finding a matching group
+    if not fuzzy:
+        return _group_duplicate_tracks_exact(tracks)
 
-        # No matching group found, create a new group
-        else:
-            groups[track["videoId"]].append(track)
-
-    # Flatten groups with duplicates into a list of lists
-    return [group for group in groups.values() if len(group) > 1]
+    return _group_duplicate_tracks_fuzzy(tracks, score_cutoff)
 
 
 def _get_matching_algorithm(track, group, fuzzy: bool, score_cutoff: int):
     if fuzzy:
         return (_artists_match(track, group[0], score_cutoff)) and all(
-            _partial_match(strip_parentheticals(t["title"]), track["title"], score_cutoff) for t in group
+            _partial_match(_normalize_title(t["title"]), _normalize_title(track["title"]), score_cutoff)
+            for t in group
         )
 
-    similar_title_key = (track["artist"], strip_parentheticals(track["title"]).lower())
+    similar_title_key = (track["artist"], _normalize_title(track["title"]))
     return group[0]["artist"] == similar_title_key[0] and all(
-        strip_parentheticals(t["title"]).lower() == similar_title_key[1] for t in group
+        _normalize_title(t["title"]) == similar_title_key[1] for t in group
     )
 
 
@@ -177,23 +234,24 @@ def _remove_exact_dupes(duplicate_groups) -> tuple[list[list[dict]], list[dict]]
     return unique_groups, tracks_to_remove
 
 
-def _partial_match(titleA, titleB, score_cutoff):
-    score = fuzz.partial_ratio(titleA, titleB)
+def _partial_match(title_a, title_b, score_cutoff):
+    score = fuzz.partial_ratio(title_a, title_b)
 
     # Make sure this result at least passes the score cutoff
     is_match = score >= score_cutoff
     if is_match:
         logging.debug(
             f"""
-            Token A: {titleA}
-            Token B: {titleB}
+            Token A: {title_a}
+            Token B: {title_b}
             Score: {score} ✅
         """
         )
         return is_match
+    return False
 
 
-def _artists_match(trackA, trackB, score_cutoff):
-    if any(t.get("videoType") == VideoType.UGC for t in [trackA, trackB]):
+def _artists_match(track_a, track_b, score_cutoff):
+    if any(t.get("videoType") == VideoType.UGC for t in [track_a, track_b]):
         return True
-    return _partial_match(trackA["artist"], trackB["artist"], score_cutoff)
+    return bool(_partial_match(track_a["artist"], track_b["artist"], score_cutoff))

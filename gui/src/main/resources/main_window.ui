@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>900</width>
-    <height>685</height>
+    <height>700</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -19,7 +19,7 @@
      <rect>
       <x>220</x>
       <y>140</y>
-      <width>101</width>
+      <width>130</width>
       <height>41</height>
      </rect>
     </property>
@@ -37,9 +37,9 @@
     <property name="geometry">
      <rect>
       <x>40</x>
-      <y>320</y>
+      <y>375</y>
       <width>811</width>
-      <height>311</height>
+      <height>260</height>
      </rect>
     </property>
     <property name="readOnly">
@@ -49,9 +49,9 @@
    <widget class="QPushButton" name="deleteUploadsButton">
     <property name="geometry">
      <rect>
-      <x>330</x>
+      <x>360</x>
       <y>140</y>
-      <width>101</width>
+      <width>130</width>
       <height>41</height>
      </rect>
     </property>
@@ -69,7 +69,7 @@
     <property name="geometry">
      <rect>
       <x>50</x>
-      <y>300</y>
+      <y>350</y>
       <width>81</width>
       <height>21</height>
      </rect>
@@ -105,9 +105,9 @@
    <widget class="QPushButton" name="deletePlaylistsButton">
     <property name="geometry">
      <rect>
-      <x>440</x>
+      <x>500</x>
       <y>140</y>
-      <width>101</width>
+      <width>130</width>
       <height>41</height>
      </rect>
     </property>
@@ -124,9 +124,9 @@
    <widget class="QPushButton" name="unlikeAllButton">
     <property name="geometry">
      <rect>
-      <x>550</x>
-      <y>140</y>
-      <width>101</width>
+      <x>220</x>
+      <y>190</y>
+      <width>130</width>
       <height>41</height>
      </rect>
     </property>
@@ -145,7 +145,7 @@
      <rect>
       <x>40</x>
       <y>140</y>
-      <width>121</width>
+      <width>130</width>
       <height>41</height>
      </rect>
     </property>
@@ -163,8 +163,8 @@
     <property name="geometry">
      <rect>
       <x>40</x>
-      <y>240</y>
-      <width>101</width>
+      <y>290</y>
+      <width>140</width>
       <height>41</height>
      </rect>
     </property>
@@ -181,9 +181,9 @@
    <widget class="QPushButton" name="deleteHistoryButton">
     <property name="geometry">
      <rect>
-      <x>660</x>
-      <y>140</y>
-      <width>101</width>
+      <x>360</x>
+      <y>190</y>
+      <width>130</width>
       <height>41</height>
      </rect>
     </property>
@@ -200,9 +200,9 @@
    <widget class="QLabel" name="orLabel">
     <property name="geometry">
      <rect>
-      <x>180</x>
+      <x>185</x>
       <y>150</y>
-      <width>21</width>
+      <width>25</width>
       <height>21</height>
      </rect>
     </property>
@@ -237,11 +237,24 @@
      <string/>
     </property>
    </widget>
+   <widget class="QLabel" name="libraryFunctionsLabel">
+    <property name="geometry">
+     <rect>
+      <x>40</x>
+      <y>110</y>
+      <width>131</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Library Functions</string>
+    </property>
+   </widget>
    <widget class="QLabel" name="playlistFunctionsLabel">
     <property name="geometry">
      <rect>
       <x>40</x>
-      <y>210</y>
+      <y>260</y>
       <width>131</width>
       <height>20</height>
      </rect>
@@ -261,9 +274,9 @@
     </property>
     <property name="styleSheet">
      <string notr="true">QWidget {
-	background-color: rgb(202, 202, 202);
+	background-color: #313244;
     border-radius: 20px;
-    border: 2px solid
+    border: 2px solid #45475a
 }</string>
     </property>
     <widget class="QLabel" name="accountNameLabel">
@@ -355,16 +368,14 @@
     </property>
     <property name="geometry">
      <rect>
-      <x>160</x>
-      <y>240</y>
-      <width>111</width>
+      <x>190</x>
+      <y>290</y>
+      <width>160</width>
       <height>41</height>
      </rect>
     </property>
     <property name="font">
-     <font>
-      <pointsize>8</pointsize>
-     </font>
+     <font/>
     </property>
     <property name="statusTip">
      <string>Remove duplicate tracks in a playlist.</string>
@@ -382,16 +393,14 @@
     </property>
     <property name="geometry">
      <rect>
-      <x>290</x>
-      <y>240</y>
-      <width>101</width>
+      <x>360</x>
+      <y>290</y>
+      <width>160</width>
       <height>41</height>
      </rect>
     </property>
     <property name="font">
-     <font>
-      <pointsize>8</pointsize>
-     </font>
+     <font/>
     </property>
     <property name="statusTip">
      <string>Add all library songs or uploads to a playlist.</string>
@@ -409,16 +418,14 @@
     </property>
     <property name="geometry">
      <rect>
-      <x>410</x>
-      <y>240</y>
-      <width>101</width>
+      <x>530</x>
+      <y>290</y>
+      <width>160</width>
       <height>41</height>
      </rect>
     </property>
     <property name="font">
-     <font>
-      <pointsize>8</pointsize>
-     </font>
+     <font/>
     </property>
     <property name="statusTip">
      <string>Add all songs from a playlist to your library.</string>
@@ -433,9 +440,9 @@
    <widget class="QPushButton" name="reportButton">
     <property name="geometry">
      <rect>
-      <x>730</x>
-      <y>280</y>
-      <width>121</width>
+      <x>720</x>
+      <y>330</y>
+      <width>140</width>
       <height>31</height>
      </rect>
     </property>
