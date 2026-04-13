@@ -9,6 +9,8 @@ from ytmusic_deleter.duplicates import determine_tracks_to_remove
 from ytmusic_deleter.progress import manager
 from ytmusic_deleter.progress import update_progress
 from ytmusic_deleter.uploads import maybe_delete_uploaded_albums
+from ytmusicapi import YTMusic
+from ytmusicapi.exceptions import YTMusicServerError
 from ytmusicapi.models.content.enums import LikeStatus
 from ytmusicapi.type_alias import JsonDict
 
@@ -26,7 +28,7 @@ class ActionContext:
 
 
 def delete_uploads(ctx: ActionContext, add_to_library=False, score_cutoff=90):
-    (albums_deleted, albums_total) = maybe_delete_uploaded_albums(
+    albums_deleted, albums_total = maybe_delete_uploaded_albums(
         yt_auth=ctx.yt_auth,
         add_to_library=add_to_library,
         score_cutoff=score_cutoff,
@@ -42,7 +44,7 @@ def delete_uploads(ctx: ActionContext, add_to_library=False, score_cutoff=90):
 
 
 def remove_library(ctx: ActionContext):
-    yt_auth = ctx.yt_auth
+    yt_auth: YTMusic = ctx.yt_auth
     logging.info("Retrieving all library albums...")
     try:
         library_albums = yt_auth.get_library_albums(limit=None)
@@ -229,7 +231,7 @@ def unlike_all(ctx: ActionContext):
 
 
 def delete_playlists(ctx: ActionContext):
-    yt_auth = ctx.yt_auth
+    yt_auth: YTMusic = ctx.yt_auth
     logging.info("Retrieving all your playlists...")
     library_playlists = yt_auth.get_library_playlists(limit=None)
     library_playlists = list(filter(lambda playlist: playlist["playlistId"] != "LM", library_playlists))
@@ -248,18 +250,27 @@ def delete_playlists(ctx: ActionContext):
         if ctx.is_cancelled():
             logging.info("Operation cancelled by user.")
             break
-        logging.info(f"Processing playlist: {playlist['title']}")
+
+        playlist_id = playlist["playlistId"]
+        playlist_title = playlist["title"]
+
+        if playlist_id in {"LM", "SE"}:
+            logging.info(f"Skipping auto playlist {playlist_title!r}")
+            continue
+
+        logging.info(f"Processing playlist: {playlist_title}")
+
         try:
-            response = yt_auth.delete_playlist(playlist["playlistId"])
-            if response:
-                logging.info(f"\tRemoved playlist {playlist['title']!r} from your library.")
-                playlists_deleted += 1
-            else:
-                logging.error(f"\tFailed to remove playlist {playlist['title']!r} from your library.")
-        except Exception:
-            logging.error(
-                f"\tCould not delete playlist {playlist['title']!r}. You might not have permission to delete it."
-            )
+            response = yt_auth.delete_playlist(playlist_id)
+        except YTMusicServerError:
+            # try removing it from library instead (might be community playlist)
+            response = yt_auth.rate_playlist(playlist_id, LikeStatus.INDIFFERENT)
+
+        if response:
+            logging.info(f"\tRemoved playlist {playlist['title']!r} from your library.")
+            playlists_deleted += 1
+        else:
+            logging.error(f"\tFailed to remove playlist {playlist['title']!r} from your library.")
         update_progress(progress_bar)
 
     logging.info(f"Deleted {playlists_deleted} out of {len(library_playlists)} playlists from your library.")
