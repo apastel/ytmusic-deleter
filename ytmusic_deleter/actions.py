@@ -14,6 +14,9 @@ from ytmusicapi.exceptions import YTMusicServerError
 from ytmusicapi.models.content.enums import LikeStatus
 from ytmusicapi.type_alias import JsonDict
 
+SORT_PLAYLIST_FAILURE_WARNING_INTERVAL = 25
+SORT_PLAYLIST_CONSECUTIVE_FAILURE_WARNING_THRESHOLD = 10
+
 
 class ActionContext:
     __slots__ = ("yt_auth", "static_progress", "cancelled")
@@ -363,8 +366,11 @@ def sort_playlist(ctx: ActionContext, shuffle, playlist_titles, custom_sort, rev
             enabled=not ctx.static_progress,
         )
 
-        failed_moves = []
+        failed_moves = 0
         missing_set_video_ids = 0
+        consecutive_failed_moves = 0
+        playlist_title = selected_playlist["title"]
+
         for cur_idx, cur_track in enumerate(desired_tracklist):
             track_after = current_tracklist[cur_idx]
 
@@ -376,34 +382,34 @@ def sort_playlist(ctx: ActionContext, shuffle, playlist_titles, custom_sort, rev
                 logging.debug(
                     f"Moving {cur_artist} - {cur_track['title']!r} before {track_after_artist} - {track_after['title']!r}"
                 )
+                move_failed = False
                 try:
                     if "setVideoId" not in cur_track or "setVideoId" not in track_after:
                         missing_set_video_ids += 1
+                        move_failed = True
                         if "setVideoId" not in cur_track:
                             logging.debug("setVideoId attribute not in cur_track: %s", cur_track)
                         if "setVideoId" not in track_after:
                             logging.debug("setVideoId attribute not in track_after: %s", track_after)
-                        failed_moves.append((cur_artist, cur_track["title"], track_after_artist, track_after["title"]))
-                        continue
-
-                    response = yt_auth.edit_playlist(
-                        playlist["id"],
-                        moveItem=(
-                            cur_track["setVideoId"],
-                            track_after["setVideoId"],
-                        ),
-                    )
-                    if not response:
-                        failed_moves.append((cur_artist, cur_track["title"], track_after_artist, track_after["title"]))
-                        logging.debug(
-                            "Failed to move %s - %r before %s - %r",
-                            cur_artist,
-                            cur_track["title"],
-                            track_after_artist,
-                            track_after["title"],
+                    else:
+                        response = yt_auth.edit_playlist(
+                            playlist["id"],
+                            moveItem=(
+                                cur_track["setVideoId"],
+                                track_after["setVideoId"],
+                            ),
                         )
+                        if not response:
+                            move_failed = True
+                            logging.debug(
+                                "Failed to move %s - %r before %s - %r",
+                                cur_artist,
+                                cur_track["title"],
+                                track_after_artist,
+                                track_after["title"],
+                            )
                 except Exception:
-                    failed_moves.append((cur_artist, cur_track["title"], track_after_artist, track_after["title"]))
+                    move_failed = True
                     logging.debug(
                         "Failed to move %s - %r before %s - %r",
                         cur_artist,
@@ -412,6 +418,45 @@ def sort_playlist(ctx: ActionContext, shuffle, playlist_titles, custom_sort, rev
                         track_after["title"],
                         exc_info=True,
                     )
+
+                if move_failed:
+                    failed_moves += 1
+                    consecutive_failed_moves += 1
+                    extra_detail = ""
+                    if missing_set_video_ids:
+                        extra_detail = f" {missing_set_video_ids} move(s) were missing setVideoId metadata."
+
+                    if failed_moves == 1:
+                        logging.warning(
+                            "Playlist %r has started failing move requests while sorting/shuffling.",
+                            playlist_title,
+                        )
+                        logging.warning(
+                            "First failure: %s - %r before %s - %r. "
+                            "Additional failures will be summarized every %d failed move(s).",
+                            cur_artist,
+                            cur_track["title"],
+                            track_after_artist,
+                            track_after["title"],
+                            SORT_PLAYLIST_FAILURE_WARNING_INTERVAL,
+                        )
+                    elif consecutive_failed_moves == SORT_PLAYLIST_CONSECUTIVE_FAILURE_WARNING_THRESHOLD:
+                        logging.warning(
+                            "Playlist %r has hit %d consecutive move failure(s). "
+                            "The API may be rate limiting this sort, so later moves may keep failing.%s",
+                            playlist_title,
+                            consecutive_failed_moves,
+                            extra_detail,
+                        )
+                    elif failed_moves % SORT_PLAYLIST_FAILURE_WARNING_INTERVAL == 0:
+                        logging.warning(
+                            "Playlist %r has %d failed move request(s) so far while sorting/shuffling.%s",
+                            playlist_title,
+                            failed_moves,
+                            extra_detail,
+                        )
+                else:
+                    consecutive_failed_moves = 0
 
                 current_tracklist.remove(cur_track)
                 current_tracklist.insert(cur_idx, cur_track)
@@ -422,9 +467,12 @@ def sort_playlist(ctx: ActionContext, shuffle, playlist_titles, custom_sort, rev
             if missing_set_video_ids:
                 extra_detail = f" {missing_set_video_ids} move(s) were missing setVideoId metadata."
             logging.warning(
-                "Playlist %r had %d move failure(s) while sorting/shuffling.%s Enable DEBUG logs for per-track details.",
-                selected_playlist["title"],
-                len(failed_moves),
+                (
+                    "Playlist %r finished with %d move failure(s) while sorting/shuffling.%s Re-run with DEBUG logs "
+                    " enabled in the settings for per-track details."
+                ),
+                playlist_title,
+                failed_moves,
                 extra_detail,
             )
 
