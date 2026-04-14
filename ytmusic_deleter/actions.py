@@ -327,13 +327,13 @@ def delete_all(ctx: ActionContext):
 
 
 def sort_playlist(ctx: ActionContext, shuffle, playlist_titles, custom_sort, reverse):
-    yt_auth = ctx.yt_auth
+    yt_auth: YTMusic = ctx.yt_auth
     invalid_keys = [attr for attr in custom_sort if attr not in common.SORTABLE_ATTRIBUTES]
     if invalid_keys:
         raise ValueError(f"Invalid sort option(s): {', '.join(invalid_keys)}")
 
     all_playlists = yt_auth.get_library_playlists(limit=None)
-    lowercase_playlist_titles = [title.lower() for title in playlist_titles]
+    lowercase_playlist_titles = {title.lower() for title in playlist_titles}
     selected_playlist_list = [
         playlist for playlist in all_playlists if playlist["title"].lower() in lowercase_playlist_titles
     ]
@@ -347,15 +347,14 @@ def sort_playlist(ctx: ActionContext, shuffle, playlist_titles, custom_sort, rev
         if not common.can_edit_playlist(playlist):
             logging.error(f"Cannot modify playlist {playlist.get('title')!r}. You are not the owner of this playlist.")
             continue
-        current_tracklist = [t for t in playlist["tracks"]]
+        playlist_tracks = playlist["tracks"]
+        current_tracklist = playlist_tracks.copy()
         if shuffle:
             logging.info(f"\tPlaylist: {selected_playlist['title']} will be shuffled")
-            desired_tracklist = [t for t in playlist["tracks"]]
+            desired_tracklist = playlist_tracks.copy()
             unsort(desired_tracklist)
         else:
-            desired_tracklist = [
-                t for t in sorted(playlist["tracks"], key=lambda t: make_sort_key(t, custom_sort), reverse=reverse)
-            ]
+            desired_tracklist = sorted(playlist_tracks, key=lambda t: make_sort_key(t, custom_sort), reverse=reverse)
 
         progress_bar = manager.counter(
             total=len(desired_tracklist),
@@ -364,8 +363,9 @@ def sort_playlist(ctx: ActionContext, shuffle, playlist_titles, custom_sort, rev
             enabled=not ctx.static_progress,
         )
 
-        for cur_track in desired_tracklist:
-            cur_idx = desired_tracklist.index(cur_track)
+        failed_moves = []
+        missing_set_video_ids = 0
+        for cur_idx, cur_track in enumerate(desired_tracklist):
             track_after = current_tracklist[cur_idx]
 
             cur_artist = cur_track["artists"][0]["name"] if cur_track.get("artists") else common.UNKNOWN_ARTIST
@@ -378,13 +378,12 @@ def sort_playlist(ctx: ActionContext, shuffle, playlist_titles, custom_sort, rev
                 )
                 try:
                     if "setVideoId" not in cur_track or "setVideoId" not in track_after:
-                        logging.error(
-                            "Encountered track(s) with missing 'setVideoId'. Cannot sort the following track(s):"
-                        )
+                        missing_set_video_ids += 1
                         if "setVideoId" not in cur_track:
-                            logging.error(f"setVideoId attribute not in cur_track: {cur_track}")
+                            logging.debug("setVideoId attribute not in cur_track: %s", cur_track)
                         if "setVideoId" not in track_after:
-                            logging.error(f"setVideoId attribute not in track_after: {track_after}")
+                            logging.debug("setVideoId attribute not in track_after: %s", track_after)
+                        failed_moves.append((cur_artist, cur_track["title"], track_after_artist, track_after["title"]))
                         continue
 
                     response = yt_auth.edit_playlist(
@@ -395,23 +394,44 @@ def sort_playlist(ctx: ActionContext, shuffle, playlist_titles, custom_sort, rev
                         ),
                     )
                     if not response:
-                        logging.error(
-                            f"Failed to move {cur_artist} - {cur_track['title']!r} "
-                            f"before {track_after_artist} - {track_after['title']!r}"
+                        failed_moves.append((cur_artist, cur_track["title"], track_after_artist, track_after["title"]))
+                        logging.debug(
+                            "Failed to move %s - %r before %s - %r",
+                            cur_artist,
+                            cur_track["title"],
+                            track_after_artist,
+                            track_after["title"],
                         )
                 except Exception:
-                    logging.error(
-                        f"Failed to move {cur_artist} - {cur_track['title']!r} "
-                        f"before {track_after_artist} - {track_after['title']!r}"
+                    failed_moves.append((cur_artist, cur_track["title"], track_after_artist, track_after["title"]))
+                    logging.debug(
+                        "Failed to move %s - %r before %s - %r",
+                        cur_artist,
+                        cur_track["title"],
+                        track_after_artist,
+                        track_after["title"],
+                        exc_info=True,
                     )
 
                 current_tracklist.remove(cur_track)
                 current_tracklist.insert(cur_idx, cur_track)
             update_progress(progress_bar)
 
+        if failed_moves:
+            extra_detail = ""
+            if missing_set_video_ids:
+                extra_detail = f" {missing_set_video_ids} move(s) were missing setVideoId metadata."
+            logging.warning(
+                "Playlist %r had %d move failure(s) while sorting/shuffling.%s Enable DEBUG logs for per-track details.",
+                selected_playlist["title"],
+                len(failed_moves),
+                extra_detail,
+            )
+
     not_found_playlists = []
+    found_titles = {playlist["title"].lower() for playlist in selected_playlist_list}
     for title in lowercase_playlist_titles:
-        if title not in [x["title"].lower() for x in selected_playlist_list]:
+        if title not in found_titles:
             not_found_playlists.append(title)
     if not_found_playlists:
         raise ValueError(
