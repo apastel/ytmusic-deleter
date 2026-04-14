@@ -468,8 +468,9 @@ def sort_playlist(ctx: ActionContext, shuffle, playlist_titles, custom_sort, rev
                 extra_detail = f" {missing_set_video_ids} move(s) were missing setVideoId metadata."
             logging.warning(
                 (
-                    "Playlist %r finished with %d move failure(s) while sorting/shuffling.%s Re-run with DEBUG logs "
-                    " enabled in the settings for per-track details."
+                    "Playlist %r finished with %d move failure(s) while sorting/shuffling.%s Failures are common with "
+                    "longer playlists when you hit an API rate limitation. Wait a few hours and try again later. "
+                    "Re-run with debug logs enabled in the settings for per-track details."
                 ),
                 playlist_title,
                 failed_moves,
