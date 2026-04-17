@@ -282,17 +282,21 @@ def delete_playlists(ctx: ActionContext):
 
 
 def delete_history(ctx: ActionContext, items_deleted=0):
-    yt_auth = ctx.yt_auth
+    yt_auth: YTMusic = ctx.yt_auth
     logging.info("Begin deleting history...")
     try:
         history_items = yt_auth.get_history()
+    except YTMusicServerError as e:
+        if "Turn on your YouTube watch history" in str(e):
+            logging.warning("Your watch history is turned off, nothing to delete.")
+            return items_deleted
+        raise
     except Exception as e:
         if str(e) == "None":
             logging.info("History is empty, nothing left to delete.")
-        else:
-            logging.exception(e)
-        logging.info(f"Deleted {items_deleted} history items.")
-        return items_deleted
+            logging.info(f"Deleted {items_deleted} history items.")
+            return items_deleted
+        raise
 
     progress_bar = manager.counter(
         total=len(history_items),
