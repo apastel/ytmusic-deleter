@@ -597,7 +597,7 @@ def add_all_to_library(ctx: ActionContext, playlist_title_or_id):
             else:
                 logging.error(f"Failed to add {track_str} to your library")
         else:
-            logging.error(f"{track_str} is a video and cannot be added to your library")
+            logging.warning(f"{track_str} is a video and cannot be added to your library")
         update_progress(progress_bar)
 
     logging.info(
