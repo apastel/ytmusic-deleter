@@ -290,8 +290,6 @@ def delete_history(ctx: ActionContext, items_deleted=0):
         if "Turn on your YouTube watch history" in str(e):
             logging.warning("Your watch history is turned off, nothing to delete.")
             return items_deleted
-        raise
-    except Exception as e:
         if str(e) == "None":
             logging.info("History is empty, nothing left to delete.")
             logging.info(f"Deleted {items_deleted} history items.")
