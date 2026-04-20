@@ -237,7 +237,6 @@ def delete_playlists(ctx: ActionContext):
     yt_auth: YTMusic = ctx.yt_auth
     logging.info("Retrieving all your playlists...")
     library_playlists = yt_auth.get_library_playlists(limit=None)
-    library_playlists = list(filter(lambda playlist: playlist["playlistId"] != "LM", library_playlists))
     logging.info(f"\tRetrieved {len(library_playlists)} playlists.")
     logging.info("Begin deleting playlists...")
 
@@ -257,7 +256,7 @@ def delete_playlists(ctx: ActionContext):
         playlist_id = playlist["playlistId"]
         playlist_title = playlist["title"]
 
-        if playlist_id in {"LM", "SE"}:
+        if playlist_id in {"LM", "SE", "RDPN"}:
             logging.info(f"Skipping auto playlist {playlist_title!r}")
             continue
 
