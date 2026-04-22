@@ -1,63 +1,34 @@
-import ytmusicapi
-from generated.ui_playlist_selection_dialog import Ui_PlaylistSelectionDialog
+from generated.ui_add_all_to_playlist_dialog import Ui_AddAllSongsToPlaylistDialog
 from PySide6.QtWidgets import QDialog
-from PySide6.QtWidgets import QDialogButtonBox
 from PySide6.QtWidgets import QMessageBox
 from PySide6.QtWidgets import QStyle
 
 
-class AddAllToPlaylistDialog(QDialog, Ui_PlaylistSelectionDialog):
+class AddAllToPlaylistDialog(QDialog, Ui_AddAllSongsToPlaylistDialog):
     def __init__(self, parent):
         super().__init__(parent)
         self.setupUi(self)
 
-        self.setWindowTitle("Select Playlist to Add All Songs To")
+        self.setWindowTitle("Add All Songs To Playlist(s)")
         self.radioButtonLabel.setText("Add all songs from...")
-        self.radioButtonA.setText("Uploads")
-        self.radioButtonB.setText("Library")
-        self.scoreCutoffInput.setVisible(False)
-        self.scoreCutoffLabel.setVisible(False)
-        self.playlistIdLabel.setVisible(False)
-        self.playlistIdInput.setVisible(False)
-        self.playlistIdInfoButton.setVisible(False)
-        self.enable_ok_button()
-        self.playlistList.itemSelectionChanged.connect(self.enable_ok_button)
         self.infoButton.setIcon(self.style().standardIcon(QStyle.StandardPixmap.SP_MessageBoxInformation))
         self.infoButton.clicked.connect(self.show_info_dialog)
 
-        try:
-            self.all_playlists = parent.ytmusic.get_library_playlists(limit=None)
-        except (ytmusicapi.exceptions.YTMusicError, TypeError) as e:
-            # Ensure we log an exception in the console (not just log file) if fetching playlists fails
-            self.parentWidget().message(str(e))
-            raise
-        if not self.all_playlists:
-            QMessageBox.critical(
-                self,
-                "Error",
-                "No playlists found in your library! Your credentials may be expired. Try signing out and signing back in.",
-            )
-            self.close()
-            self.deleteLater()
-            return
-        self.playlistList.insertItems(0, [playlist["title"] for playlist in self.all_playlists])
-
     def accept(self):
-        selected_playlist = self.playlistList.selectedItems()
-        if not selected_playlist:
-            QMessageBox.critical(self, "Error", "No playlist selected!")
-            return
         library_or_uploads = self.radioButtonGroup.checkedButton().text().lower()
-        add_all_args = ["add-all-to-playlist", selected_playlist[0].text()] + [f"--{library_or_uploads}"]
+        max_playlist_size = self.maxPlaylistSizeBox.value()
+        add_all_args = ["add-all-to-playlist", f"--{library_or_uploads}", "-m", max_playlist_size]
         self.parentWidget().launch_process(add_all_args)
 
     def show_info_dialog(self):
         QMessageBox.information(
             self,
             "Information",
-            "This will either add all of your uploads or all of your library songs to a particular playlist depending "
-            "on which option you select.",
+            "This will either add all of your uploads or all of your library songs to a new playlist depending "
+            "on which option you select.\n\n"
+            "If you wish to combine it with one of your pre-existing playlists, you can go into YouTube Music "
+            "afterwards and save the playlist to another playlist.\n\n"
+            "The 'Max Playlist Size' determines how many songs will be added to a single playlist. If the number "
+            "of songs exceeds the maximum, then multiple playlists will be created.\n"
+            "The max value of 5000 is a YouTube Music restriction that cannot be exceeded.",
         )
-
-    def enable_ok_button(self):
-        self.buttonBox.button(QDialogButtonBox.StandardButton.Ok).setEnabled(len(self.playlistList.selectedItems()) > 0)

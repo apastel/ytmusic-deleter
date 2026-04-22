@@ -1,4 +1,5 @@
 import logging
+import math
 import re
 import time
 from random import shuffle as unsort
@@ -520,31 +521,68 @@ def remove_duplicates(ctx: ActionContext, playlist_title, exact, fuzzy, score_cu
     logging.info("Finished removing duplicate tracks.")
 
 
-def add_all_to_playlist(ctx: ActionContext, playlist_title, library, uploads):
-    if not (library or uploads):
+def add_all_to_playlist(ctx: ActionContext, library, uploads, max_playlist_size):
+    if not isinstance(library, bool) or not isinstance(uploads, bool):
+        raise ValueError("--library and --uploads must be boolean flags.")
+    if library == uploads:
         raise ValueError("You must specify either --library or --uploads.")
+    if max_playlist_size <= 0:
+        raise ValueError("Max playlist size must be a positive integer.")
 
-    yt_auth = ctx.yt_auth
-    playlist = get_library_playlist_from_title(yt_auth, playlist_title)
+    yt_auth: YTMusic = ctx.yt_auth
+    source = "Library" if library else "Uploads"
+
     if library:
         logging.info("User has selected 'Library' option. Retrieving all library songs...")
         songs_to_add = yt_auth.get_library_songs(limit=None)
         logging.info(f"Retrieved {len(songs_to_add)} library songs.")
     else:
-        logging.info("User has selected 'Uploads' option. Retriving all uploaded songs...")
+        logging.info("User has selected 'Uploads' option. Retrieving all uploaded songs...")
         songs_to_add = yt_auth.get_library_upload_songs(limit=None)
         logging.info(f"Retrieved {len(songs_to_add)} uploaded songs.")
 
     if not songs_to_add:
         raise ValueError("No songs were found to add to the playlist.")
 
-    video_ids = [song["videoId"] for song in songs_to_add if "videoId" in song]
-    logging.info(f"Preparing to add all {len(video_ids)} songs to playlist {playlist.get('title')!r}.")
-    response = yt_auth.add_playlist_items(playlist.get("id"), video_ids, duplicates=True)
-    if "status" not in response or "STATUS_SUCCEEDED" not in response.get("status", ""):
-        logging.error(response)
-        raise RuntimeError("API did not return a success message. See response object above.")
-    logging.info(f"Finished adding {len(video_ids)} songs to playlist {playlist.get('title')!r}.")
+    video_ids = []
+    songs_without_video_id = []
+    for song in songs_to_add:
+        video_id = song.get("videoId")
+        if video_id:
+            video_ids.append(video_id)
+            continue
+        artist = song["artists"][0]["name"] if song.get("artists") else common.UNKNOWN_ARTIST
+        title = song.get("title", "Unknown Title")
+        songs_without_video_id.append(f"{artist} - {title!r}")
+
+    if songs_without_video_id:
+        logging.warning(
+            "Skipping %d song(s) without videoId: %s",
+            len(songs_without_video_id),
+            "; ".join(songs_without_video_id),
+        )
+    if not video_ids:
+        raise ValueError("No songs with a videoId were found to add to the playlist.")
+
+    logging.info(
+        f"Max playlist size is {max_playlist_size}. "
+        f"{math.ceil(len(video_ids) / max_playlist_size)} playlist(s) will be created."
+    )
+    num_playlists_created = 0
+
+    for i, chunk in enumerate(common.chunked(video_ids, max_playlist_size), 1):
+        playlist_title = f"New Playlist from {source} {i}"
+        response = yt_auth.create_playlist(playlist_title, description="", video_ids=chunk)
+
+        # Response should be the new playlist ID or else it's an error response object.
+        if not isinstance(response, str):
+            logging.error("Unexpected create_playlist response: %r", response)
+            raise RuntimeError("API did not return a success message. See response object above.")
+
+        num_playlists_created += 1
+        logging.info(f"Added {len(chunk)} songs to {playlist_title!r}")
+
+    logging.info(f"Finished adding {len(video_ids)} songs across {num_playlists_created} playlist(s).")
 
 
 def add_all_to_library(ctx: ActionContext, playlist_title_or_id):

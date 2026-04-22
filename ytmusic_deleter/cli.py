@@ -187,14 +187,20 @@ def remove_duplicates(ctx: click.Context, playlist_title, exact, fuzzy, score_cu
 
 
 @cli.command
-@click.argument("playlist_title")
 @click.option("--library", "-l", is_flag=True, help="Add all library songs to a playlist")
 @click.option("--uploads", "-u", is_flag=True, help="Add all uploaded songs to a playlist")
+@click.option(
+    "--max-playlist-size",
+    "-m",
+    type=click.IntRange(min=1),
+    help="Maximum size of new playlists created",
+    default=5000,
+)
 @click.pass_context
-def add_all_to_playlist(ctx: click.Context, playlist_title, library, uploads):
+def add_all_to_playlist(ctx: click.Context, library, uploads, max_playlist_size):
     """Add all library songs or uploaded songs to a playlist."""
     context = actions.ActionContext(ctx.obj["YT_AUTH"], static_progress=ctx.obj["STATIC_PROGRESS"])
-    return actions.add_all_to_playlist(context, playlist_title, library, uploads)
+    return actions.add_all_to_playlist(context, library, uploads, max_playlist_size)
 
 
 @cli.command

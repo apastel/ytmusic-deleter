@@ -165,13 +165,17 @@ class InternalCommandWorker(QObject):
                             pass
                 actions.remove_duplicates(context, playlist_title, exact, fuzzy, score_cutoff)
             elif command == "add-all-to-playlist":
-                # add-all-to-playlist expects: ['add-all-to-playlist', playlist_title, '--library' or '--uploads']
-                if len(cmd_args) < 1:
-                    raise ValueError("add-all-to-playlist requires a playlist title")
-                playlist_title = cmd_args[0]
+                # add-all-to-playlist expects: ['add-all-to-playlist', '--library' or '--uploads', '--max-playlist-size N']
                 library = "--library" in cmd_args or "-l" in cmd_args
                 uploads = "--uploads" in cmd_args or "-u" in cmd_args
-                actions.add_all_to_playlist(context, playlist_title, library, uploads)
+                max_playlist_size = 5000
+                for i, arg in enumerate(cmd_args):
+                    if arg in ["--max-playlist-size", "-m"] and i + 1 < len(cmd_args):
+                        try:
+                            max_playlist_size = int(cmd_args[i + 1])
+                        except ValueError as err:
+                            raise ValueError("Max playlist size must be a positive integer.") from err
+                actions.add_all_to_playlist(context, library, uploads, max_playlist_size)
             elif command == "add-all-to-library":
                 # add-all-to-library expects: ['add-all-to-library', playlist_title_or_id]
                 if len(cmd_args) < 1:
@@ -500,13 +504,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                     please_wait_dialog.run(load_window)
 
                 case "add-all-to-playlist":
-                    please_wait_dialog = ProgressWorkerDialog("Loading your playlists", self)
-
-                    def load_window():
-                        self.remove_duplicates_dialog = AddAllToPlaylistDialog(self)
-                        self.remove_duplicates_dialog.show()
-
-                    please_wait_dialog.run(load_window)
+                    self.remove_duplicates_dialog = AddAllToPlaylistDialog(self)
+                    self.remove_duplicates_dialog.show()
 
                 case "add-all-to-library":
                     please_wait_dialog = ProgressWorkerDialog("Loading your playlists", self)
