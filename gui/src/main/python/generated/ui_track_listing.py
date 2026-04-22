@@ -3,7 +3,7 @@
 ################################################################################
 ## Form generated from reading UI file 'track_listing.ui'
 ##
-## Created by: Qt User Interface Compiler version 6.10.2
+## Created by: Qt User Interface Compiler version 6.11.0
 ##
 ## WARNING! All changes made in this file will be lost when recompiling UI file!
 ################################################################################
