@@ -60,7 +60,9 @@ class AddAllToLibraryDialog(QDialog, Ui_PlaylistSelectionDialog):
             "You can either select one of your playlists, or paste the "
             "ID of any public playlist.\n\nPlaylist IDs are obtained by viewing the playlist "
             "in your browser and copying the ID from your address bar, specifically the "
-            "long alphanumeric string at the end (e.g. RDCLAK5uy_kx0d2-VPr69KAkIQOTVFq04hCBsJE9LaI).",
+            "long alphanumeric string at the end (e.g. RDCLAK5uy_kx0d2-VPr69KAkIQOTVFq04hCBsJE9LaI).\n\n"
+            "Note that if you're using the free version of YouTube Music, songs will default to their video "
+            "counterparts whenever available, and videos cannot be added to your library.",
         )
 
     def enable_ok_button(self):
