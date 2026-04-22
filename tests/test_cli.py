@@ -14,6 +14,32 @@ from ytmusicapi.type_alias import JsonList
 
 
 class TestCli:
+    @staticmethod
+    def delete_add_all_playlists(yt_browser: YTMusic, source: str):
+        title_prefix = f"New Playlist from {source} "
+        playlists = yt_browser.get_library_playlists(limit=None)
+        for playlist in playlists:
+            if playlist.get("title", "").startswith(title_prefix):
+                yt_browser.delete_playlist(playlist["playlistId"])
+
+    @staticmethod
+    def get_add_all_playlist(yt_browser: YTMusic, source: str, playlist_number: int = 1):
+        playlist_title = f"New Playlist from {source} {playlist_number}"
+
+        @retry(AssertionError, tries=5, delay=3.0)
+        def _get_playlist():
+            playlists = yt_browser.get_library_playlists(limit=None)
+            playlist_id = next(
+                (playlist["playlistId"] for playlist in playlists if playlist.get("title") == playlist_title),
+                None,
+            )
+            assert playlist_id, f"Playlist {playlist_title!r} was not created"
+            playlist = yt_browser.get_playlist(playlist_id, limit=None)
+            assert playlist.get("tracks") is not None
+            return playlist
+
+        return _get_playlist()
+
     def test_delete_uploads(self, yt_browser: YTMusic, upload_song, cleanup_uploads):
         result = CliRunner().invoke(cli, ["delete-uploads"], standalone_mode=False, obj=yt_browser)
         print(result.stdout)
@@ -148,39 +174,41 @@ class TestCli:
             check_for_duplicates(processed_playlist, yt_browser)
         ), "Playlist contained wrong number of remaining duplicates"
 
-    def test_add_all_library_songs_to_playlist(
-        self, yt_browser: YTMusic, create_playlist_and_delete_after: str, add_library_album, cleanup_library
-    ):
-        num_tracks_before_add = len(yt_browser.get_playlist(create_playlist_and_delete_after).get("tracks"))
-        num_library_album_tracks = len(yt_browser.get_album(add_library_album["browseId"])["tracks"])
-        runner = CliRunner()
-        result = runner.invoke(
-            cli,
-            ["add-all-to-playlist", "--library", "Test Playlist (to be deleted)"],
-            standalone_mode=False,
-            obj=yt_browser,
-        )
-        time.sleep(3)
-        assert (
-            len(yt_browser.get_playlist(create_playlist_and_delete_after).get("tracks"))
-            == num_tracks_before_add + num_library_album_tracks
-        )
-        assert result.exit_code == 0
+    def test_add_all_library_songs_to_playlist(self, yt_browser: YTMusic, add_library_album, cleanup_library):
+        self.delete_add_all_playlists(yt_browser, "Library")
+        library_songs = yt_browser.get_library_songs(limit=None)
+        num_library_songs_with_video_id = sum(bool(song.get("videoId")) for song in library_songs)
+        try:
+            result = CliRunner().invoke(
+                cli,
+                ["add-all-to-playlist", "--library"],
+                standalone_mode=False,
+                obj=yt_browser,
+            )
+            assert result.exit_code == 0
 
-    def test_add_all_uploaded_songs_to_playlist(
-        self, yt_browser: YTMusic, create_playlist_and_delete_after: str, upload_song, cleanup_uploads
-    ):
-        num_tracks_before_add = len(yt_browser.get_playlist(create_playlist_and_delete_after).get("tracks"))
-        runner = CliRunner()
-        result = runner.invoke(
-            cli,
-            ["add-all-to-playlist", "--uploads", "Test Playlist (to be deleted)"],
-            standalone_mode=False,
-            obj=yt_browser,
-        )
-        time.sleep(3)
-        assert len(yt_browser.get_playlist(create_playlist_and_delete_after).get("tracks")) == num_tracks_before_add + 1
-        assert result.exit_code == 0
+            playlist = self.get_add_all_playlist(yt_browser, "Library")
+            assert len(playlist.get("tracks", [])) == num_library_songs_with_video_id
+        finally:
+            self.delete_add_all_playlists(yt_browser, "Library")
+
+    def test_add_all_uploaded_songs_to_playlist(self, yt_browser: YTMusic, upload_song, cleanup_uploads):
+        self.delete_add_all_playlists(yt_browser, "Uploads")
+        uploaded_songs = yt_browser.get_library_upload_songs(limit=None)
+        num_uploaded_songs_with_video_id = sum(bool(song.get("videoId")) for song in uploaded_songs)
+        try:
+            result = CliRunner().invoke(
+                cli,
+                ["add-all-to-playlist", "--uploads"],
+                standalone_mode=False,
+                obj=yt_browser,
+            )
+            assert result.exit_code == 0
+
+            playlist = self.get_add_all_playlist(yt_browser, "Uploads")
+            assert len(playlist.get("tracks", [])) == num_uploaded_songs_with_video_id
+        finally:
+            self.delete_add_all_playlists(yt_browser, "Uploads")
 
     def test_add_all_playlist_tracks_to_library_via_title(
         self, yt_browser: YTMusic, get_playlist_with_dupes, cleanup_library
