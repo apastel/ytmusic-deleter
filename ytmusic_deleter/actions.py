@@ -282,6 +282,11 @@ def delete_playlists(ctx: ActionContext):
 
 
 def delete_history(ctx: ActionContext, items_deleted=0):
+    def log_history_empty():
+        logging.info("History is empty, nothing left to delete.")
+        logging.info(f"Deleted {items_deleted} history items.")
+        return items_deleted
+
     yt_auth: YTMusic = ctx.yt_auth
     logging.info("Begin deleting history...")
     try:
@@ -291,9 +296,11 @@ def delete_history(ctx: ActionContext, items_deleted=0):
             logging.warning("Your watch history is turned off, nothing to delete.")
             return items_deleted
         if str(e) == "None":
-            logging.info("History is empty, nothing left to delete.")
-            logging.info(f"Deleted {items_deleted} history items.")
-            return items_deleted
+            return log_history_empty()
+        raise
+    except Exception as e:
+        if str(e) == "None":
+            return log_history_empty()
         raise
 
     progress_bar = manager.counter(
