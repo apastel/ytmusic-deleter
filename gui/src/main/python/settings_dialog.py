@@ -31,6 +31,10 @@ class SettingsDialog(QDialog, Ui_SettingsDialog):
         self.oauthInfoButton.clicked.connect(self.open_oauth_info)
         self.oauthInfoButton.setIcon(self.style().standardIcon(QStyle.StandardPixmap.SP_MessageBoxInformation))
 
+        # OAuth is disabled: https://github.com/sigma67/ytmusicapi/issues/813
+        self.oauthCheckbox.setDisabled(True)
+        self.oauthCheckbox.setToolTip("OAuth is disabled due to changes in Google's API")
+
     def accept(self) -> None:
         self.save_settings_signal.emit(True)
         super().accept()
