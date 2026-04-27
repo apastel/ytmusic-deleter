@@ -1,4 +1,5 @@
 import logging
+import sys
 from json import JSONDecodeError
 from pathlib import Path
 
@@ -37,7 +38,7 @@ def do_auth(
             raise RuntimeError("Authentication failed")
         logging.info(f"Authenticated with: {auth_file_path}")
         logging.info(
-            f"Signed in using {"OAuth" if oauth else "browser authentication"} as {yt_auth.get_account_info().get('accountName')!r}"
+            f"Signed in using {'OAuth' if oauth else 'browser authentication'} as {yt_auth.get_account_info().get('accountName')!r}"
         )
     return yt_auth
 
@@ -57,7 +58,12 @@ def _setup_auth(oauth: bool, client_id: str, client_secret: str, auth_file_path:
             open_browser=True,
         )
     else:
-        ytmusicapi.setup(filepath=auth_file_path)
+        click.echo(
+            "Please paste the request headers from your browser and press Ctrl-D (or Ctrl-Z on Windows) to continue:"
+        )
+        headers_raw = sys.stdin.read()
+        cleaned_headers = const.HeaderCleanup.cleanup_headers(headers_raw)
+        ytmusicapi.setup(filepath=auth_file_path, headers_raw=cleaned_headers)
 
 
 def _authenticate(auth_file_path: str, oauth: bool, client_id: str, client_secret: str) -> ytmusicapi.YTMusic:

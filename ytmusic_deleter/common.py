@@ -132,23 +132,39 @@ class HeaderCleanup:
         if HeaderCleanup.is_already_formatted(header_lines):
             logging.debug("Headers are already formatted, returning as is.")
             return header_lines.strip()
+
         header_lines = HeaderCleanup.remove_client_variations_block(header_lines)
         logging.debug("Headers after removing ClientVariations block:\n%s", header_lines)
-        lines = header_lines.splitlines()
 
-        # Remove empty lines
-        lines = [line.strip() for line in lines if line.strip()]
+        header_lines = header_lines.strip()
+        lines = [line.strip() for line in header_lines.splitlines()]
 
         result = []
-        i = 0
-        while i < len(lines) - 1:
-            header = lines[i]
-            value = lines[i + 1]
-            result.append(f"{header}: {value}")
-            i += 2
-        # Handle odd number of lines
-        if i < len(lines):
-            result.append(lines[i])
+        current_header = None
+        current_value = []
+
+        for line in lines:
+            if current_header is None:
+                current_header = line
+            elif not current_value:
+                # The very first line after the header is unconditionally part of the value
+                current_value.append(line)
+            else:
+                # Chrome copies header names as strictly lowercase alphanumeric/hyphens.
+                # If a line has uppercase, semicolons, etc., it's a wrapped fragment of the previous value!
+                is_header_format = bool(line and re.match(r"^[A-Za-z0-9\-]+$", line) and len(line) < 50)
+
+                if is_header_format:
+                    result.append(f"{current_header}: {''.join(current_value)}")
+                    current_header = line
+                    current_value = []
+                else:
+                    current_value.append(line)
+
+        # Append the final item
+        if current_header is not None:
+            result.append(f"{current_header}: {''.join(current_value)}")
+
         joined_result = "\n".join(result)
         logging.debug("Formatted headers:\n%s", joined_result)
         return joined_result
@@ -193,19 +209,16 @@ class HeaderCleanup:
     @staticmethod
     def is_already_formatted(header_text: str) -> bool:
         """
-        Returns True if either of the first two non-empty lines contains a colon followed by at least one
-        non-space character, indicating it's already formatted as 'Header: Value'.
+        Returns True if the text is already formatted as 'Header: Value'.
         """
-        checked = 0
-        for line in header_text.splitlines():
-            line = line.strip()
-            if not line:
-                continue
-            checked += 1
-            if ":" in line:
-                parts = line.split(":", 1)
-                if parts[1].strip():
-                    return True
-            if checked >= 2:
-                break
-        return False
+        lines = [line.strip() for line in header_text.splitlines() if line.strip()]
+        if not lines:
+            return False
+
+        # Check up to the first 4 non-empty lines
+        lines_to_check = lines[:4]
+        colon_count = sum(1 for line in lines_to_check if ":" in line)
+
+        # Firefox (formatted) has a colon on every line.
+        # Chrome (alternating) has colons on half or fewer lines.
+        return colon_count > (len(lines_to_check) / 2)
