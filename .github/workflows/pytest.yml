@@ -27,10 +27,7 @@ jobs:
   pytest:
     runs-on: ubuntu-latest
     # This ensures both standard PRs and PRs from forks require approval
-    environment: >-
-      ${{ (github.event_name == 'pull_request' || github.event_name == 'pull_request_target')
-      && 'testing'
-      || null }}
+    environment: ${{ (github.event_name == 'pull_request' || github.event_name == 'pull_request_target') && 'testing' || null }}
     steps:
 
     - name: Checkout code
