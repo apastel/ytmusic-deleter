@@ -8,7 +8,7 @@ on:
       - '**/pytest.yml'
       - pyproject.toml
       - pdm.lock
-  pull_request:
+  pull_request_target:
     branches: [ main ]
     paths:
       - ytmusic_deleter/**
