@@ -29,7 +29,12 @@ jobs:
     environment: ${{ github.event_name == 'pull_request' && 'testing' || null }}
     steps:
 
-    - uses: actions/checkout@v6
+    - name: Checkout code
+      uses: actions/checkout@v6
+      with:
+        # If pull_request exists, use its head SHA. Otherwise, use empty (default).
+        ref: ${{ github.event.pull_request.head.sha || '' }}
+        persist-credentials: false
 
     - name: Setup PDM
       uses: pdm-project/setup-pdm@main
