@@ -8,7 +8,7 @@ on:
       - '**/pytest.yml'
       - pyproject.toml
       - pdm.lock
-  pull_request_target:
+  pull_request:
     branches: [ main ]
     paths:
       - ytmusic_deleter/**
@@ -26,6 +26,7 @@ concurrency:
 jobs:
   pytest:
     runs-on: ubuntu-latest
+    environment: testing
     steps:
 
     - uses: actions/checkout@v6
