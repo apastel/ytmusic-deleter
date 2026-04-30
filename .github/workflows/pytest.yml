@@ -56,11 +56,6 @@ jobs:
         cat <<< "$OAUTH_JSON" > tests/resources/oauth.json
         cat <<< "$TEST_CFG" > tests/resources/test.cfg
 
-        # Debug: verify files were created
-        echo "=== browser.json ===" && wc -l tests/resources/browser.json && head -5 tests/resources/browser.json
-        echo "=== oauth.json ===" && wc -l tests/resources/oauth.json && head -5 tests/resources/oauth.json
-        echo "=== test.cfg ===" && wc -l tests/resources/test.cfg && cat tests/resources/test.cfg
-
     - name: Run pytest
       uses: nick-fields/retry@v4
       with:
