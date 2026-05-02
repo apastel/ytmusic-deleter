@@ -4,7 +4,6 @@ import re
 import sys
 import webbrowser
 from pathlib import Path
-from time import strftime
 
 import error_reporter
 import requests
@@ -45,6 +44,7 @@ from PySide6.QtWidgets import QStyle
 from report_preview_dialog import DebugReportPreviewDialog
 from settings_dialog import SettingsDialog
 from ytmusic_deleter import common
+from ytmusic_deleter.cli import configure_logging
 from ytmusicapi.auth.types import AuthType
 
 from common import APP_DATA_PATH
@@ -224,16 +224,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         Path(self.credential_dir).mkdir(parents=True, exist_ok=True)
         self.account_photo_dir.mkdir(parents=True, exist_ok=True)
 
-        # Initialize a logger
-        self.log_file_path = Path(self.log_dir) / f"ytmusic-deleter-gui_{strftime('%Y-%m-%d')}.log"
-        logging.basicConfig(
-            level=logging.DEBUG if self.verbose_logging else logging.INFO,
-            format="[%(asctime)s] %(message)s",
-            datefmt="%Y-%m-%d %H:%M:%S",
-            handlers=[
-                logging.FileHandler(self.log_file_path, delay=True),
-                logging.StreamHandler(sys.stdout),
-            ],
+        # Initialize logging using the same log file as the CLI.
+        self.log_file_path = configure_logging(
+            self.log_dir, no_logfile=False, verbose=self.verbose_logging, stream=sys.stdout
         )
         # Add a handler for unhandled exceptions
         sys.excepthook = self.log_unhandled_exception
@@ -574,7 +567,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self._internal_worker.finished.connect(self._internal_thread.quit)
         self._internal_worker.finished.connect(self.process_finished)
         self._internal_worker.error.connect(self._on_internal_error)
-        self._internal_worker.output.connect(self.message)
+        self._internal_worker.output.connect(self._on_internal_output)
         self._internal_worker.progress_changed.connect(self._on_internal_progress)
         self._internal_thread.finished.connect(self._internal_thread.deleteLater)
         self._internal_thread.start()
@@ -594,6 +587,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                     self.progress_dialog.itemLine.setText(desc)
             except Exception:
                 pass
+
+    @Slot(str)
+    def _on_internal_output(self, msg: str):
+        self.message(msg, log=False)
 
     @Slot(str)
     def _on_internal_error(self, err_msg: str):
@@ -643,11 +640,15 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.message("Process finished.")
         self.p = None
 
-    def message(self, msg, exc_info=None):
+    def message(self, msg, exc_info=None, log=True):
         msg = msg.rstrip()  # Remove extra newlines
         self.consoleTextArea.appendPlainText(msg)
+        if not log or not msg:
+            return
         if exc_info:
-            logging.exception("Unhandled exception occurred", exc_info=exc_info)
+            logging.error(msg, exc_info=exc_info)
+        else:
+            logging.info(msg)
 
     def get_percent_complete(self, output):
         """

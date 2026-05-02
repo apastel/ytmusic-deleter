@@ -14,30 +14,37 @@ from ytmusic_deleter.version import get_version
 from ytmusicapi import YTMusic
 
 
-def configure_logging(log_dir, no_logfile, verbose):
+def configure_logging(log_dir, no_logfile, verbose, stream=None):
     logger = logging.getLogger()
-
-    if logger.hasHandlers():
-        return
 
     logger.setLevel(logging.DEBUG if verbose else logging.INFO)
     formatter = logging.Formatter("[%(levelname)s] %(message)s")
 
-    if "PYTEST_CURRENT_TEST" in os.environ:
-        stream = io.StringIO()
-    else:
-        stream = sys.stderr
-    stream_handler = logging.StreamHandler(stream)
-    stream_handler.setFormatter(formatter)
-    logger.addHandler(stream_handler)
+    if stream is None:
+        if "PYTEST_CURRENT_TEST" in os.environ:
+            stream = io.StringIO()
+        else:
+            stream = sys.stderr
+
+    if not any(getattr(handler, "_ytmusic_deleter_stream_handler", False) for handler in logger.handlers):
+        stream_handler = logging.StreamHandler(stream)
+        stream_handler.setFormatter(formatter)
+        stream_handler._ytmusic_deleter_stream_handler = True
+        logger.addHandler(stream_handler)
+
+    log_file_path = Path(log_dir) / f"ytmusic-deleter-cli_{strftime('%Y-%m-%d')}.log"
 
     if not no_logfile:
-        logger.addHandler(
-            logging.FileHandler(
-                Path(log_dir) / f"ytmusic-deleter-cli_{strftime('%Y-%m-%d')}.log",
-                encoding="utf-8",
-            )
-        )
+        log_file_path = log_file_path.resolve()
+        if not any(
+            isinstance(handler, logging.FileHandler) and Path(handler.baseFilename) == log_file_path
+            for handler in logger.handlers
+        ):
+            file_handler = logging.FileHandler(log_file_path, encoding="utf-8")
+            file_handler.setFormatter(formatter)
+            logger.addHandler(file_handler)
+
+    return log_file_path
 
 
 def main():
