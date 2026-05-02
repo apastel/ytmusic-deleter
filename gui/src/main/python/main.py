@@ -695,18 +695,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def on_report_issue_clicked(self):
         # Read the app log file
-        log_preview = ""
-        if self.log_file_path.exists():
-            try:
-                with open(self.log_file_path, encoding="latin-1", errors="replace") as f:
-                    log_preview = f.read()
-                self.message(f"Read {len(log_preview)} bytes from log file for error report.")
-            except Exception as e:
-                self.message(f"Failed to read log file: {e}")
-                log_preview = f"Error reading log file: {e}"
-        else:
-            self.message(f"Log file not found at {self.log_file_path}")
-            log_preview = "Log file not found"
+        log_preview = error_reporter.read_app_log(self.log_file_path)
+        self.message(f"Read {len(log_preview)} bytes from log file for error report.")
 
         dialog = DebugReportPreviewDialog(log_preview)
         if dialog.exec() == QDialog.DialogCode.Accepted:
@@ -744,6 +734,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             progress = ProgressWorkerDialog("Building and sending debug report", self)
             progress.run(send_report, on_report_sent)
 
+    def add_debug_context_to_sentry_event(self, event, hint):
+        yt_auth: ytmusicapi.YTMusic | None = self.ytmusic if hasattr(self, "ytmusic") else None
+        app_log = error_reporter.read_app_log(self.log_file_path)
+        return error_reporter.add_debug_context_to_sentry_event(event, hint, yt_auth, app_log)
+
 
 class AppContext:
     def __init__(self):
@@ -762,6 +757,7 @@ class AppContext:
                 dsn=PUBLIC_SETTINGS.sentry_dsn,
                 release=PUBLIC_SETTINGS.version,
                 environment="production",
+                before_send=self.window.add_debug_context_to_sentry_event,
             )
 
     def run(self):
