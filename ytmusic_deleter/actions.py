@@ -17,6 +17,7 @@ from ytmusicapi.type_alias import JsonDict
 
 SORT_PLAYLIST_FAILURE_WARNING_INTERVAL = 25
 SORT_PLAYLIST_CONSECUTIVE_FAILURE_WARNING_THRESHOLD = 10
+AUTO_PLAYLIST_IDS = {"LM", "SE", "RDPN"}
 
 
 class ActionContext:
@@ -234,31 +235,82 @@ def unlike_all(ctx: ActionContext):
     return songs_unliked, len(your_likes["tracks"])
 
 
-def delete_playlists(ctx: ActionContext):
+def _playlist_id(playlist: dict) -> str:
+    return playlist.get("playlistId") or playlist.get("id") or ""
+
+
+def _select_playlists(library_playlists: list[dict], playlist_selectors: tuple[str, ...]) -> list[dict]:
+    if not playlist_selectors:
+        return library_playlists
+
+    selected_playlists = []
+    selected_ids = set()
+    for raw_selector in playlist_selectors:
+        selector = raw_selector.strip()
+        if not selector:
+            raise ValueError("Playlist selectors cannot be empty.")
+
+        matches = [playlist for playlist in library_playlists if _playlist_id(playlist) == selector]
+        if not matches:
+            matches = [
+                playlist for playlist in library_playlists if playlist.get("title", "").lower() == selector.lower()
+            ]
+
+        if not matches:
+            raise ValueError(f"No playlist found matching {selector!r}. Provide a playlist title or playlist ID.")
+        if len(matches) > 1:
+            matching_ids = ", ".join(_playlist_id(playlist) for playlist in matches)
+            raise ValueError(
+                f"Multiple playlists named {selector!r} were found: {matching_ids}. "
+                "Re-run using the playlist ID instead."
+            )
+
+        playlist = matches[0]
+        playlist_id = _playlist_id(playlist)
+        if playlist_id in AUTO_PLAYLIST_IDS:
+            raise ValueError(
+                f"Cannot delete auto playlist {playlist['title']!r}. "
+                "Auto playlists are managed by YouTube Music and cannot be deleted."
+            )
+        if playlist_id not in selected_ids:
+            selected_playlists.append(playlist)
+            selected_ids.add(playlist_id)
+
+    return selected_playlists
+
+
+def delete_playlists(ctx: ActionContext, playlist_selectors: tuple[str, ...] = ()):
     yt_auth: YTMusic = ctx.yt_auth
     logging.info("Retrieving all your playlists...")
     library_playlists = yt_auth.get_library_playlists(limit=None)
     logging.info(f"\tRetrieved {len(library_playlists)} playlists.")
+
+    playlist_selectors = tuple(playlist_selectors or ())
+    target_playlists = _select_playlists(library_playlists, playlist_selectors)
+    if playlist_selectors:
+        logging.info(f"\tSelected {len(target_playlists)} playlist(s).")
+
     logging.info("Begin deleting playlists...")
 
     progress_bar = manager.counter(
-        total=len(library_playlists),
+        total=len(target_playlists),
         desc="Playlists Deleted",
         unit="playlists",
         enabled=not ctx.static_progress,
     )
 
     playlists_deleted = 0
-    for playlist in library_playlists:
+    for playlist in target_playlists:
         if ctx.is_cancelled():
             logging.info("Operation cancelled by user.")
             break
 
-        playlist_id = playlist["playlistId"]
+        playlist_id = _playlist_id(playlist)
         playlist_title = playlist["title"]
 
-        if playlist_id in {"LM", "SE", "RDPN"}:
+        if playlist_id in AUTO_PLAYLIST_IDS:
             logging.info(f"Skipping auto playlist {playlist_title!r}")
+            update_progress(progress_bar)
             continue
 
         logging.info(f"Processing playlist: {playlist_title}")
@@ -276,9 +328,10 @@ def delete_playlists(ctx: ActionContext):
             logging.error(f"\tFailed to remove playlist {playlist['title']!r} from your library.")
         update_progress(progress_bar)
 
-    logging.info(f"Deleted {playlists_deleted} out of {len(library_playlists)} playlists from your library.")
-    remove_episodes_for_later(ctx)
-    return playlists_deleted, len(library_playlists)
+    logging.info(f"Deleted {playlists_deleted} out of {len(target_playlists)} playlists from your library.")
+    if not playlist_selectors:
+        remove_episodes_for_later(ctx)
+    return playlists_deleted, len(target_playlists)
 
 
 def delete_history(ctx: ActionContext, items_deleted=0):

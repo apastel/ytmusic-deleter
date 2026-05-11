@@ -137,11 +137,12 @@ def unlike_all(ctx: click.Context):
 
 
 @cli.command()
+@click.argument("playlist_selectors", nargs=-1)
 @click.pass_context
-def delete_playlists(ctx: click.Context):
-    """Delete all playlists"""
+def delete_playlists(ctx: click.Context, playlist_selectors):
+    """Delete all playlists, or only the selected playlist titles/IDs."""
     context = actions.ActionContext(ctx.obj["YT_AUTH"], static_progress=ctx.obj["STATIC_PROGRESS"])
-    return actions.delete_playlists(context)
+    return actions.delete_playlists(context, playlist_selectors=playlist_selectors)
 
 
 @cli.command()
