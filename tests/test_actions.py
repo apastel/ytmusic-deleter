@@ -13,9 +13,10 @@ def make_playlist(title, playlist_id):
 
 
 class FakePlaylistYTMusic:
-    def __init__(self, playlists, delete_playlist_errors=None):
+    def __init__(self, playlists, delete_playlist_errors=None, rate_playlist_errors=None):
         self.playlists = playlists
         self.delete_playlist_errors = set(delete_playlist_errors or ())
+        self.rate_playlist_errors = set(rate_playlist_errors or ())
         self.deleted_playlists = []
         self.rated_playlists = []
         self.loaded_playlists = []
@@ -32,6 +33,8 @@ class FakePlaylistYTMusic:
 
     def rate_playlist(self, playlist_id, status):
         self.rated_playlists.append((playlist_id, status))
+        if playlist_id in self.rate_playlist_errors:
+            raise YTMusicServerError("Cannot rate playlist")
         return {"actions": []}
 
     def get_playlist(self, playlist_id, limit=None):
@@ -141,6 +144,26 @@ class TestDeletePlaylists:
         assert result == (2, 2)
         assert yt_music.deleted_playlists == ["C1", "P1"]
         assert yt_music.rated_playlists == [("C1", LikeStatus.INDIFFERENT)]
+
+    def test_continues_when_a_playlist_fails_to_delete(self, caplog):
+        yt_music = FakePlaylistYTMusic(
+            [
+                make_playlist("First", "P1"),
+                make_playlist("Stubborn", "P2"),
+                make_playlist("Third", "P3"),
+            ],
+            delete_playlist_errors={"P2"},
+            rate_playlist_errors={"P2"},
+        )
+        ctx = ActionContext(yt_music, static_progress=True)
+
+        with caplog.at_level(logging.ERROR):
+            result = delete_playlists(ctx)
+
+        assert result == (2, 3)
+        assert yt_music.deleted_playlists == ["P1", "P2", "P3"]
+        assert yt_music.rated_playlists == [("P2", LikeStatus.INDIFFERENT)]
+        assert any("'Stubborn'" in record.getMessage() for record in caplog.records)
 
 
 class TestDeleteHistory:

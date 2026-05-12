@@ -316,16 +316,20 @@ def delete_playlists(ctx: ActionContext, playlist_selectors: tuple[str, ...] = (
         logging.info(f"Processing playlist: {playlist_title}")
 
         try:
-            response = yt_auth.delete_playlist(playlist_id)
-        except YTMusicServerError:
-            # try removing it from library instead (might be community playlist)
-            response = yt_auth.rate_playlist(playlist_id, LikeStatus.INDIFFERENT)
-
-        if response:
-            logging.info(f"\tRemoved playlist {playlist['title']!r} from your library.")
-            playlists_deleted += 1
-        else:
-            logging.error(f"\tFailed to remove playlist {playlist['title']!r} from your library.")
+            try:
+                response = yt_auth.delete_playlist(playlist_id)
+            except YTMusicServerError:
+                # try removing it from library instead (might be community playlist)
+                response = yt_auth.rate_playlist(playlist_id, LikeStatus.INDIFFERENT)
+            if response:
+                logging.info(f"\tRemoved playlist {playlist_title!r} from your library.")
+                playlists_deleted += 1
+            else:
+                logging.error(f"\tFailed to remove playlist {playlist_title!r} from your library.")
+        except Exception:
+            logging.exception(
+                f"\tFailed to remove playlist {playlist_title!r} from your library. Continuing on..."
+            )
         update_progress(progress_bar)
 
     logging.info(f"Deleted {playlists_deleted} out of {len(target_playlists)} playlists from your library.")
