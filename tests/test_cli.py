@@ -39,6 +39,37 @@ def test_configure_logging_adds_file_handler_when_other_handlers_exist(tmp_path)
         logger.removeHandler(existing_handler)
 
 
+class FakeCliYTMusic:
+    def __init__(self):
+        self.playlists = [
+            {"title": "Keep Moving", "playlistId": "P1"},
+            {"title": "Road Trip", "playlistId": "P2"},
+        ]
+        self.deleted_playlists = []
+
+    def get_library_playlists(self, limit=None):
+        return self.playlists
+
+    def delete_playlist(self, playlist_id):
+        self.deleted_playlists.append(playlist_id)
+        return True
+
+
+def test_delete_playlists_cli_passes_selected_playlists_to_action():
+    yt_music = FakeCliYTMusic()
+
+    result = CliRunner().invoke(
+        cli,
+        ["--no-logfile", "delete-playlists", "Road Trip"],
+        standalone_mode=False,
+        obj=yt_music,
+    )
+
+    assert result.exit_code == 0
+    assert result.return_value == (1, 1)
+    assert yt_music.deleted_playlists == ["P2"]
+
+
 class TestCli:
     @staticmethod
     def delete_add_all_playlists(yt_browser: YTMusic, source: str):

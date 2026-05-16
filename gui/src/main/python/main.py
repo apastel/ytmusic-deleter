@@ -17,6 +17,7 @@ from generated.ui_main_window import Ui_MainWindow
 from library_dialogs.delete_uploads_dialog import DeleteUploadsDialog
 from playlist_dialogs.add_all_to_library_dialog import AddAllToLibraryDialog
 from playlist_dialogs.add_all_to_playlist_dialog import AddAllToPlaylistDialog
+from playlist_dialogs.delete_playlists_dialog import DeletePlaylistsDialog
 from playlist_dialogs.remove_dupes_dialogs.remove_duplicates_dialog import RemoveDuplicatesDialog
 from playlist_dialogs.sort_playlists_dialog import SortPlaylistsDialog
 from progress_dialog import ProgressDialog
@@ -129,7 +130,7 @@ class InternalCommandWorker(QObject):
             elif command == "remove-library":
                 actions.remove_library(context)
             elif command == "delete-playlists":
-                actions.delete_playlists(context)
+                actions.delete_playlists(context, playlist_selectors=tuple(cmd_args))
             elif command == "unlike-all":
                 actions.unlike_all(context)
             elif command == "delete-history":
@@ -478,6 +479,15 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                     self.delete_uploads_dialog = DeleteUploadsDialog(self)
                     self.delete_uploads_dialog.show()
 
+                case "delete-playlists":
+                    please_wait_dialog = ProgressWorkerDialog("Loading your playlists", self)
+
+                    def load_window():
+                        self.delete_playlists_dialog = DeletePlaylistsDialog(self)
+                        self.delete_playlists_dialog.show()
+
+                    please_wait_dialog.run(load_window)
+
                 case "sort-playlist":
                     please_wait_dialog = ProgressWorkerDialog("Loading your playlists", self)
 
@@ -522,8 +532,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         confirmation_dialog.setIcon(QMessageBox.Icon.Warning)
         if args[0] == "remove-library":
             text = "This will remove all your library songs and albums. This will not delete your uploads."
-        elif args[0] == "delete-playlists":
-            text = "This will delete all your playlists, which may also include playlists in regular YouTube.com that have music."
         elif args[0] == "unlike-all":
             text = (
                 "This will reset all your liked songs back to neutral.\n\n"

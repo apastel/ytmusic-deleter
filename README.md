@@ -34,7 +34,7 @@ Features
 * Remove all songs and podcasts from your Library
 * Delete all of your Uploads
   * Option to automatically add the corresponding album to your library from within YT Music
-* Delete all of your playlists
+* Delete selected playlists or all of your playlists
 * Reset all of your "Liked" ratings
 * Delete your play history
 ### Playlist Utilities

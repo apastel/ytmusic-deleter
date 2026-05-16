@@ -50,7 +50,7 @@ When using the `-a` option, you can also use the `--score-cutoff` or `-s` option
 
 `unlike-all`:&nbsp;&nbsp;&nbsp;&nbsp;Reset all Thumbs Up ratings back to neutral.
 
-`delete-playlists`:&nbsp;&nbsp;&nbsp;&nbsp;Delete all manually created YT Music playlists.
+`delete-playlists`:&nbsp;&nbsp;&nbsp;&nbsp;Delete all manually created YT Music playlists, or only selected playlist titles/IDs.
 
 `delete-all`:&nbsp;&nbsp;&nbsp;&nbsp;Combo command that will run `delete-uploads`, `remove-library`, `unlike-all`, and `delete-playlists`.
 #### Non-deletion commands:
@@ -97,6 +97,10 @@ ytmusic-deleter unlike-all
 Delete all your personally created playlists:
 ```
 ytmusic-deleter delete-playlists
+```
+Delete selected playlists:
+```
+ytmusic-deleter delete-playlists "Workout Jams" "Road Trip"
 ```
 Remove everything (uploads, library tracks, playlists, and unlike all songs):
 ```
