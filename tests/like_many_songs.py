@@ -2,6 +2,7 @@ import time
 
 import ytmusicapi
 from retry import retry
+from ytmusic_deleter.common import string_exists_in_dict
 from ytmusicapi.models.content.enums import LikeStatus
 
 PLAYLISTS = [
@@ -22,33 +23,10 @@ PLAYLISTS = [
 ]
 
 
-def string_exists_in_dict(data: dict, search_string: str) -> bool:
-    """
-    Recursively searches for a string in the keys or values of a dictionary,
-    including nested dictionaries.
-
-    Args:
-        data (dict): The dictionary to search within.
-        search_string (str): The string to search for.
-
-    Returns:
-        bool: True if the string is found, False otherwise.
-    """
-    for key, value in data.items():
-        if search_string in str(key):
-            return True
-        if isinstance(value, dict):
-            if string_exists_in_dict(value, search_string):
-                return True
-        elif search_string in str(value):
-            return True
-    return False
-
-
 def like_many_songs(yt_browser: ytmusicapi.YTMusic, long_song_list):
     total_songs_to_like = len(long_song_list)
 
-    @retry(AssertionError)
+    @retry(AssertionError, tries=10, delay=1)
     def _like_song(song):
         response = yt_browser.rate_song(song, LikeStatus.LIKE)
         if not string_exists_in_dict(response, "consistencyTokenJar"):
@@ -58,7 +36,10 @@ def like_many_songs(yt_browser: ytmusicapi.YTMusic, long_song_list):
 
     for idx, song in enumerate(long_song_list):
         print(f"liking song {idx + 1} out of {total_songs_to_like}")
-        _like_song(song)
+        try:
+            _like_song(song)
+        except AssertionError:
+            print("Skipping failing track...")
 
     time.sleep(5)
     liked_songs = yt_browser.get_liked_songs(limit=None)["tracks"]
