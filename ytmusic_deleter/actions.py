@@ -227,7 +227,7 @@ def unlike_all(ctx: ActionContext):
         if success:
             songs_unliked += 1
         else:
-            logging.error(f"\tFailed to unlike {artist} - {title!r}")
+            logging.error(f"\tFailed to unlike {artist} - {title!r}", extra=common.SKIP_SENTRY_EXTRA)
         update_progress(progress_bar)
 
     logging.info(f"Finished unliking {songs_unliked} out of {len(your_likes['tracks'])} songs.")
@@ -357,7 +357,10 @@ def sort_playlist(ctx: ActionContext, shuffle, playlist_titles, custom_sort, rev
         logging.info(f"Processing playlist: {selected_playlist['title']}")
         playlist = yt_auth.get_playlist(selected_playlist["playlistId"], limit=None)
         if not common.can_edit_playlist(playlist):
-            logging.error(f"Cannot modify playlist {playlist.get('title')!r}. You are not the owner of this playlist.")
+            logging.error(
+                f"Cannot modify playlist {playlist.get('title')!r}. You are not the owner of this playlist.",
+                extra=common.SKIP_SENTRY_EXTRA,
+            )
             continue
         playlist_tracks = playlist["tracks"]
         current_tracklist = playlist_tracks.copy()
@@ -521,7 +524,9 @@ def remove_duplicates(ctx: ActionContext, playlist_title, exact, fuzzy, score_cu
             success = common.unlike_song(yt_auth, song)
             logging.info(song)
             if not success:
-                logging.error(f"\tFailed to unlike {song['artist']} - {song['title']!r}")
+                logging.error(
+                    f"\tFailed to unlike {song['artist']} - {song['title']!r}", extra=common.SKIP_SENTRY_EXTRA
+                )
     else:
         for chunk in common.chunked(items_to_remove, 50):
             yt_auth.remove_playlist_items(playlist_id, chunk)
@@ -549,7 +554,7 @@ def add_all_to_playlist(ctx: ActionContext, library, uploads, max_playlist_size)
         logging.info(f"Retrieved {len(songs_to_add)} uploaded songs.")
 
     if not songs_to_add:
-        raise ValueError("No songs were found to add to the playlist.")
+        raise common.skip_sentry(ValueError("No songs were found to add to the playlist."))
 
     video_ids = []
     songs_without_video_id = []
@@ -672,8 +677,8 @@ def get_library_playlist_from_title(
     playlist_title_formatted = playlist.get("title")
     logging.info(f"Retrieved playlist named {playlist_title_formatted!r} with {len(playlist.get('tracks'))} tracks.")
     if fail_if_not_owner and not common.can_edit_playlist(playlist):
-        raise ValueError(
-            f"Cannot modify playlist {playlist_title_formatted!r}. You are not the owner of this playlist."
+        raise common.skip_sentry(
+            ValueError(f"Cannot modify playlist {playlist_title_formatted!r}. You are not the owner of this playlist.")
         )
     return playlist
 

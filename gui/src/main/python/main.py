@@ -640,15 +640,22 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.message("Process finished.")
         self.p = None
 
-    def message(self, msg, exc_info=None, log=True):
+    def message(self, msg, exc_info=None, log=True, extra=None):
         msg = msg.rstrip()  # Remove extra newlines
         self.consoleTextArea.appendPlainText(msg)
         if not log or not msg:
             return
+
+        logging_extra = extra or {}
+        if isinstance(exc_info, tuple) and len(exc_info) >= 2:
+            exc_value = exc_info[1]
+            if getattr(exc_value, common.SKIP_SENTRY_ATTR, False):
+                logging_extra = {**logging_extra, **common.SKIP_SENTRY_EXTRA}
+
         if exc_info:
-            logging.error(msg, exc_info=exc_info)
+            logging.error(msg, exc_info=exc_info, extra=logging_extra or None)
         else:
-            logging.info(msg)
+            logging.info(msg, extra=logging_extra or None)
 
     def get_percent_complete(self, output):
         """

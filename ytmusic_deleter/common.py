@@ -15,16 +15,23 @@ ARTIST_NAME_SCORE_CUTOFF = 90
 PARENTHETICALS_REGEX = r"\s*\([^)]*\)$|\s*\[[^)]*\]$|[^\w\s]"
 EXTRA_WHITESPACE_REGEX = r"\s+"
 SORTABLE_ATTRIBUTES = ["artist", "album_title", "track_title", "duration"]
+SKIP_SENTRY_ATTR = "skip_sentry"
+SKIP_SENTRY_EXTRA = {SKIP_SENTRY_ATTR: True}
+
+
+def skip_sentry(exception: Exception) -> Exception:
+    setattr(exception, SKIP_SENTRY_ATTR, True)
+    return exception
 
 
 def unlike_song(yt_auth, track) -> bool:
 
-    @retry(AssertionError, tries=10, delay=1)
+    @retry(AssertionError, tries=15, delay=1)
     def _unlike_song(song):
         try:
             response = yt_auth.rate_song(song, LikeStatus.INDIFFERENT)
         except Exception as e:
-            logging.exception(e)
+            logging.error(e, exc_info=True, extra=SKIP_SENTRY_EXTRA)
             raise AssertionError(f"rate_song failed for {song!r}: {e}") from e
         if not string_exists_in_dict(response, "Removed from liked music"):
             raise AssertionError("Did not find 'Removed from liked music' in response")
@@ -36,7 +43,10 @@ def unlike_song(yt_auth, track) -> bool:
         logging.info("\tRemoved track from Likes.")
         return True
     except AssertionError:
-        logging.error("\tRan out of retries to remove track from Likes. Try running 'Unlike All' again.")
+        logging.error(
+            "\tRan out of retries to remove track from Likes. Try running 'Unlike All' again.",
+            extra=SKIP_SENTRY_EXTRA,
+        )
         return False
 
 

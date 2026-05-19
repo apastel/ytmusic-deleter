@@ -1,4 +1,5 @@
 import datetime
+import hashlib
 import json
 import re
 import uuid
@@ -14,6 +15,9 @@ from ytmusicapi import YTMusic
 
 if TYPE_CHECKING:
     from main import MainWindow
+
+
+SENTRY_REPORTED_SIGNATURES: set[str] = set()
 
 
 class YTMusicAPILogger:
@@ -120,6 +124,47 @@ def read_app_log(log_file_path: Path) -> str:
         return f"Error reading log file: {e}"
 
 
+def should_skip_sentry_event(hint: dict[str, Any]) -> bool:
+    log_record = hint.get("log_record")
+    return bool(log_record and getattr(log_record, "skip_sentry", False))
+
+
+def get_sentry_event_signature(event: dict[str, Any], hint: dict[str, Any]) -> str:
+    exc_info = hint.get("exc_info")
+    if exc_info:
+        exc_type, exc_value, _ = exc_info
+        payload = {
+            "type": f"{exc_type.__module__}.{exc_type.__qualname__}",
+            "value": str(exc_value),
+        }
+    else:
+        exception_values = event.get("exception", {}).get("values", [])
+        if exception_values:
+            exception = exception_values[-1]
+            payload = {
+                "type": exception.get("type", "unknown"),
+                "value": exception.get("value", ""),
+            }
+        else:
+            logentry = event.get("logentry", {})
+            payload = {
+                "type": event.get("logger", "message"),
+                "value": event.get("message") or logentry.get("formatted") or logentry.get("message") or "",
+            }
+
+    signature = json.dumps(payload, sort_keys=True, default=str)
+    return hashlib.sha256(signature.encode("utf-8")).hexdigest()
+
+
+def is_sentry_event_over_instance_limit(event: dict[str, Any], hint: dict[str, Any]) -> bool:
+    signature = get_sentry_event_signature(event, hint)
+    if signature in SENTRY_REPORTED_SIGNATURES:
+        return True
+
+    SENTRY_REPORTED_SIGNATURES.add(signature)
+    return False
+
+
 def add_debug_context_to_sentry_event(
     event: dict[str, Any],
     hint: dict[str, Any],
@@ -127,6 +172,9 @@ def add_debug_context_to_sentry_event(
     app_log: str,
 ):
     """Attach debug-report diagnostics to an automatic Sentry event."""
+    if should_skip_sentry_event(hint) or is_sentry_event_over_instance_limit(event, hint):
+        return None
+
     try:
         from sentry_sdk.attachments import Attachment
 
