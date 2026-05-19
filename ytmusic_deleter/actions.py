@@ -118,7 +118,7 @@ def remove_library_podcasts(ctx: ActionContext):
             logging.info(f"\tRemoved {title!r} from your library.")
             podcasts_removed += 1
         else:
-            logging.error(f"\tFailed to remove {title!r} from your library.")
+            logging.error(f"\tFailed to remove {title!r} from your library.", extra=common.SKIP_SENTRY_EXTRA)
         update_progress(progress_bar)
 
     logging.info(f"Removed {podcasts_removed} out of {len(library_podcasts)} podcasts from your library.")
@@ -152,9 +152,9 @@ def remove_library_items(ctx: ActionContext, library_items):
             logging.error(
                 f"""
                 Library item {artist} - {title!r} was in an unexpected format, unable to remove.
-                Provide this to the developer:
                 {item}
-            """
+            """,
+                extra=common.SKIP_SENTRY_EXTRA,
             )
 
         if response and "Removed from library" in str(response):
@@ -162,7 +162,7 @@ def remove_library_items(ctx: ActionContext, library_items):
             logging.info(f"\tRemoved {artist} - {title!r} from your library.")
             items_removed += 1
         else:
-            logging.error(f"\tFailed to remove {artist} - {title!r} from your library.")
+            logging.error(f"\tFailed to remove {artist} - {title!r} from your library.", extra=common.SKIP_SENTRY_EXTRA)
         update_progress(progress_bar)
     return items_removed
 
@@ -273,7 +273,9 @@ def delete_playlists(ctx: ActionContext):
             logging.info(f"\tRemoved playlist {playlist['title']!r} from your library.")
             playlists_deleted += 1
         else:
-            logging.error(f"\tFailed to remove playlist {playlist['title']!r} from your library.")
+            logging.error(
+                f"\tFailed to remove playlist {playlist['title']!r} from your library.", extra=common.SKIP_SENTRY_EXTRA
+            )
         update_progress(progress_bar)
 
     logging.info(f"Deleted {playlists_deleted} out of {len(library_playlists)} playlists from your library.")
@@ -322,7 +324,7 @@ def delete_history(ctx: ActionContext, items_deleted=0):
             logging.info(f"\tDeleted history item: {artist} - {item['title']!r}")
             items_deleted += 1
         else:
-            logging.info(f"\tFailed to delete history item: {response}")
+            logging.info(f"\tFailed to delete history item: {response}", extra=common.SKIP_SENTRY_EXTRA)
         update_progress(progress_bar)
 
     logging.info("Restarting history deletion to ensure all songs are deleted.")
@@ -642,7 +644,7 @@ def add_all_to_library(ctx: ActionContext, playlist_title_or_id):
                 added_tracks_count += 1
                 logging.info(f"Added {track_str} to your library")
             else:
-                logging.error(f"Failed to add {track_str} to your library")
+                logging.error(f"Failed to add {track_str} to your library", extra=common.SKIP_SENTRY_EXTRA)
         else:
             logging.warning(f"{track_str} is a video and cannot be added to your library")
         update_progress(progress_bar)
