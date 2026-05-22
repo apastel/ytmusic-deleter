@@ -17,6 +17,7 @@ from ytmusicapi.type_alias import JsonDict
 
 SORT_PLAYLIST_FAILURE_WARNING_INTERVAL = 25
 SORT_PLAYLIST_CONSECUTIVE_FAILURE_WARNING_THRESHOLD = 10
+NATURAL_SORT_NUMBER_PATTERN = re.compile(r"(\d+)")
 
 
 class ActionContext:
@@ -685,6 +686,16 @@ def get_library_playlist_from_title(
     return playlist
 
 
+def natural_sort_key(value):
+    if not isinstance(value, str):
+        return value
+    return tuple(
+        (0, int(chunk)) if chunk.isdigit() else (1, chunk)
+        for chunk in NATURAL_SORT_NUMBER_PATTERN.split(value)
+        if chunk
+    )
+
+
 def make_sort_key(track, sort_attributes):
     artists = track["artists"]
     artist = artists[0]["name"].lower() if artists else "z"
@@ -696,6 +707,6 @@ def make_sort_key(track, sort_attributes):
     duration = track.get("duration_seconds", 0)  # noqa: F841
 
     if sort_attributes:
-        return tuple([locals()[attr] for attr in sort_attributes])
+        return tuple([natural_sort_key(locals()[attr]) for attr in sort_attributes])
     else:
-        return artist, album_title, track_title
+        return natural_sort_key(artist), natural_sort_key(album_title), natural_sort_key(track_title)
