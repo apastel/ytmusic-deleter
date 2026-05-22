@@ -15,6 +15,10 @@ datas = [
     (
         os.path.join(here, 'gui', 'src', 'main', 'icons', 'Icon.ico'),
         'icons'
+    ),
+    (
+        os.path.join(here, 'gui', 'src', 'main', 'icons', 'person.png'),
+        'icons'
     )
 ]
 

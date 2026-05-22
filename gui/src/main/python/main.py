@@ -345,23 +345,25 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         try:
             account_info: dict = self.ytmusic.get_account_info()
         except Exception as e:
-            message = "Failed to get user's account info. Clearing login state then log back in."
+            message = "Failed to get user's account info. Displaying generic account info instead."
             self.message(message + "\n" + str(e))
-            logging.exception(message, e)
-            self.sign_out()
-            return False
+            account_info = {
+                "accountName": "Unknown User",
+            }
+
         account_name = account_info["accountName"]
         self.accountNameLabel.setText(account_name)
-        channel_handle = account_info["channelHandle"]
-        if channel_handle:
-            self.channelHandleLabel.setText(f"({channel_handle})")
-        else:
-            self.channelHandleLabel.setText("")
+        channel_handle = account_info.get("channelHandle")
+        self.channelHandleLabel.setText(f"({channel_handle})" if channel_handle else "")
 
-        # Display account photo
-        response = requests.get(account_info["accountPhotoUrl"])
-        pixmap = QPixmap()
-        pixmap.loadFromData(response.content)
+        # Display account photo or stock photo
+        if account_info.get("accountPhotoUrl"):
+            response = requests.get(account_info["accountPhotoUrl"])
+            pixmap = QPixmap()
+            pixmap.loadFromData(response.content)
+        else:
+            pixmap = QPixmap(get_resource_path("icons/person.png"))
+
         pixmap = pixmap.scaled(
             self.accountPhotoButton.size(),
             Qt.AspectRatioMode.KeepAspectRatio,
