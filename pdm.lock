@@ -1249,7 +1249,7 @@ files = [
 
 [[package]]
 name = "sentry-sdk"
-version = "2.61.0"
+version = "2.61.1"
 requires_python = ">=3.6"
 summary = "Python client for Sentry (https://sentry.io)"
 groups = ["gui"]
@@ -1259,8 +1259,8 @@ dependencies = [
     "urllib3>=1.26.11",
 ]
 files = [
-    {file = "sentry_sdk-2.61.0-py3-none-any.whl", hash = "sha256:ec4d30273909cb1d198e03208b16ee70e2bc5d90a16fd9f1fb2fc6a72e1f03dc"},
-    {file = "sentry_sdk-2.61.0.tar.gz", hash = "sha256:1ca9b4bb777eb5be67004edab7eb894f21c6301f1d05ed64966719ad5d1764ce"},
+    {file = "sentry_sdk-2.61.1-py3-none-any.whl", hash = "sha256:fa36eaf4b8ad708f718500d4bdcc1532637526a22beb874d88cbc0a46458b5ae"},
+    {file = "sentry_sdk-2.61.1.tar.gz", hash = "sha256:9c6adccb3feefa9ba032c8d295ca477575c2f11896046a2b0ad686c47c4af555"},
 ]
 
 [[package]]
@@ -1415,7 +1415,7 @@ files = [
 
 [[package]]
 name = "ytmusicapi"
-version = "1.12.0"
+version = "1.12.1"
 requires_python = ">=3.10"
 summary = "Unofficial API for YouTube Music"
 groups = ["default"]
@@ -1424,6 +1424,6 @@ dependencies = [
     "requests>=2.22",
 ]
 files = [
-    {file = "ytmusicapi-1.12.0-py3-none-any.whl", hash = "sha256:4130a3a7a0ab56eeeff33b343c8cf4a2f4ea14c206d96c221a7646ab0e61ebc8"},
-    {file = "ytmusicapi-1.12.0.tar.gz", hash = "sha256:9a466e633c43e90025b4c3dfa862f0f5677af4eacc8d2052ef9fc8f48cd65140"},
+    {file = "ytmusicapi-1.12.1-py3-none-any.whl", hash = "sha256:2a53f6df504b97b93a4d41c804b699b46190207cb9d864fcf4edeb338b1f15d9"},
+    {file = "ytmusicapi-1.12.1.tar.gz", hash = "sha256:4e33f424db311ece1b9e5f29a51ade46b0697f6e2f284f8a40bcbd7219772755"},
 ]
