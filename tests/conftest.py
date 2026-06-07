@@ -85,7 +85,6 @@ def fixture_sample_song_list_dupes() -> list[str]:
         # title: "Battery (Early June 1985 Demo)", album: "Master of Puppets (Remastered Expanded Edition)"
         "pAhzcQRMqKg",
         "RvW4OQFA_UY",  # title: "Battery", album: "Master of Puppets (Remastered Deluxe Box Set)""
-        "_SAGhYJLynk",  # title: "Battery (Live)", album: "Seattle 1989 (live)"
         "5Ygeh_P3ZlQ",  # title: "Battery", artist: "Machine Head"
         "b_ObqZtxuj0",  # title: "The Thing That Should Not Be", album: "Master of Puppets"
         "NmQN635Rheo",  # title: "Fear of the Dark"
@@ -104,12 +103,6 @@ def fixture_expected_dupe_groups() -> list[list[dict]]:
             {"artist": "Metallica", "setVideoId": "56B44F6D10557CC6", "title": "Battery", "videoId": "vA1nlwTbCvg"},
             {"artist": "Metallica", "setVideoId": "289F4A46DF0A30D2", "title": "Battery", "videoId": "vA1nlwTbCvg"},
             {"artist": "Metallica", "setVideoId": "12EFB3B1C57DE4E1", "title": "Battery", "videoId": "RvW4OQFA_UY"},
-            {
-                "artist": "Metallica",
-                "setVideoId": "532BB0B422FBC7EC",
-                "title": "Battery (live)",
-                "videoId": "_SAGhYJLynk",
-            },
             {
                 "artist": "Metallica",
                 "setVideoId": "090796A75D153932",

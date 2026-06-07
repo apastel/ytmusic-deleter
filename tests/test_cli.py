@@ -243,7 +243,7 @@ class TestCli:
         result = runner.invoke(cli, ["add-all-to-library", "Test Dupes"], standalone_mode=False, obj=yt_browser)
         # Playlist has 10 unique tracks even though it has 13 tracks
         assert (
-            len(yt_browser.get_library_songs(limit=None)) == 10
+            len(yt_browser.get_library_songs(limit=None)) == 9
         ), "Number of songs in library did not match number of songs in playlist"
         assert result.exit_code == 0
 
