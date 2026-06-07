@@ -137,17 +137,26 @@ class InternalCommandWorker(QObject):
             elif command == "delete-all":
                 actions.delete_all(context)
             elif command == "sort-playlist":
-                # sort-playlist expects: ['sort-playlist', playlist_title,
-                # '--shuffle' or '--reverse' or '--custom-sort attr1 attr2']
+                # sort-playlist expects playlist title(s), followed by options.
                 if len(cmd_args) < 1:
                     raise ValueError("sort-playlist requires a playlist title")
-                playlist_titles = [cmd_args[0]]
-                shuffle = "--shuffle" in cmd_args or "-s" in cmd_args
-                reverse = "--reverse" in cmd_args or "-r" in cmd_args
+                playlist_titles = []
                 custom_sort = []
-                for i, arg in enumerate(cmd_args):
+                i = 0
+                while i < len(cmd_args):
+                    arg = cmd_args[i]
                     if arg in ["--custom-sort", "-c"] and i + 1 < len(cmd_args):
                         custom_sort.append(cmd_args[i + 1])
+                        i += 2
+                    elif arg in ["--shuffle", "-s", "--reverse", "-r"]:
+                        i += 1
+                    else:
+                        playlist_titles.append(arg)
+                        i += 1
+                if not playlist_titles:
+                    raise ValueError("sort-playlist requires a playlist title")
+                shuffle = "--shuffle" in cmd_args or "-s" in cmd_args
+                reverse = "--reverse" in cmd_args or "-r" in cmd_args
                 actions.sort_playlist(context, shuffle, tuple(playlist_titles), tuple(custom_sort), reverse)
             elif command == "remove-duplicates":
                 # remove-duplicates expects: ['remove-duplicates', playlist_title, '--exact' or '--fuzzy', '--score-cutoff N']
