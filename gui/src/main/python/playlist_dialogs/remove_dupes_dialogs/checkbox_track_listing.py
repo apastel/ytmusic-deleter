@@ -103,7 +103,7 @@ class CheckboxTableWidget(TracklistTableWidget):
             self.setItem(row_idx, 0, checkbox_item)
 
             for col_idx, item in enumerate(row_items):
-                self.update_item(col_idx + 1, item)
+                self.update_item(col_idx + 1, item, track)
                 self.setItem(row_idx, col_idx + 1, item)
 
         self.set_max_column_widths()

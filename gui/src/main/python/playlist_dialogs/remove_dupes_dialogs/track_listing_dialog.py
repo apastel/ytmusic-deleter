@@ -35,7 +35,7 @@ class TrackListingDialog(QDialog, Ui_TrackListingDialog):
             # Insert the blank row
             self.tracklistTable.insertRow(row_idx)
             for col_idx, item in enumerate(row_items):
-                self.tracklistTable.update_item(col_idx, item)
+                self.tracklistTable.update_item(col_idx, item, track)
                 self.tracklistTable.setItem(row_idx, col_idx, item)
 
         self.tracklistTable.set_max_column_widths()

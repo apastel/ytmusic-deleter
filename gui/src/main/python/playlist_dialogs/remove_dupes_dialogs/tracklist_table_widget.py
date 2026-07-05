@@ -5,7 +5,12 @@ from PySide6.QtCore import QEvent
 from PySide6.QtCore import QPoint
 from PySide6.QtCore import QSize
 from PySide6.QtCore import Qt
+from PySide6.QtCore import QUrl
 from PySide6.QtCore import Signal
+from PySide6.QtCore import Slot
+from PySide6.QtGui import QBrush
+from PySide6.QtGui import QColorConstants
+from PySide6.QtGui import QDesktopServices
 from PySide6.QtGui import QImage
 from PySide6.QtGui import QPixmap
 from PySide6.QtWidgets import QAbstractItemView
@@ -23,6 +28,7 @@ class TracklistTableWidget(QTableWidget):
         self.viewport().setMouseTracking(True)
         self.viewport().installEventFilter(self)
         self.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
+        self.cellClicked.connect(self._on_cell_clicked)
         self._artwork_popup = None
         self._artwork_column_idx = artwork_column_idx
 
@@ -42,7 +48,7 @@ class TracklistTableWidget(QTableWidget):
         last_col = self.columnCount() - 1
         self.horizontalHeader().setSectionResizeMode(last_col, QHeaderView.ResizeMode.Stretch)
 
-    def update_item(self, col_idx, item):
+    def update_item(self, col_idx, item, track):
         """
         Update certain row items like Thumbnail or Type
         """
@@ -52,7 +58,18 @@ class TracklistTableWidget(QTableWidget):
         header_text = header_item.text()
         if not header_text:
             return
-        if header_text == "Thumbnail":
+        if header_text == "Title":
+            video_id = track.get("videoId", "")
+            title_text = track.get("title", video_id)
+            url = f"https://music.youtube.com/watch?v={video_id}" if video_id else ""
+            item.setText(title_text)
+            item.setToolTip(url)
+            item.setData(Qt.ItemDataRole.UserRole, url)
+            font = item.font()
+            font.setUnderline(True)
+            item.setFont(font)
+            item.setForeground(QBrush(QColorConstants.Blue))
+        elif header_text == "Thumbnail":
             thumbnail_url = item.text()
             # Store larger version for popup
             large_url = self._resize_google_thumb(thumbnail_url, 264, 264)
@@ -84,6 +101,20 @@ class TracklistTableWidget(QTableWidget):
                 case _:
                     type_str = "Unknown"
             item.setText(type_str)
+
+    @Slot(int, int)
+    def _on_cell_clicked(self, row: int, col: int):
+        header_item = self.horizontalHeaderItem(col)
+        if not header_item or header_item.text() != "Title":
+            return
+
+        item = self.item(row, col)
+        if not item:
+            return
+
+        url = item.data(Qt.ItemDataRole.UserRole)
+        if isinstance(url, str) and url:
+            QDesktopServices.openUrl(QUrl(url))
 
     def _resize_google_thumb(self, url: str, width: int, height: int) -> str:
         if "w" in url and "-h" in url:
