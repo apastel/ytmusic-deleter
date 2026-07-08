@@ -8,8 +8,6 @@ from PySide6.QtCore import Qt
 from PySide6.QtCore import QUrl
 from PySide6.QtCore import Signal
 from PySide6.QtCore import Slot
-from PySide6.QtGui import QBrush
-from PySide6.QtGui import QColorConstants
 from PySide6.QtGui import QDesktopServices
 from PySide6.QtGui import QImage
 from PySide6.QtGui import QPixmap
@@ -68,7 +66,6 @@ class TracklistTableWidget(QTableWidget):
             font = item.font()
             font.setUnderline(True)
             item.setFont(font)
-            item.setForeground(QBrush(QColorConstants.Blue))
         elif header_text == "Thumbnail":
             thumbnail_url = item.text()
             # Store larger version for popup
