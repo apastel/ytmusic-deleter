@@ -353,9 +353,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         # Display account name in popover
         try:
             account_info: dict = self.ytmusic.get_account_info()
-        except Exception as e:
+        except Exception:
             message = "Failed to get user's account info. Displaying generic account info instead."
-            self.message(message + "\n" + str(e))
+            self.message(message)
             account_info = {
                 "accountName": "Unknown User",
             }
