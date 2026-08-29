@@ -333,16 +333,16 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             try:
                 self.ytmusic.get_library_playlists(limit=1)
             except TypeError as e:
-                self.message("Auth file is invalid or expired. Please sign in again.")
+                self.message("Your credentials are invalid or may be expired. Try signing out and signing back in.")
                 # Show error dialog to the user
                 QMessageBox.critical(
                     self,
                     "Authentication Error",
-                    "Auth file is invalid or expired. Please sign in again.",
+                    "Your credentials are invalid or may be expired. Try signing out and signing back in.",
                 )
                 self.sign_out()
                 raise ytmusicapi.exceptions.YTMusicUserError(
-                    "Auth file is invalid or expired. Please sign in again."
+                    "Your credentials are invalid or may be expired. Try signing out and signing back in."
                 ) from e
         except ytmusicapi.exceptions.YTMusicUserError:
             # User is not signed in
