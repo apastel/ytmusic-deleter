@@ -952,7 +952,7 @@ files = [
 
 [[package]]
 name = "pytest-rerunfailures"
-version = "16.6"
+version = "16.6.1"
 requires_python = ">=3.10"
 summary = "pytest plugin to re-run tests to eliminate flaky failures"
 groups = ["test"]
@@ -962,8 +962,8 @@ dependencies = [
     "pytest!=8.2.2,>=8.2",
 ]
 files = [
-    {file = "pytest_rerunfailures-16.6-py3-none-any.whl", hash = "sha256:6af2d1ebd6e5cb79666ac408942cd6a0672a49fefd8523664770718560795e13"},
-    {file = "pytest_rerunfailures-16.6.tar.gz", hash = "sha256:29dbfee46f542073c888e0ed4e81c51e15b9096f49a299eb1a759629c601684a"},
+    {file = "pytest_rerunfailures-16.6.1-py3-none-any.whl", hash = "sha256:0c38d314a0a7e32795f2dbdeeb2b3d141ecf3d3abe10c8c32dae223d45ac7b3d"},
+    {file = "pytest_rerunfailures-16.6.1.tar.gz", hash = "sha256:20ac38d31f9319c4e8f43fe0d0e9c22755508e8e7987a88de6d7fd93fc6bdabb"},
 ]
 
 [[package]]
@@ -1215,7 +1215,7 @@ files = [
 
 [[package]]
 name = "sentry-sdk"
-version = "2.68.1"
+version = "2.69.1"
 requires_python = ">=3.6"
 summary = "Python client for Sentry (https://sentry.io)"
 groups = ["gui"]
@@ -1225,8 +1225,8 @@ dependencies = [
     "urllib3>=1.26.11",
 ]
 files = [
-    {file = "sentry_sdk-2.68.1-py3-none-any.whl", hash = "sha256:775b78871783a0ffd758276ad01b3bb2b1ebcdad8f9d2f0a7723f76b73c99b65"},
-    {file = "sentry_sdk-2.68.1.tar.gz", hash = "sha256:6a97895230b04bc35d4d8d2e51e3b9e21902dfb0086ccf1f131a80c15c7b997a"},
+    {file = "sentry_sdk-2.69.1-py3-none-any.whl", hash = "sha256:2d2556d9a14db548982b914cbed2a2dc07b6e55d941a620752f89a2afccfd78d"},
+    {file = "sentry_sdk-2.69.1.tar.gz", hash = "sha256:f9284b417540b0784b994fa021eb6f1e30ae1cce593d83541274d03c93966eff"},
 ]
 
 [[package]]
