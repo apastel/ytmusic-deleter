@@ -510,19 +510,19 @@ files = [
 
 [[package]]
 name = "flake8"
-version = "7.3.0"
-requires_python = ">=3.9"
+version = "7.4.1"
+requires_python = ">=3.10"
 summary = "the modular source code checker: pep8 pyflakes and co"
 groups = ["lint"]
 marker = "python_version >= \"3.10\" and python_version < \"3.15\""
 dependencies = [
     "mccabe<0.8.0,>=0.7.0",
-    "pycodestyle<2.15.0,>=2.14.0",
-    "pyflakes<3.5.0,>=3.4.0",
+    "pycodestyle<2.16.0,>=2.15.0",
+    "pyflakes<4.1.0,>=4.0.0",
 ]
 files = [
-    {file = "flake8-7.3.0-py2.py3-none-any.whl", hash = "sha256:b9696257b9ce8beb888cdbe31cf885c90d31928fe202be0889a7cdafad32f01e"},
-    {file = "flake8-7.3.0.tar.gz", hash = "sha256:fe044858146b9fc69b551a4b490d69cf960fcb78ad1edcb84e7fbb1b4a8e3872"},
+    {file = "flake8-7.4.1-py2.py3-none-any.whl", hash = "sha256:78480274a6d7289d9cb8eafeda241fac57d4ea687d26e32dfdca37b72cdeddad"},
+    {file = "flake8-7.4.1.tar.gz", hash = "sha256:84ea5afcaf344487b0ea5baaebb8100f4cfaebc01f755998f75876664029f587"},
 ]
 
 [[package]]
@@ -772,26 +772,26 @@ files = [
 
 [[package]]
 name = "pycodestyle"
-version = "2.14.0"
-requires_python = ">=3.9"
+version = "2.15.0"
+requires_python = ">=3.10"
 summary = "Python style guide checker"
 groups = ["lint"]
 marker = "python_version >= \"3.10\" and python_version < \"3.15\""
 files = [
-    {file = "pycodestyle-2.14.0-py2.py3-none-any.whl", hash = "sha256:dd6bf7cb4ee77f8e016f9c8e74a35ddd9f67e1d5fd4184d86c3b98e07099f42d"},
-    {file = "pycodestyle-2.14.0.tar.gz", hash = "sha256:c4b5b517d278089ff9d0abdec919cd97262a3367449ea1c8b49b91529167b783"},
+    {file = "pycodestyle-2.15.0-py2.py3-none-any.whl", hash = "sha256:12fd2f73c7b8ee8845a0431111df8faf4c1a07d6e64e2ee7f0c74014dab14181"},
+    {file = "pycodestyle-2.15.0.tar.gz", hash = "sha256:318f5db083869b4c4dad922d0b11124fb27ab181b6730b93371da671e31bd50e"},
 ]
 
 [[package]]
 name = "pyflakes"
-version = "3.4.0"
-requires_python = ">=3.9"
+version = "4.0.0"
+requires_python = ">=3.10"
 summary = "passive checker of Python programs"
 groups = ["lint"]
 marker = "python_version >= \"3.10\" and python_version < \"3.15\""
 files = [
-    {file = "pyflakes-3.4.0-py2.py3-none-any.whl", hash = "sha256:f742a7dbd0d9cb9ea41e9a24a918996e8170c799fa528688d40dd582c8265f4f"},
-    {file = "pyflakes-3.4.0.tar.gz", hash = "sha256:b24f96fafb7d2ab0ec5075b7350b3d2d2218eab42003821c06344973d3ea2f58"},
+    {file = "pyflakes-4.0.0-py2.py3-none-any.whl", hash = "sha256:0f7b7a78e8fcffd78b205200f045a70911f4179be1b42eac82c3323e0bf5c8aa"},
+    {file = "pyflakes-4.0.0.tar.gz", hash = "sha256:492b27735181e3d4a6acfc08738948b666bf3e696781854ea6e0d8540d566d52"},
 ]
 
 [[package]]
@@ -1215,7 +1215,7 @@ files = [
 
 [[package]]
 name = "sentry-sdk"
-version = "2.69.2"
+version = "2.70.0"
 requires_python = ">=3.6"
 summary = "Python client for Sentry (https://sentry.io)"
 groups = ["gui"]
@@ -1225,8 +1225,8 @@ dependencies = [
     "urllib3>=1.26.11",
 ]
 files = [
-    {file = "sentry_sdk-2.69.2-py3-none-any.whl", hash = "sha256:25bc0a6c55bba0b83398212a7247f4f9f3190f189a1909b68e4807ef4b785895"},
-    {file = "sentry_sdk-2.69.2.tar.gz", hash = "sha256:b4d8915a526e626b0b14a2925907554b722d3b8e3e3781570fc35791712af323"},
+    {file = "sentry_sdk-2.70.0-py3-none-any.whl", hash = "sha256:89600e8bb5fc5239cad5c4434217f453204f2207ad29399ea58947460b37a62e"},
+    {file = "sentry_sdk-2.70.0.tar.gz", hash = "sha256:27e4b512f47be93136645dbe8f02d430473ee73a389ce430b2b7104baa66cf75"},
 ]
 
 [[package]]
