@@ -116,7 +116,7 @@ SectionEnd
 Section /o "un.Delete user data"
 
   RMDir /r "$APPDATA\${app_name}"
-  DeleteRegKey HKCU "Software\${app_name}\${app_name}"
+  DeleteRegKey HKCU "Software\${app_name}"
 
 SectionEnd
 
