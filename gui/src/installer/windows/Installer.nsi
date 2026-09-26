@@ -113,7 +113,7 @@ Section "Uninstall"
 
 SectionEnd
 
-Section /o "Delete user data"
+Section /o "un.Delete user data"
 
   RMDir /r "$APPDATA\${app_name}"
   DeleteRegKey HKCU "Software\${app_name}\${app_name}"
