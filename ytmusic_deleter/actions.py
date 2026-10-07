@@ -567,7 +567,7 @@ def add_all_to_playlist(ctx: ActionContext, library, uploads, max_playlist_size)
             video_ids.append(video_id)
             continue
         artist = song["artists"][0]["name"] if song.get("artists") else common.UNKNOWN_ARTIST
-        title = song.get("title", "Unknown Title")
+        title = song.get("title", common.UNKNOWN_TITLE)
         songs_without_video_id.append(f"{artist} - {title!r}")
 
     if songs_without_video_id:
@@ -636,7 +636,9 @@ def add_all_to_library(ctx: ActionContext, playlist_title_or_id):
         if ctx.is_cancelled():
             logging.info("Operation cancelled by user.")
             break
-        track_str = f"{track['artists'][0]['name']} - {track['title']!r}"
+        artist = track["artists"][0]["name"] if track.get("artists") else common.UNKNOWN_ARTIST
+        title = track.get("title", common.UNKNOWN_TITLE)
+        track_str = f"{artist} - {title!r}"
         logging.info(f"Processing item: {track_str}")
         add_token = track.get("feedbackTokens", {}).get("add")
         if add_token:

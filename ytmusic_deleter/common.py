@@ -9,6 +9,7 @@ BROWSER_FILENAME = "browser.json"
 OAUTH_FILENAME = "oauth.json"
 UNKNOWN_ARTIST = "Unknown Artist"
 UNKNOWN_ALBUM = "Unknown Album"
+UNKNOWN_TITLE = "Unknown Title"
 EPISODES_FOR_LATER = "Episodes for Later"
 SAVED_EPISODES_PLAYLIST_ID = "SE"
 ARTIST_NAME_SCORE_CUTOFF = 90
