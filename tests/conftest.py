@@ -239,8 +239,8 @@ def fixture_sample_playlist() -> str:
 
 @pytest.fixture(name="sample_podcast")
 def fixture_sample_podcast() -> str:
-    """JRE Archive"""
-    return "PLk1Sqn_f33KuU_aJDvMPPAy_SoxXTt_ub"
+    """JRE"""
+    return "PLk1Sqn_f33KuWf3tW9BBe_4TP7x8l0m3T"
 
 
 @pytest.fixture(name="sample_smaller_podcast")
@@ -394,7 +394,7 @@ def fixture_add_podcast(yt_browser: YTMusic, sample_podcast):
     while retries_remaining:
         podcasts = yt_browser.get_library_podcasts(limit=None)
         for podcast in podcasts:
-            if podcast.get("title") == "JRE Archive - Episodes #701 - 1000":
+            if podcast.get("title") == "The Joe Rogan Experience":
                 return podcast
         retries_remaining -= 1
         time.sleep(2)
