@@ -332,7 +332,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             # Check that credential is still valid
             try:
                 self.ytmusic.get_library_playlists(limit=1)
-            except TypeError as e:
+            except Exception as e:
                 self.message("Your credentials are invalid or may be expired. Try signing out and signing back in.")
                 # Show error dialog to the user
                 QMessageBox.critical(
