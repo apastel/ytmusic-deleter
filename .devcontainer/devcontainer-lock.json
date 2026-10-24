@@ -1,0 +1,9 @@
+{
+  "features": {
+    "ghcr.io/devcontainers-extra/features/pdm:2": {
+      "version": "2.0.18",
+      "resolved": "ghcr.io/devcontainers-extra/features/pdm@sha256:545234c1abbee2b89e201328870c2ee1e3b1e1a80ccf78e85926f8175db6f26e",
+      "integrity": "sha256:545234c1abbee2b89e201328870c2ee1e3b1e1a80ccf78e85926f8175db6f26e"
+    }
+  }
+}
