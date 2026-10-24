@@ -36,6 +36,7 @@ jobs:
 
     - uses: pdm-project/setup-pdm@main
       with:
+        python-version: "3.15"
         cache: false
 
     - name: Resolve PDM cache dir

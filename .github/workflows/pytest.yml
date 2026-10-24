@@ -26,6 +26,9 @@ concurrency:
 jobs:
   pytest:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.10", "3.14", "3.15"]
     # This ensures both standard PRs and PRs from forks require approval
     environment: ${{ (github.event_name == 'pull_request' || github.event_name == 'pull_request_target') && 'testing' || null }}
     steps:
@@ -40,6 +43,7 @@ jobs:
     - name: Setup PDM
       uses: pdm-project/setup-pdm@main
       with:
+        python-version: ${{ matrix.python-version }}
         cache: true
         cache-dependency-path: "**/pdm.lock"
 
@@ -69,6 +73,7 @@ jobs:
         pdm run coverage xml
 
     - name: Upload coverage to Codecov
+      if: matrix.python-version == '3.15'
       uses: codecov/codecov-action@v5
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
