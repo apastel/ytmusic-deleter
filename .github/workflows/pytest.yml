@@ -70,7 +70,6 @@ jobs:
         pdm run coverage xml
 
     - name: Upload coverage to Codecov
-      if: matrix.python-version == '3.15'
       uses: codecov/codecov-action@v5
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
