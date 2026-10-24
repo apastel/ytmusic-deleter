@@ -8,14 +8,14 @@ lock_version = "4.5.1"
 content_hash = "sha256:2957942949941f79c7c0d6a92cf51b8864dfa7cbc57bd551388a2112e85c55a9"
 
 [[metadata.targets]]
-requires_python = ">=3.10,<3.15"
+requires_python = ">=3.10,<3.16"
 
 [[package]]
 name = "altgraph"
 version = "0.17.5"
 summary = "Python graph (network) package"
 groups = ["gui"]
-marker = "python_version >= \"3.10\" and python_version < \"3.15\""
+marker = "python_version >= \"3.10\" and python_version < \"3.16\""
 files = [
     {file = "altgraph-0.17.5-py2.py3-none-any.whl", hash = "sha256:f3a22400bce1b0c701683820ac4f3b159cd301acab067c51c653e06961600597"},
     {file = "altgraph-0.17.5.tar.gz", hash = "sha256:c87b395dd12fabde9c99573a9749d67da8d29ef9de0125c7f536699b4a9bc9e7"},
@@ -26,7 +26,7 @@ name = "ansicon"
 version = "1.89.0"
 summary = "Python wrapper for loading Jason Hood's ANSICON"
 groups = ["default"]
-marker = "python_version >= \"3.10\" and python_version < \"3.15\" and platform_system == \"Windows\""
+marker = "python_version >= \"3.10\" and python_version < \"3.16\" and platform_system == \"Windows\""
 files = [
     {file = "ansicon-1.89.0-py2.py3-none-any.whl", hash = "sha256:f1def52d17f65c2c9682cf8370c03f541f410c1752d6a14029f97318e4b9dfec"},
     {file = "ansicon-1.89.0.tar.gz", hash = "sha256:e4d039def5768a47e4afec8e89e83ec3ae5a26bf00ad851f914d1240b444d2b1"},
@@ -38,7 +38,7 @@ version = "26.10.1"
 requires_python = ">=3.10"
 summary = "The uncompromising code formatter."
 groups = ["lint"]
-marker = "python_version >= \"3.10\" and python_version < \"3.15\""
+marker = "python_version >= \"3.10\" and python_version < \"3.16\""
 dependencies = [
     "click>=8.0.0",
     "mypy-extensions>=0.4.3",
@@ -85,7 +85,7 @@ version = "1.25.0"
 requires_python = ">=3.7"
 summary = "Easy, practical library for making terminal apps, by providing an elegant, well-documented interface to Colors, Keyboard input, and screen Positioning capabilities."
 groups = ["default"]
-marker = "python_version >= \"3.10\" and python_version < \"3.15\""
+marker = "python_version >= \"3.10\" and python_version < \"3.16\""
 dependencies = [
     "jinxed>=1.1.0; platform_system == \"Windows\"",
     "wcwidth>=0.1.4",
@@ -101,7 +101,7 @@ version = "2026.1.4"
 requires_python = ">=3.7"
 summary = "Python package for providing Mozilla's CA Bundle."
 groups = ["default", "gui"]
-marker = "python_version >= \"3.10\" and python_version < \"3.15\""
+marker = "python_version >= \"3.10\" and python_version < \"3.16\""
 files = [
     {file = "certifi-2026.1.4-py3-none-any.whl", hash = "sha256:9943707519e4add1115f44c2bc244f782c0249876bf51b6599fee1ffbedd685c"},
     {file = "certifi-2026.1.4.tar.gz", hash = "sha256:ac726dd470482006e014ad384921ed6438c457018f4b3d204aea4281258b2120"},
@@ -113,7 +113,7 @@ version = "3.5.0"
 requires_python = ">=3.10"
 summary = "Validate configuration and produce human readable error messages."
 groups = ["lint"]
-marker = "python_version >= \"3.10\" and python_version < \"3.15\""
+marker = "python_version >= \"3.10\" and python_version < \"3.16\""
 files = [
     {file = "cfgv-3.5.0-py2.py3-none-any.whl", hash = "sha256:a8dc6b26ad22ff227d2634a65cb388215ce6cc96bbcc5cfde7641ae87e8dacc0"},
     {file = "cfgv-3.5.0.tar.gz", hash = "sha256:d5b1034354820651caa73ede66a6294d6e95c1b00acc5e9b098e917404669132"},
@@ -125,7 +125,7 @@ version = "3.4.4"
 requires_python = ">=3.7"
 summary = "The Real First Universal Charset Detector. Open, modern and actively maintained alternative to Chardet."
 groups = ["default"]
-marker = "python_version >= \"3.10\" and python_version < \"3.15\""
+marker = "python_version >= \"3.10\" and python_version < \"3.16\""
 files = [
     {file = "charset_normalizer-3.4.4-cp310-cp310-macosx_10_9_universal2.whl", hash = "sha256:e824f1492727fa856dd6eda4f7cee25f8518a12f3c4a56a74e8095695089cf6d"},
     {file = "charset_normalizer-3.4.4-cp310-cp310-manylinux2014_aarch64.manylinux_2_17_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:4bd5d4137d500351a30687c2d3971758aac9a19208fc110ccb9d7188fbe709e8"},
@@ -217,7 +217,7 @@ version = "8.5.0"
 requires_python = ">=3.10"
 summary = "Composable command line interface toolkit"
 groups = ["default", "lint"]
-marker = "python_version >= \"3.10\" and python_version < \"3.15\""
+marker = "python_version >= \"3.10\" and python_version < \"3.16\""
 files = [
     {file = "click-8.5.0-py3-none-any.whl", hash = "sha256:255bc9599cf7748b4b1a446ccc735421bd08a2ae529a8b88597d3de5664ee360"},
     {file = "click-8.5.0.tar.gz", hash = "sha256:ba0d2089de75ea0310e2dde03160e6ca10009947fb95a182f9b54021bb272e34"},
@@ -229,7 +229,7 @@ version = "0.4.6"
 requires_python = "!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,!=3.4.*,!=3.5.*,!=3.6.*,>=2.7"
 summary = "Cross-platform colored terminal text."
 groups = ["test"]
-marker = "python_version >= \"3.10\" and python_version < \"3.15\" and sys_platform == \"win32\""
+marker = "python_version >= \"3.10\" and python_version < \"3.16\" and sys_platform == \"win32\""
 files = [
     {file = "colorama-0.4.6-py2.py3-none-any.whl", hash = "sha256:4f1d9991f5acc0ca119f9d443620b77f9d6b33703e51011c16baf57afb285fc6"},
     {file = "colorama-0.4.6.tar.gz", hash = "sha256:08695f5cb7ed6e0531a20572697297273c47b8cae5a63ffc6d6ed5c201be6e44"},
@@ -241,7 +241,7 @@ version = "7.16.2"
 requires_python = ">=3.10"
 summary = "Code coverage measurement for Python"
 groups = ["test"]
-marker = "python_version >= \"3.10\" and python_version < \"3.15\""
+marker = "python_version >= \"3.10\" and python_version < \"3.16\""
 files = [
     {file = "coverage-7.16.2-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:23219888477edd736b6fcaec1272d47d93b926e999641ffea7e53a1738e70b2b"},
     {file = "coverage-7.16.2-cp310-cp310-macosx_11_0_arm64.whl", hash = "sha256:40c0f00899fe6181ae7f434ceb200e51f5ee4b8ed10e3b5f0b605f0cae15da87"},
@@ -332,6 +332,36 @@ files = [
     {file = "coverage-7.16.2-cp314-cp314t-win32.whl", hash = "sha256:a9cd3de0a5bfe7b0e21ee10e1a14e3d61bf52efc88217ab1d95d6ace6970bd46"},
     {file = "coverage-7.16.2-cp314-cp314t-win_amd64.whl", hash = "sha256:611a44e5229a59d7483ce830160e1a0e85f700562c7a5651c7c63fb8f4eb528c"},
     {file = "coverage-7.16.2-cp314-cp314t-win_arm64.whl", hash = "sha256:22957cef43ce038641de78ba995de7568d2d6a37c6ddbf7fa0fd7d1ae2344d91"},
+    {file = "coverage-7.16.2-cp315-cp315-macosx_10_15_x86_64.whl", hash = "sha256:414c26dfdb96aac2d570a54e03008f001e32eb2d413705365503648c6bd361d8"},
+    {file = "coverage-7.16.2-cp315-cp315-macosx_11_0_arm64.whl", hash = "sha256:00d3eb96e9988c45f50cccd1f1496571ac5c1f91386ac02c4d55516eeda19a24"},
+    {file = "coverage-7.16.2-cp315-cp315-manylinux1_i686.manylinux_2_28_i686.manylinux_2_5_i686.whl", hash = "sha256:4dbbd1155ca46e6e0b6b89d204428c56ef6a459af21333f365d135a2820e5a09"},
+    {file = "coverage-7.16.2-cp315-cp315-manylinux1_x86_64.manylinux_2_28_x86_64.manylinux_2_5_x86_64.whl", hash = "sha256:8fc15cc8d0d06e873c00ef18e1372d605f9aaf3de27d8c24e50782e75bc8b843"},
+    {file = "coverage-7.16.2-cp315-cp315-manylinux2014_aarch64.manylinux_2_17_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:9c6afdd69218202bc1758c9a14b86b8cf1084f37ed2ca143e567a103772b16d1"},
+    {file = "coverage-7.16.2-cp315-cp315-manylinux2014_ppc64le.manylinux_2_17_ppc64le.manylinux_2_28_ppc64le.whl", hash = "sha256:aba5c63b7afdc749cc9eae943d5b868cba2b261a176378fa1c5a30bc8bc89982"},
+    {file = "coverage-7.16.2-cp315-cp315-manylinux_2_31_riscv64.manylinux_2_39_riscv64.whl", hash = "sha256:9174f0af24e5eff248b9dbfe76ec5275a3d19d37edbc2810543f12cf97347a34"},
+    {file = "coverage-7.16.2-cp315-cp315-musllinux_1_2_aarch64.whl", hash = "sha256:80e9fdb4c3d926b6ba721d4bf7435bdb869c3527ae7803290361d0ab73db13b6"},
+    {file = "coverage-7.16.2-cp315-cp315-musllinux_1_2_i686.whl", hash = "sha256:7b3bce4a0d05401d70b7d0d5ca783e686bc9d30e81dbd7d980d532609bf809e4"},
+    {file = "coverage-7.16.2-cp315-cp315-musllinux_1_2_ppc64le.whl", hash = "sha256:44f21e407b278efdfc1ee5e481e00518bd1d500310a30a5fbf2bcbedfef4aaf0"},
+    {file = "coverage-7.16.2-cp315-cp315-musllinux_1_2_riscv64.whl", hash = "sha256:59c3926585e1cd1f2190f4b2ac9014de1bbeaf0d5d0587b0dc6b0aa90d17896a"},
+    {file = "coverage-7.16.2-cp315-cp315-musllinux_1_2_x86_64.whl", hash = "sha256:066429634299e14dd2d511e1e85f8f9cecc500781f6b41907c0dd6f1baea7e63"},
+    {file = "coverage-7.16.2-cp315-cp315-win32.whl", hash = "sha256:893ea9cf86cb8d2546812ac93d973aaf2ee1fb45110a873b014214fd23e3725e"},
+    {file = "coverage-7.16.2-cp315-cp315-win_amd64.whl", hash = "sha256:01c6908bc613b420c26c818fe948e1b97dfd041a53c98b01c63bd8321f5c9aae"},
+    {file = "coverage-7.16.2-cp315-cp315-win_arm64.whl", hash = "sha256:967d72c835d7a8cf0af99ec813a2d06e3db6df706402f1fe85b31b437645f495"},
+    {file = "coverage-7.16.2-cp315-cp315t-macosx_10_15_x86_64.whl", hash = "sha256:98d9c97f51b334b0adce7b964442a9af33c1a00c6ac856984cc5dc8d18f81c75"},
+    {file = "coverage-7.16.2-cp315-cp315t-macosx_11_0_arm64.whl", hash = "sha256:3e861f1071dcc2fec1e88bef0920f6b1eaa66a143555b4f8ab79ba2b0f30ef55"},
+    {file = "coverage-7.16.2-cp315-cp315t-manylinux1_i686.manylinux_2_28_i686.manylinux_2_5_i686.whl", hash = "sha256:fb9d92ecfe2d5b494367c67f7446f8b75b68d8d0c8cf3bc3e6997478be25d9e2"},
+    {file = "coverage-7.16.2-cp315-cp315t-manylinux1_x86_64.manylinux_2_28_x86_64.manylinux_2_5_x86_64.whl", hash = "sha256:eb57acff4a74246ae513c142d4b36e18c389c3aed8661914a53f7cd0071031b2"},
+    {file = "coverage-7.16.2-cp315-cp315t-manylinux2014_aarch64.manylinux_2_17_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:444889f7f66b74e4455c0a97e0e166dd41177f1dca8c0239a47cff25e05ba7e1"},
+    {file = "coverage-7.16.2-cp315-cp315t-manylinux2014_ppc64le.manylinux_2_17_ppc64le.manylinux_2_28_ppc64le.whl", hash = "sha256:a740ea6f083c6db7b926534d159508f80ba275ab35e722522de0d18d0f56e55f"},
+    {file = "coverage-7.16.2-cp315-cp315t-manylinux_2_31_riscv64.manylinux_2_39_riscv64.whl", hash = "sha256:8e209591f7c41ae4a9171335cf6156afda0b21de73b02f73f5aa95b2d5fbb08d"},
+    {file = "coverage-7.16.2-cp315-cp315t-musllinux_1_2_aarch64.whl", hash = "sha256:396bb16e04ce04efbb3df91456ae4e3da918e69ecdf67fb711b0a0fdf35ccce0"},
+    {file = "coverage-7.16.2-cp315-cp315t-musllinux_1_2_i686.whl", hash = "sha256:9cdf19874e0d247f32f03609200370343c3c7aa260b191d8c2bb251d36198283"},
+    {file = "coverage-7.16.2-cp315-cp315t-musllinux_1_2_ppc64le.whl", hash = "sha256:fd3d72233eb8b48acc94fa57d44e2d32ce8e7abed02882ccb6d855ccc4ed33ec"},
+    {file = "coverage-7.16.2-cp315-cp315t-musllinux_1_2_riscv64.whl", hash = "sha256:bb4ffe96aa663cee727659db5a2afeb38c95f8677b747d447b90d6d4874ea2c5"},
+    {file = "coverage-7.16.2-cp315-cp315t-musllinux_1_2_x86_64.whl", hash = "sha256:dba2edfb054f6d4a08df9d1637c39a5aa3865bca6617c13c86be21e45658a59c"},
+    {file = "coverage-7.16.2-cp315-cp315t-win32.whl", hash = "sha256:251aed777c47c77aba047096d4542889db089227655711dfc2b9c54ef0e15e35"},
+    {file = "coverage-7.16.2-cp315-cp315t-win_amd64.whl", hash = "sha256:2aca0bdfa9e91621d5b09d815357bf63def4fc0e9cb66da67bf2cf93f3b1a6f5"},
+    {file = "coverage-7.16.2-cp315-cp315t-win_arm64.whl", hash = "sha256:b88841e654f09732804809e435b3e005a929ffd9998b872b7b213957b8759cb8"},
     {file = "coverage-7.16.2-py3-none-any.whl", hash = "sha256:11d28e9123a9156cb405d8d27b44256c9a58fb5decc2073a8f17862057e3aa0f"},
     {file = "coverage-7.16.2.tar.gz", hash = "sha256:ca64d9f1f384f151b9511bec01126072acd2f313439f8ed015a22d8790aab6fa"},
 ]
@@ -343,7 +373,7 @@ extras = ["toml"]
 requires_python = ">=3.10"
 summary = "Code coverage measurement for Python"
 groups = ["test"]
-marker = "python_version >= \"3.10\" and python_version < \"3.15\""
+marker = "python_version >= \"3.10\" and python_version < \"3.16\""
 dependencies = [
     "coverage==7.16.2",
     "tomli; python_full_version <= \"3.11.0a6\"",
@@ -438,6 +468,36 @@ files = [
     {file = "coverage-7.16.2-cp314-cp314t-win32.whl", hash = "sha256:a9cd3de0a5bfe7b0e21ee10e1a14e3d61bf52efc88217ab1d95d6ace6970bd46"},
     {file = "coverage-7.16.2-cp314-cp314t-win_amd64.whl", hash = "sha256:611a44e5229a59d7483ce830160e1a0e85f700562c7a5651c7c63fb8f4eb528c"},
     {file = "coverage-7.16.2-cp314-cp314t-win_arm64.whl", hash = "sha256:22957cef43ce038641de78ba995de7568d2d6a37c6ddbf7fa0fd7d1ae2344d91"},
+    {file = "coverage-7.16.2-cp315-cp315-macosx_10_15_x86_64.whl", hash = "sha256:414c26dfdb96aac2d570a54e03008f001e32eb2d413705365503648c6bd361d8"},
+    {file = "coverage-7.16.2-cp315-cp315-macosx_11_0_arm64.whl", hash = "sha256:00d3eb96e9988c45f50cccd1f1496571ac5c1f91386ac02c4d55516eeda19a24"},
+    {file = "coverage-7.16.2-cp315-cp315-manylinux1_i686.manylinux_2_28_i686.manylinux_2_5_i686.whl", hash = "sha256:4dbbd1155ca46e6e0b6b89d204428c56ef6a459af21333f365d135a2820e5a09"},
+    {file = "coverage-7.16.2-cp315-cp315-manylinux1_x86_64.manylinux_2_28_x86_64.manylinux_2_5_x86_64.whl", hash = "sha256:8fc15cc8d0d06e873c00ef18e1372d605f9aaf3de27d8c24e50782e75bc8b843"},
+    {file = "coverage-7.16.2-cp315-cp315-manylinux2014_aarch64.manylinux_2_17_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:9c6afdd69218202bc1758c9a14b86b8cf1084f37ed2ca143e567a103772b16d1"},
+    {file = "coverage-7.16.2-cp315-cp315-manylinux2014_ppc64le.manylinux_2_17_ppc64le.manylinux_2_28_ppc64le.whl", hash = "sha256:aba5c63b7afdc749cc9eae943d5b868cba2b261a176378fa1c5a30bc8bc89982"},
+    {file = "coverage-7.16.2-cp315-cp315-manylinux_2_31_riscv64.manylinux_2_39_riscv64.whl", hash = "sha256:9174f0af24e5eff248b9dbfe76ec5275a3d19d37edbc2810543f12cf97347a34"},
+    {file = "coverage-7.16.2-cp315-cp315-musllinux_1_2_aarch64.whl", hash = "sha256:80e9fdb4c3d926b6ba721d4bf7435bdb869c3527ae7803290361d0ab73db13b6"},
+    {file = "coverage-7.16.2-cp315-cp315-musllinux_1_2_i686.whl", hash = "sha256:7b3bce4a0d05401d70b7d0d5ca783e686bc9d30e81dbd7d980d532609bf809e4"},
+    {file = "coverage-7.16.2-cp315-cp315-musllinux_1_2_ppc64le.whl", hash = "sha256:44f21e407b278efdfc1ee5e481e00518bd1d500310a30a5fbf2bcbedfef4aaf0"},
+    {file = "coverage-7.16.2-cp315-cp315-musllinux_1_2_riscv64.whl", hash = "sha256:59c3926585e1cd1f2190f4b2ac9014de1bbeaf0d5d0587b0dc6b0aa90d17896a"},
+    {file = "coverage-7.16.2-cp315-cp315-musllinux_1_2_x86_64.whl", hash = "sha256:066429634299e14dd2d511e1e85f8f9cecc500781f6b41907c0dd6f1baea7e63"},
+    {file = "coverage-7.16.2-cp315-cp315-win32.whl", hash = "sha256:893ea9cf86cb8d2546812ac93d973aaf2ee1fb45110a873b014214fd23e3725e"},
+    {file = "coverage-7.16.2-cp315-cp315-win_amd64.whl", hash = "sha256:01c6908bc613b420c26c818fe948e1b97dfd041a53c98b01c63bd8321f5c9aae"},
+    {file = "coverage-7.16.2-cp315-cp315-win_arm64.whl", hash = "sha256:967d72c835d7a8cf0af99ec813a2d06e3db6df706402f1fe85b31b437645f495"},
+    {file = "coverage-7.16.2-cp315-cp315t-macosx_10_15_x86_64.whl", hash = "sha256:98d9c97f51b334b0adce7b964442a9af33c1a00c6ac856984cc5dc8d18f81c75"},
+    {file = "coverage-7.16.2-cp315-cp315t-macosx_11_0_arm64.whl", hash = "sha256:3e861f1071dcc2fec1e88bef0920f6b1eaa66a143555b4f8ab79ba2b0f30ef55"},
+    {file = "coverage-7.16.2-cp315-cp315t-manylinux1_i686.manylinux_2_28_i686.manylinux_2_5_i686.whl", hash = "sha256:fb9d92ecfe2d5b494367c67f7446f8b75b68d8d0c8cf3bc3e6997478be25d9e2"},
+    {file = "coverage-7.16.2-cp315-cp315t-manylinux1_x86_64.manylinux_2_28_x86_64.manylinux_2_5_x86_64.whl", hash = "sha256:eb57acff4a74246ae513c142d4b36e18c389c3aed8661914a53f7cd0071031b2"},
+    {file = "coverage-7.16.2-cp315-cp315t-manylinux2014_aarch64.manylinux_2_17_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:444889f7f66b74e4455c0a97e0e166dd41177f1dca8c0239a47cff25e05ba7e1"},
+    {file = "coverage-7.16.2-cp315-cp315t-manylinux2014_ppc64le.manylinux_2_17_ppc64le.manylinux_2_28_ppc64le.whl", hash = "sha256:a740ea6f083c6db7b926534d159508f80ba275ab35e722522de0d18d0f56e55f"},
+    {file = "coverage-7.16.2-cp315-cp315t-manylinux_2_31_riscv64.manylinux_2_39_riscv64.whl", hash = "sha256:8e209591f7c41ae4a9171335cf6156afda0b21de73b02f73f5aa95b2d5fbb08d"},
+    {file = "coverage-7.16.2-cp315-cp315t-musllinux_1_2_aarch64.whl", hash = "sha256:396bb16e04ce04efbb3df91456ae4e3da918e69ecdf67fb711b0a0fdf35ccce0"},
+    {file = "coverage-7.16.2-cp315-cp315t-musllinux_1_2_i686.whl", hash = "sha256:9cdf19874e0d247f32f03609200370343c3c7aa260b191d8c2bb251d36198283"},
+    {file = "coverage-7.16.2-cp315-cp315t-musllinux_1_2_ppc64le.whl", hash = "sha256:fd3d72233eb8b48acc94fa57d44e2d32ce8e7abed02882ccb6d855ccc4ed33ec"},
+    {file = "coverage-7.16.2-cp315-cp315t-musllinux_1_2_riscv64.whl", hash = "sha256:bb4ffe96aa663cee727659db5a2afeb38c95f8677b747d447b90d6d4874ea2c5"},
+    {file = "coverage-7.16.2-cp315-cp315t-musllinux_1_2_x86_64.whl", hash = "sha256:dba2edfb054f6d4a08df9d1637c39a5aa3865bca6617c13c86be21e45658a59c"},
+    {file = "coverage-7.16.2-cp315-cp315t-win32.whl", hash = "sha256:251aed777c47c77aba047096d4542889db089227655711dfc2b9c54ef0e15e35"},
+    {file = "coverage-7.16.2-cp315-cp315t-win_amd64.whl", hash = "sha256:2aca0bdfa9e91621d5b09d815357bf63def4fc0e9cb66da67bf2cf93f3b1a6f5"},
+    {file = "coverage-7.16.2-cp315-cp315t-win_arm64.whl", hash = "sha256:b88841e654f09732804809e435b3e005a929ffd9998b872b7b213957b8759cb8"},
     {file = "coverage-7.16.2-py3-none-any.whl", hash = "sha256:11d28e9123a9156cb405d8d27b44256c9a58fb5decc2073a8f17862057e3aa0f"},
     {file = "coverage-7.16.2.tar.gz", hash = "sha256:ca64d9f1f384f151b9511bec01126072acd2f313439f8ed015a22d8790aab6fa"},
 ]
@@ -448,7 +508,7 @@ version = "5.2.1"
 requires_python = ">=3.8"
 summary = "Decorators for Humans"
 groups = ["default"]
-marker = "python_version >= \"3.10\" and python_version < \"3.15\""
+marker = "python_version >= \"3.10\" and python_version < \"3.16\""
 files = [
     {file = "decorator-5.2.1-py3-none-any.whl", hash = "sha256:d316bb415a2d9e2d2b3abcc4084c6502fc09240e292cd76a76afc106a1c8e04a"},
     {file = "decorator-5.2.1.tar.gz", hash = "sha256:65f266143752f734b0a7cc83c46f4618af75b8c5911b00ccb61d0ac9b6da0360"},
@@ -459,7 +519,7 @@ name = "distlib"
 version = "0.4.0"
 summary = "Distribution utilities"
 groups = ["lint"]
-marker = "python_version >= \"3.10\" and python_version < \"3.15\""
+marker = "python_version >= \"3.10\" and python_version < \"3.16\""
 files = [
     {file = "distlib-0.4.0-py2.py3-none-any.whl", hash = "sha256:9659f7d87e46584a30b5780e43ac7a2143098441670ff0a49d5f9034c54a6c16"},
     {file = "distlib-0.4.0.tar.gz", hash = "sha256:feec40075be03a04501a973d81f633735b4b69f98b05450592310c0f401a4e0d"},
@@ -470,7 +530,7 @@ name = "enlighten"
 version = "1.14.1"
 summary = "Enlighten Progress Bar"
 groups = ["default"]
-marker = "python_version >= \"3.10\" and python_version < \"3.15\""
+marker = "python_version >= \"3.10\" and python_version < \"3.16\""
 dependencies = [
     "backports-functools-lru-cache; python_version < \"3.2\"",
     "blessed>=1.17.7",
@@ -502,7 +562,7 @@ version = "3.20.2"
 requires_python = ">=3.10"
 summary = "A platform independent file lock."
 groups = ["lint"]
-marker = "python_version >= \"3.10\" and python_version < \"3.15\""
+marker = "python_version >= \"3.10\" and python_version < \"3.16\""
 files = [
     {file = "filelock-3.20.2-py3-none-any.whl", hash = "sha256:fbba7237d6ea277175a32c54bb71ef814a8546d8601269e1bfc388de333974e8"},
     {file = "filelock-3.20.2.tar.gz", hash = "sha256:a2241ff4ddde2a7cebddf78e39832509cb045d18ec1a09d7248d6bfc6bfbbe64"},
@@ -514,7 +574,7 @@ version = "7.4.1"
 requires_python = ">=3.10"
 summary = "the modular source code checker: pep8 pyflakes and co"
 groups = ["lint"]
-marker = "python_version >= \"3.10\" and python_version < \"3.15\""
+marker = "python_version >= \"3.10\" and python_version < \"3.16\""
 dependencies = [
     "mccabe<0.8.0,>=0.7.0",
     "pycodestyle<2.16.0,>=2.15.0",
@@ -531,7 +591,7 @@ version = "2.6.15"
 requires_python = ">=3.9"
 summary = "File identification library for Python"
 groups = ["lint"]
-marker = "python_version >= \"3.10\" and python_version < \"3.15\""
+marker = "python_version >= \"3.10\" and python_version < \"3.16\""
 files = [
     {file = "identify-2.6.15-py2.py3-none-any.whl", hash = "sha256:1181ef7608e00704db228516541eb83a88a9f94433a8c80bb9b5bd54b1d81757"},
     {file = "identify-2.6.15.tar.gz", hash = "sha256:e4f4864b96c6557ef2a1e1c951771838f4edc9df3a72ec7118b338801b11c7bf"},
@@ -543,7 +603,7 @@ version = "3.11"
 requires_python = ">=3.8"
 summary = "Internationalized Domain Names in Applications (IDNA)"
 groups = ["default"]
-marker = "python_version >= \"3.10\" and python_version < \"3.15\""
+marker = "python_version >= \"3.10\" and python_version < \"3.16\""
 files = [
     {file = "idna-3.11-py3-none-any.whl", hash = "sha256:771a87f49d9defaf64091e6e6fe9c18d4833f140bd19464795bc32d966ca37ea"},
     {file = "idna-3.11.tar.gz", hash = "sha256:795dafcc9c04ed0c1fb032c2aa73654d8e8c5023a7df64a53f39190ada629902"},
@@ -555,7 +615,7 @@ version = "2.3.0"
 requires_python = ">=3.10"
 summary = "brain-dead simple config-ini parsing"
 groups = ["test"]
-marker = "python_version >= \"3.10\" and python_version < \"3.15\""
+marker = "python_version >= \"3.10\" and python_version < \"3.16\""
 files = [
     {file = "iniconfig-2.3.0-py3-none-any.whl", hash = "sha256:f631c04d2c48c52b84d0d0549c99ff3859c98df65b3101406327ecc7d53fbf12"},
     {file = "iniconfig-2.3.0.tar.gz", hash = "sha256:c76315c77db068650d49c5b56314774a7804df16fee4402c1f19d6d15d8c4730"},
@@ -567,7 +627,7 @@ version = "0.3.4"
 requires_python = ">=3.7,<4.0"
 summary = "Python port of Inquirer.js (A collection of common interactive command-line user interfaces)"
 groups = ["default"]
-marker = "python_version >= \"3.10\" and python_version < \"3.15\""
+marker = "python_version >= \"3.10\" and python_version < \"3.16\""
 dependencies = [
     "pfzy<0.4.0,>=0.3.1",
     "prompt-toolkit<4.0.0,>=3.0.1",
@@ -582,7 +642,7 @@ name = "jinxed"
 version = "1.3.0"
 summary = "Jinxed Terminal Library"
 groups = ["default"]
-marker = "python_version >= \"3.10\" and python_version < \"3.15\" and platform_system == \"Windows\""
+marker = "python_version >= \"3.10\" and python_version < \"3.16\" and platform_system == \"Windows\""
 dependencies = [
     "ansicon; platform_system == \"Windows\"",
 ]
@@ -596,7 +656,7 @@ name = "macholib"
 version = "1.16.4"
 summary = "Mach-O header analysis and editing"
 groups = ["gui"]
-marker = "python_version >= \"3.10\" and python_version < \"3.15\" and sys_platform == \"darwin\""
+marker = "python_version >= \"3.10\" and python_version < \"3.16\" and sys_platform == \"darwin\""
 dependencies = [
     "altgraph>=0.17",
 ]
@@ -611,7 +671,7 @@ version = "0.7.0"
 requires_python = ">=3.6"
 summary = "McCabe checker, plugin for flake8"
 groups = ["lint"]
-marker = "python_version >= \"3.10\" and python_version < \"3.15\""
+marker = "python_version >= \"3.10\" and python_version < \"3.16\""
 files = [
     {file = "mccabe-0.7.0-py2.py3-none-any.whl", hash = "sha256:6c2d30ab6be0e4a46919781807b4f0d834ebdd6c6e3dca0bda5a15f863427b6e"},
     {file = "mccabe-0.7.0.tar.gz", hash = "sha256:348e0240c33b60bbdf4e523192ef919f28cb2c3d7d5c7794f74009290f236325"},
@@ -623,7 +683,7 @@ version = "1.1.0"
 requires_python = ">=3.8"
 summary = "Type system extensions for programs checked with the mypy type checker."
 groups = ["lint"]
-marker = "python_version >= \"3.10\" and python_version < \"3.15\""
+marker = "python_version >= \"3.10\" and python_version < \"3.16\""
 files = [
     {file = "mypy_extensions-1.1.0-py3-none-any.whl", hash = "sha256:1be4cccdb0f2482337c4743e60421de3a356cd97508abadd57d47403e94f5505"},
     {file = "mypy_extensions-1.1.0.tar.gz", hash = "sha256:52e68efc3284861e772bbcd66823fde5ae21fd2fdb51c62a211403730b916558"},
@@ -635,7 +695,7 @@ version = "1.10.0"
 requires_python = "!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,!=3.4.*,!=3.5.*,!=3.6.*,>=2.7"
 summary = "Node.js virtual environment builder"
 groups = ["lint"]
-marker = "python_version >= \"3.10\" and python_version < \"3.15\""
+marker = "python_version >= \"3.10\" and python_version < \"3.16\""
 files = [
     {file = "nodeenv-1.10.0-py2.py3-none-any.whl", hash = "sha256:5bb13e3eed2923615535339b3c620e76779af4cb4c6a90deccc9e36b274d3827"},
     {file = "nodeenv-1.10.0.tar.gz", hash = "sha256:996c191ad80897d076bdfba80a41994c2b47c68e224c542b48feba42ba00f8bb"},
@@ -647,7 +707,7 @@ version = "25.0"
 requires_python = ">=3.8"
 summary = "Core utilities for Python packages"
 groups = ["gui", "lint", "test"]
-marker = "python_version >= \"3.10\" and python_version < \"3.15\""
+marker = "python_version >= \"3.10\" and python_version < \"3.16\""
 files = [
     {file = "packaging-25.0-py3-none-any.whl", hash = "sha256:29572ef2b1f17581046b3a2227d5c611fb25ec70ca1ba8554b24b0e69331a484"},
     {file = "packaging-25.0.tar.gz", hash = "sha256:d443872c98d677bf60f6a1f2f8c1cb748e8fe762d2bf9d3148b5599295b0fc4f"},
@@ -659,7 +719,7 @@ version = "1.0.2"
 requires_python = ">=3.9"
 summary = "Utility library for gitignore style pattern matching of file paths."
 groups = ["lint"]
-marker = "python_version >= \"3.10\" and python_version < \"3.15\""
+marker = "python_version >= \"3.10\" and python_version < \"3.16\""
 files = [
     {file = "pathspec-1.0.2-py3-none-any.whl", hash = "sha256:62f8558917908d237d399b9b338ef455a814801a4688bc41074b25feefd93472"},
     {file = "pathspec-1.0.2.tar.gz", hash = "sha256:fa32b1eb775ed9ba8d599b22c5f906dc098113989da2c00bf8b210078ca7fb92"},
@@ -671,7 +731,7 @@ version = "2024.8.26"
 requires_python = ">=3.6.0"
 summary = "Python PE parsing module"
 groups = ["gui"]
-marker = "python_version >= \"3.10\" and python_version < \"3.15\" and sys_platform == \"win32\""
+marker = "python_version >= \"3.10\" and python_version < \"3.16\" and sys_platform == \"win32\""
 files = [
     {file = "pefile-2024.8.26-py3-none-any.whl", hash = "sha256:76f8b485dcd3b1bb8166f1128d395fa3d87af26360c2358fb75b80019b957c6f"},
     {file = "pefile-2024.8.26.tar.gz", hash = "sha256:3ff6c5d8b43e8c37bb6e6dd5085658d658a7a0bdcd20b6a07b1fcfc1c4e9d632"},
@@ -683,7 +743,7 @@ version = "0.3.4"
 requires_python = ">=3.7,<4.0"
 summary = "Python port of the fzy fuzzy string matching algorithm"
 groups = ["default"]
-marker = "python_version >= \"3.10\" and python_version < \"3.15\""
+marker = "python_version >= \"3.10\" and python_version < \"3.16\""
 files = [
     {file = "pfzy-0.3.4-py3-none-any.whl", hash = "sha256:5f50d5b2b3207fa72e7ec0ef08372ef652685470974a107d0d4999fc5a903a96"},
     {file = "pfzy-0.3.4.tar.gz", hash = "sha256:717ea765dd10b63618e7298b2d98efd819e0b30cd5905c9707223dceeb94b3f1"},
@@ -695,7 +755,7 @@ version = "4.5.1"
 requires_python = ">=3.10"
 summary = "A small Python package for determining appropriate platform-specific dirs, e.g. a `user data dir`."
 groups = ["lint"]
-marker = "python_version >= \"3.10\" and python_version < \"3.15\""
+marker = "python_version >= \"3.10\" and python_version < \"3.16\""
 files = [
     {file = "platformdirs-4.5.1-py3-none-any.whl", hash = "sha256:d03afa3963c806a9bed9d5125c8f4cb2fdaf74a55ab60e5d59b3fde758104d31"},
     {file = "platformdirs-4.5.1.tar.gz", hash = "sha256:61d5cdcc6065745cdd94f0f878977f8de9437be93de97c1c12f853c9c0cdcbda"},
@@ -707,7 +767,7 @@ version = "1.6.0"
 requires_python = ">=3.9"
 summary = "plugin and hook calling mechanisms for python"
 groups = ["test"]
-marker = "python_version >= \"3.10\" and python_version < \"3.15\""
+marker = "python_version >= \"3.10\" and python_version < \"3.16\""
 files = [
     {file = "pluggy-1.6.0-py3-none-any.whl", hash = "sha256:e920276dd6813095e9377c0bc5566d94c932c33b27a3e3945d8389c374dd4746"},
     {file = "pluggy-1.6.0.tar.gz", hash = "sha256:7dcc130b76258d33b90f61b658791dede3486c3e6bfb003ee5c9bfb396dd22f3"},
@@ -719,7 +779,7 @@ version = "4.6.2"
 requires_python = ">=3.10"
 summary = "A framework for managing and maintaining multi-language pre-commit hooks."
 groups = ["lint"]
-marker = "python_version >= \"3.10\" and python_version < \"3.15\""
+marker = "python_version >= \"3.10\" and python_version < \"3.16\""
 dependencies = [
     "cfgv>=2.0.0",
     "identify>=1.0.0",
@@ -737,7 +797,7 @@ name = "prefixed"
 version = "0.9.0"
 summary = "Prefixed alternative numeric library"
 groups = ["default"]
-marker = "python_version >= \"3.10\" and python_version < \"3.15\""
+marker = "python_version >= \"3.10\" and python_version < \"3.16\""
 files = [
     {file = "prefixed-0.9.0-py2.py3-none-any.whl", hash = "sha256:3cdb74bfc4cf0aba28f3574662b13afdcac27c463dcbef320fe5d03f4c5fbca8"},
     {file = "prefixed-0.9.0.tar.gz", hash = "sha256:164403fa9ebc83280bbc4705f4b243a28837e164310b4e65c38ccab1ebafeeb3"},
@@ -749,7 +809,7 @@ version = "3.0.52"
 requires_python = ">=3.8"
 summary = "Library for building powerful interactive command lines in Python"
 groups = ["default"]
-marker = "python_version >= \"3.10\" and python_version < \"3.15\""
+marker = "python_version >= \"3.10\" and python_version < \"3.16\""
 dependencies = [
     "wcwidth",
 ]
@@ -764,7 +824,7 @@ version = "1.11.0"
 requires_python = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*"
 summary = "library with cross-python path, ini-parsing, io, code, log facilities"
 groups = ["default"]
-marker = "python_version >= \"3.10\" and python_version < \"3.15\""
+marker = "python_version >= \"3.10\" and python_version < \"3.16\""
 files = [
     {file = "py-1.11.0-py2.py3-none-any.whl", hash = "sha256:607c53218732647dff4acdfcd50cb62615cedf612e72d1724fb1a0cc6405b378"},
     {file = "py-1.11.0.tar.gz", hash = "sha256:51c75c4126074b472f746a24399ad32f6053d1b34b68d2fa41e558e6f4a98719"},
@@ -776,7 +836,7 @@ version = "2.15.0"
 requires_python = ">=3.10"
 summary = "Python style guide checker"
 groups = ["lint"]
-marker = "python_version >= \"3.10\" and python_version < \"3.15\""
+marker = "python_version >= \"3.10\" and python_version < \"3.16\""
 files = [
     {file = "pycodestyle-2.15.0-py2.py3-none-any.whl", hash = "sha256:12fd2f73c7b8ee8845a0431111df8faf4c1a07d6e64e2ee7f0c74014dab14181"},
     {file = "pycodestyle-2.15.0.tar.gz", hash = "sha256:318f5db083869b4c4dad922d0b11124fb27ab181b6730b93371da671e31bd50e"},
@@ -788,7 +848,7 @@ version = "4.0.0"
 requires_python = ">=3.10"
 summary = "passive checker of Python programs"
 groups = ["lint"]
-marker = "python_version >= \"3.10\" and python_version < \"3.15\""
+marker = "python_version >= \"3.10\" and python_version < \"3.16\""
 files = [
     {file = "pyflakes-4.0.0-py2.py3-none-any.whl", hash = "sha256:0f7b7a78e8fcffd78b205200f045a70911f4179be1b42eac82c3323e0bf5c8aa"},
     {file = "pyflakes-4.0.0.tar.gz", hash = "sha256:492b27735181e3d4a6acfc08738948b666bf3e696781854ea6e0d8540d566d52"},
@@ -800,7 +860,7 @@ version = "2.19.2"
 requires_python = ">=3.8"
 summary = "Pygments is a syntax highlighting package written in Python."
 groups = ["test"]
-marker = "python_version >= \"3.10\" and python_version < \"3.15\""
+marker = "python_version >= \"3.10\" and python_version < \"3.16\""
 files = [
     {file = "pygments-2.19.2-py3-none-any.whl", hash = "sha256:86540386c03d588bb81d44bc3928634ff26449851e99741617ecb9037ee5ec0b"},
     {file = "pygments-2.19.2.tar.gz", hash = "sha256:636cb2477cec7f8952536970bc533bc43743542f70392ae026374600add5b887"},
@@ -812,7 +872,7 @@ version = "6.22.3"
 requires_python = "<3.16,>=3.8"
 summary = "PyInstaller bundles a Python application and all its dependencies into a single package."
 groups = ["gui"]
-marker = "python_version >= \"3.10\" and python_version < \"3.15\""
+marker = "python_version >= \"3.10\" and python_version < \"3.16\""
 dependencies = [
     "altgraph",
     "importlib-metadata>=4.6; python_version < \"3.10\"",
@@ -844,7 +904,7 @@ version = "2026.7"
 requires_python = ">=3.8"
 summary = "Community maintained hooks for PyInstaller"
 groups = ["gui"]
-marker = "python_version >= \"3.10\" and python_version < \"3.15\""
+marker = "python_version >= \"3.10\" and python_version < \"3.16\""
 dependencies = [
     "importlib-metadata>=4.6; python_version < \"3.10\"",
     "packaging>=22.0",
@@ -860,7 +920,7 @@ version = "6.12.0"
 requires_python = "<3.16,>=3.10"
 summary = "Python bindings for the Qt cross-platform application and UI framework"
 groups = ["gui"]
-marker = "python_version >= \"3.10\" and python_version < \"3.15\""
+marker = "python_version >= \"3.10\" and python_version < \"3.16\""
 dependencies = [
     "PySide6-Addons==6.12.0",
     "PySide6-Essentials==6.12.0",
@@ -882,7 +942,7 @@ version = "6.12.0"
 requires_python = "<3.16,>=3.10"
 summary = "Python bindings for the Qt cross-platform application and UI framework (Addons)"
 groups = ["gui"]
-marker = "python_version >= \"3.10\" and python_version < \"3.15\""
+marker = "python_version >= \"3.10\" and python_version < \"3.16\""
 dependencies = [
     "PySide6-Essentials==6.12.0",
 ]
@@ -900,7 +960,7 @@ version = "6.12.0"
 requires_python = "<3.16,>=3.10"
 summary = "Python bindings for the Qt cross-platform application and UI framework (Essentials)"
 groups = ["gui"]
-marker = "python_version >= \"3.10\" and python_version < \"3.15\""
+marker = "python_version >= \"3.10\" and python_version < \"3.16\""
 dependencies = [
     "shiboken6==6.12.0",
 ]
@@ -918,7 +978,7 @@ version = "6.12.0.140"
 requires_python = "<3.16,>=3.10"
 summary = "Python bindings for the Qt cross-platform application and UI framework (Pdf)"
 groups = ["gui"]
-marker = "python_version >= \"3.10\" and python_version < \"3.15\""
+marker = "python_version >= \"3.10\" and python_version < \"3.16\""
 dependencies = [
     "PySide6-Essentials==6.12.0",
 ]
@@ -936,7 +996,7 @@ version = "6.12.0.140"
 requires_python = "<3.16,>=3.10"
 summary = "Python bindings for the Qt cross-platform application and UI framework (WebEngine)"
 groups = ["gui"]
-marker = "python_version >= \"3.10\" and python_version < \"3.15\""
+marker = "python_version >= \"3.10\" and python_version < \"3.16\""
 dependencies = [
     "PySide6-Addons==6.12.0",
 ]
@@ -954,7 +1014,7 @@ version = "9.1.1"
 requires_python = ">=3.10"
 summary = "pytest: simple powerful testing with Python"
 groups = ["test"]
-marker = "python_version >= \"3.10\" and python_version < \"3.15\""
+marker = "python_version >= \"3.10\" and python_version < \"3.16\""
 dependencies = [
     "colorama>=0.4; sys_platform == \"win32\"",
     "exceptiongroup>=1; python_version < \"3.11\"",
@@ -975,7 +1035,7 @@ version = "7.1.0"
 requires_python = ">=3.9"
 summary = "Pytest plugin for measuring coverage."
 groups = ["test"]
-marker = "python_version >= \"3.10\" and python_version < \"3.15\""
+marker = "python_version >= \"3.10\" and python_version < \"3.16\""
 dependencies = [
     "coverage[toml]>=7.10.6",
     "pluggy>=1.2",
@@ -992,7 +1052,7 @@ version = "16.7"
 requires_python = ">=3.10"
 summary = "pytest plugin to re-run tests to eliminate flaky failures"
 groups = ["test"]
-marker = "python_version >= \"3.10\" and python_version < \"3.15\""
+marker = "python_version >= \"3.10\" and python_version < \"3.16\""
 dependencies = [
     "packaging>=17.1",
     "pytest!=8.2.2,>=8.2",
@@ -1008,7 +1068,7 @@ version = "0.4.1"
 requires_python = ">=3.8"
 summary = "A Fast, spec compliant Python 3.14+ tokenizer that runs on older Pythons."
 groups = ["lint"]
-marker = "python_version >= \"3.10\" and python_version < \"3.15\""
+marker = "python_version >= \"3.10\" and python_version < \"3.16\""
 files = [
     {file = "pytokens-0.4.1-cp310-cp310-macosx_11_0_arm64.whl", hash = "sha256:2a44ed93ea23415c54f3face3b65ef2b844d96aeb3455b8a69b3df6beab6acc5"},
     {file = "pytokens-0.4.1-cp310-cp310-manylinux2014_aarch64.manylinux_2_17_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:add8bf86b71a5d9fb5b89f023a80b791e04fba57960aa790cc6125f7f1d39dfe"},
@@ -1050,7 +1110,7 @@ version = "0.2.3"
 requires_python = ">=3.6"
 summary = "A (partial) reimplementation of pywin32 using ctypes/cffi"
 groups = ["gui"]
-marker = "python_version >= \"3.10\" and python_version < \"3.15\" and sys_platform == \"win32\""
+marker = "python_version >= \"3.10\" and python_version < \"3.16\" and sys_platform == \"win32\""
 files = [
     {file = "pywin32-ctypes-0.2.3.tar.gz", hash = "sha256:d162dc04946d704503b2edc4d55f3dba5c1d539ead017afa00142c38b9885755"},
     {file = "pywin32_ctypes-0.2.3-py3-none-any.whl", hash = "sha256:8a1513379d709975552d202d942d9837758905c8d01eb82b8bcc30918929e7b8"},
@@ -1062,7 +1122,7 @@ version = "6.0.3"
 requires_python = ">=3.8"
 summary = "YAML parser and emitter for Python"
 groups = ["lint"]
-marker = "python_version >= \"3.10\" and python_version < \"3.15\""
+marker = "python_version >= \"3.10\" and python_version < \"3.16\""
 files = [
     {file = "pyyaml-6.0.3-cp310-cp310-macosx_10_13_x86_64.whl", hash = "sha256:214ed4befebe12df36bcc8bc2b64b396ca31be9304b8f59e25c11cf94a4c033b"},
     {file = "pyyaml-6.0.3-cp310-cp310-macosx_11_0_arm64.whl", hash = "sha256:02ea2dfa234451bbb8772601d7b8e426c2bfa197136796224e50e35a78777956"},
@@ -1129,7 +1189,7 @@ version = "3.14.3"
 requires_python = ">=3.10"
 summary = "rapid fuzzy string matching"
 groups = ["default"]
-marker = "python_version >= \"3.10\" and python_version < \"3.15\""
+marker = "python_version >= \"3.10\" and python_version < \"3.16\""
 files = [
     {file = "rapidfuzz-3.14.3-cp310-cp310-macosx_10_9_x86_64.whl", hash = "sha256:b9fcd4d751a4fffa17aed1dde41647923c72c74af02459ad1222e3b0022da3a1"},
     {file = "rapidfuzz-3.14.3-cp310-cp310-macosx_11_0_arm64.whl", hash = "sha256:4ad73afb688b36864a8d9b7344a9cf6da186c471e5790cbf541a635ee0f457f2"},
@@ -1222,7 +1282,7 @@ version = "2.32.5"
 requires_python = ">=3.9"
 summary = "Python HTTP for Humans."
 groups = ["default"]
-marker = "python_version >= \"3.10\" and python_version < \"3.15\""
+marker = "python_version >= \"3.10\" and python_version < \"3.16\""
 dependencies = [
     "certifi>=2017.4.17",
     "charset-normalizer<4,>=2",
@@ -1239,7 +1299,7 @@ name = "retry"
 version = "0.9.2"
 summary = "Easy to use retry decorator."
 groups = ["default"]
-marker = "python_version >= \"3.10\" and python_version < \"3.15\""
+marker = "python_version >= \"3.10\" and python_version < \"3.16\""
 dependencies = [
     "decorator>=3.4.2",
     "py<2.0.0,>=1.4.26",
@@ -1255,7 +1315,7 @@ version = "2.73.0"
 requires_python = ">=3.6"
 summary = "Python client for Sentry (https://sentry.io)"
 groups = ["gui"]
-marker = "python_version >= \"3.10\" and python_version < \"3.15\""
+marker = "python_version >= \"3.10\" and python_version < \"3.16\""
 dependencies = [
     "certifi",
     "urllib3>=1.26.11",
@@ -1271,7 +1331,7 @@ version = "82.0.1"
 requires_python = ">=3.9"
 summary = "Most extensible Python build backend with support for C/C++ extension modules"
 groups = ["gui"]
-marker = "python_version >= \"3.10\" and python_version < \"3.15\""
+marker = "python_version >= \"3.10\" and python_version < \"3.16\""
 files = [
     {file = "setuptools-82.0.1-py3-none-any.whl", hash = "sha256:a59e362652f08dcd477c78bb6e7bd9d80a7995bc73ce773050228a348ce2e5bb"},
     {file = "setuptools-82.0.1.tar.gz", hash = "sha256:7d872682c5d01cfde07da7bccc7b65469d3dca203318515ada1de5eda35efbf9"},
@@ -1283,7 +1343,7 @@ version = "6.12.0"
 requires_python = "<3.16,>=3.10"
 summary = "Python/C++ bindings helper module"
 groups = ["gui"]
-marker = "python_version >= \"3.10\" and python_version < \"3.15\""
+marker = "python_version >= \"3.10\" and python_version < \"3.16\""
 files = [
     {file = "shiboken6-6.12.0-cp310-abi3-macosx_14_0_universal2.whl", hash = "sha256:47105e05baf57d35453e07d240bbe59cb4b8d9565377ea5134ff9fb37d4f5c02"},
     {file = "shiboken6-6.12.0-cp310-abi3-manylinux_2_34_x86_64.whl", hash = "sha256:3bde565bb0890044b5c7f63808adddede5abc241e9395a2bfed61919884d6240"},
@@ -1298,7 +1358,7 @@ version = "0.22.1"
 requires_python = ">=3.8"
 summary = "Fuzzy string matching in python"
 groups = ["default"]
-marker = "python_version >= \"3.10\" and python_version < \"3.15\""
+marker = "python_version >= \"3.10\" and python_version < \"3.16\""
 dependencies = [
     "rapidfuzz<4.0.0,>=3.0.0",
 ]
@@ -1377,7 +1437,7 @@ version = "2.6.3"
 requires_python = ">=3.9"
 summary = "HTTP library with thread-safe connection pooling, file post, and more."
 groups = ["default", "gui"]
-marker = "python_version >= \"3.10\" and python_version < \"3.15\""
+marker = "python_version >= \"3.10\" and python_version < \"3.16\""
 files = [
     {file = "urllib3-2.6.3-py3-none-any.whl", hash = "sha256:bf272323e553dfb2e87d9bfd225ca7b0f467b919d7bbd355436d3fd37cb0acd4"},
     {file = "urllib3-2.6.3.tar.gz", hash = "sha256:1b62b6884944a57dbe321509ab94fd4d3b307075e0c2eae991ac71ee15ad38ed"},
@@ -1389,7 +1449,7 @@ version = "20.36.0"
 requires_python = ">=3.8"
 summary = "Virtual Python Environment builder"
 groups = ["lint"]
-marker = "python_version >= \"3.10\" and python_version < \"3.15\""
+marker = "python_version >= \"3.10\" and python_version < \"3.16\""
 dependencies = [
     "distlib<1,>=0.3.7",
     "filelock<4,>=3.16.1; python_version < \"3.10\"",
@@ -1409,7 +1469,7 @@ version = "0.2.14"
 requires_python = ">=3.6"
 summary = "Measures the displayed width of unicode strings in a terminal"
 groups = ["default"]
-marker = "python_version >= \"3.10\" and python_version < \"3.15\""
+marker = "python_version >= \"3.10\" and python_version < \"3.16\""
 files = [
     {file = "wcwidth-0.2.14-py2.py3-none-any.whl", hash = "sha256:a7bb560c8aee30f9957e5f9895805edd20602f2d7f720186dfd906e82b4982e1"},
     {file = "wcwidth-0.2.14.tar.gz", hash = "sha256:4d478375d31bc5395a3c55c40ccdf3354688364cd61c4f6adacaa9215d0b3605"},
@@ -1421,7 +1481,7 @@ version = "1.12.3"
 requires_python = ">=3.10"
 summary = "Unofficial API for YouTube Music"
 groups = ["default"]
-marker = "python_version >= \"3.10\" and python_version < \"3.15\""
+marker = "python_version >= \"3.10\" and python_version < \"3.16\""
 dependencies = [
     "requests>=2.22",
 ]

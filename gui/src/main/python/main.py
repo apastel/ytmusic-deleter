@@ -2,6 +2,7 @@ import atexit
 import logging
 import re
 import sys
+import traceback
 import webbrowser
 from pathlib import Path
 
@@ -237,8 +238,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.log_file_path = configure_logging(
             self.log_dir, no_logfile=False, verbose=self.verbose_logging, stream=sys.stdout
         )
-        # Add a handler for unhandled exceptions
-        sys.excepthook = self.log_unhandled_exception
 
         # Initailize UI from generated files
         self.setupUi(self)
@@ -332,7 +331,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             # Check that credential is still valid
             try:
                 self.ytmusic.get_library_playlists(limit=1)
-            except TypeError as e:
+            except Exception as e:
                 self.message("Your credentials are invalid or may be expired. Try signing out and signing back in.")
                 # Show error dialog to the user
                 QMessageBox.critical(
@@ -706,12 +705,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.credential_dir / (common.OAUTH_FILENAME if self.oauth_enabled else common.BROWSER_FILENAME)
         )
 
-    def log_unhandled_exception(self, exc_type, exc_value, exc_traceback):
-        self.message(
-            "Unhandled exception occurred, check the logs or click 'Report a Problem'",
-            exc_info=(exc_type, exc_value, exc_traceback),
-        )
-
     def on_report_issue_clicked(self):
         # Read the app log file
         log_preview = error_reporter.read_app_log(self.log_file_path)
@@ -763,6 +756,9 @@ class AppContext:
     def __init__(self):
 
         self.app = QApplication(sys.argv)
+        self.window = None
+        sys.excepthook = self.log_unhandled_exception
+
         icon_path = get_resource_path("icons/Icon.ico")
         app_icon = QIcon(icon_path)
         self.app.setWindowIcon(app_icon)
@@ -778,6 +774,27 @@ class AppContext:
                 environment="production",
                 before_send=self.window.add_debug_context_to_sentry_event,
             )
+
+    def log_unhandled_exception(self, exc_type, exc_value, exc_traceback):
+        exc_info = (exc_type, exc_value, exc_traceback)
+        message = "An unexpected error occurred. Check the details below for troubleshooting."
+
+        if self.window is not None and hasattr(self.window, "consoleTextArea"):
+            self.window.message(message, exc_info=exc_info)
+        else:
+            logging.error(message, exc_info=exc_info)
+
+        dialog = QMessageBox()
+        dialog.setIcon(QMessageBox.Icon.Critical)
+        dialog.setWindowTitle("Application Error")
+        dialog.setText(message)
+        dialog.setInformativeText(
+            "If this keeps happening, try uninstalling YTMusic Deleter and removing its user data before reinstalling. "
+            "On Windows, choose 'Delete user data' in the uninstaller. "
+            f"User data folder: {APP_DATA_PATH}"
+        )
+        dialog.setDetailedText("".join(traceback.format_exception(*exc_info)))
+        dialog.exec()
 
     def run(self):
         self.app.setStyle("Fusion")
