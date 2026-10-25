@@ -118,8 +118,9 @@ class RemoveDuplicatesDialog(QDialog, Ui_PlaylistSelectionDialog):
             playlist = yt_auth.get_playlist(selected_playlist_id, limit=None)
             if not common.can_edit_playlist(playlist):
                 raise common.skip_sentry(
-                Exception(
-                    f"Cannot modify playlist {self.selected_playlist_title!r}. You are not the owner of this playlist."
+                    Exception(
+                        f"Cannot modify playlist {self.selected_playlist_title!r}. You are not the owner of this playlist."
+                    )
                 )
             playlists.append(playlist)
 
