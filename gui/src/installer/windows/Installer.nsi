@@ -69,6 +69,7 @@ FunctionEnd
   !insertmacro MUI_PAGE_FINISH
 
   !insertmacro MUI_UNPAGE_CONFIRM
+  !insertmacro MUI_UNPAGE_COMPONENTS
   !insertmacro MUI_UNPAGE_INSTFILES
 
 ;--------------------------------
@@ -109,6 +110,13 @@ Section "Uninstall"
   Delete "$SMPROGRAMS\${app_name}.lnk"
   DeleteRegKey /ifempty SHCTX "Software\${app_name}"
   DeleteRegKey SHCTX "${UNINST_KEY}"
+
+SectionEnd
+
+Section /o "un.Delete user data"
+
+  RMDir /r "$APPDATA\${app_name}"
+  DeleteRegKey HKCU "Software\${app_name}"
 
 SectionEnd
 

@@ -29,11 +29,6 @@ class TestPlaylists:
                 {"artist": "Metallica", "setVideoId": "12EFB3B1C57DE4E1", "title": "Battery", "videoId": "RvW4OQFA_UY"},
                 {
                     "artist": "Metallica",
-                    "title": "Battery (live)",
-                    "videoId": "_SAGhYJLynk",
-                },
-                {
-                    "artist": "Metallica",
                     "title": "Battery (Early June 1985 Demo)",
                     "videoId": "pAhzcQRMqKg",
                 },

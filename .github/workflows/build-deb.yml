@@ -33,6 +33,7 @@ jobs:
 
     - uses: pdm-project/setup-pdm@main
       with:
+        python-version: "3.15"
         cache: true
         cache-dependency-path: "**/pdm.lock"
 

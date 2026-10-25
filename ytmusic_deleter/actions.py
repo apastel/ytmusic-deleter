@@ -17,6 +17,7 @@ from ytmusicapi.type_alias import JsonDict
 
 SORT_PLAYLIST_FAILURE_WARNING_INTERVAL = 25
 SORT_PLAYLIST_CONSECUTIVE_FAILURE_WARNING_THRESHOLD = 10
+NATURAL_SORT_NUMBER_PATTERN = re.compile(r"(\d+)")
 
 
 class ActionContext:
@@ -118,7 +119,7 @@ def remove_library_podcasts(ctx: ActionContext):
             logging.info(f"\tRemoved {title!r} from your library.")
             podcasts_removed += 1
         else:
-            logging.error(f"\tFailed to remove {title!r} from your library.")
+            logging.error(f"\tFailed to remove {title!r} from your library.", extra=common.SKIP_SENTRY_EXTRA)
         update_progress(progress_bar)
 
     logging.info(f"Removed {podcasts_removed} out of {len(library_podcasts)} podcasts from your library.")
@@ -152,9 +153,9 @@ def remove_library_items(ctx: ActionContext, library_items):
             logging.error(
                 f"""
                 Library item {artist} - {title!r} was in an unexpected format, unable to remove.
-                Provide this to the developer:
                 {item}
-            """
+            """,
+                extra=common.SKIP_SENTRY_EXTRA,
             )
 
         if response and "Removed from library" in str(response):
@@ -162,7 +163,7 @@ def remove_library_items(ctx: ActionContext, library_items):
             logging.info(f"\tRemoved {artist} - {title!r} from your library.")
             items_removed += 1
         else:
-            logging.error(f"\tFailed to remove {artist} - {title!r} from your library.")
+            logging.error(f"\tFailed to remove {artist} - {title!r} from your library.", extra=common.SKIP_SENTRY_EXTRA)
         update_progress(progress_bar)
     return items_removed
 
@@ -227,7 +228,7 @@ def unlike_all(ctx: ActionContext):
         if success:
             songs_unliked += 1
         else:
-            logging.error(f"\tFailed to unlike {artist} - {title!r}")
+            logging.error(f"\tFailed to unlike {artist} - {title!r}", extra=common.SKIP_SENTRY_EXTRA)
         update_progress(progress_bar)
 
     logging.info(f"Finished unliking {songs_unliked} out of {len(your_likes['tracks'])} songs.")
@@ -273,7 +274,9 @@ def delete_playlists(ctx: ActionContext):
             logging.info(f"\tRemoved playlist {playlist['title']!r} from your library.")
             playlists_deleted += 1
         else:
-            logging.error(f"\tFailed to remove playlist {playlist['title']!r} from your library.")
+            logging.error(
+                f"\tFailed to remove playlist {playlist['title']!r} from your library.", extra=common.SKIP_SENTRY_EXTRA
+            )
         update_progress(progress_bar)
 
     logging.info(f"Deleted {playlists_deleted} out of {len(library_playlists)} playlists from your library.")
@@ -322,7 +325,7 @@ def delete_history(ctx: ActionContext, items_deleted=0):
             logging.info(f"\tDeleted history item: {artist} - {item['title']!r}")
             items_deleted += 1
         else:
-            logging.info(f"\tFailed to delete history item: {response}")
+            logging.info(f"\tFailed to delete history item: {response}", extra=common.SKIP_SENTRY_EXTRA)
         update_progress(progress_bar)
 
     logging.info("Restarting history deletion to ensure all songs are deleted.")
@@ -357,7 +360,10 @@ def sort_playlist(ctx: ActionContext, shuffle, playlist_titles, custom_sort, rev
         logging.info(f"Processing playlist: {selected_playlist['title']}")
         playlist = yt_auth.get_playlist(selected_playlist["playlistId"], limit=None)
         if not common.can_edit_playlist(playlist):
-            logging.error(f"Cannot modify playlist {playlist.get('title')!r}. You are not the owner of this playlist.")
+            logging.error(
+                f"Cannot modify playlist {playlist.get('title')!r}. You are not the owner of this playlist.",
+                extra=common.SKIP_SENTRY_EXTRA,
+            )
             continue
         playlist_tracks = playlist["tracks"]
         current_tracklist = playlist_tracks.copy()
@@ -545,7 +551,9 @@ def remove_duplicates(ctx: ActionContext, playlist_titles, exact, fuzzy, score_c
             for song in items:
                 success = common.unlike_song(yt_auth, song)
                 if not success:
-                    logging.error(f"\tFailed to unlike {song.get('artist')} - {song.get('title')!r}")
+                    logging.error(
+                        f"\tFailed to unlike {song['artist']} - {song['title']!r}", extra=common.SKIP_SENTRY_EXTRA
+                    )
         else:
             for chunk in common.chunked(items, 50):
                 max_retries = 5
@@ -597,7 +605,7 @@ def add_all_to_playlist(ctx: ActionContext, library, uploads, max_playlist_size)
         logging.info(f"Retrieved {len(songs_to_add)} uploaded songs.")
 
     if not songs_to_add:
-        raise ValueError("No songs were found to add to the playlist.")
+        raise common.skip_sentry(ValueError("No songs were found to add to the playlist."))
 
     video_ids = []
     songs_without_video_id = []
@@ -607,7 +615,7 @@ def add_all_to_playlist(ctx: ActionContext, library, uploads, max_playlist_size)
             video_ids.append(video_id)
             continue
         artist = song["artists"][0]["name"] if song.get("artists") else common.UNKNOWN_ARTIST
-        title = song.get("title", "Unknown Title")
+        title = song.get("title", common.UNKNOWN_TITLE)
         songs_without_video_id.append(f"{artist} - {title!r}")
 
     if songs_without_video_id:
@@ -676,7 +684,9 @@ def add_all_to_library(ctx: ActionContext, playlist_title_or_id):
         if ctx.is_cancelled():
             logging.info("Operation cancelled by user.")
             break
-        track_str = f"{track['artists'][0]['name']} - {track['title']!r}"
+        artist = track["artists"][0]["name"] if track.get("artists") else common.UNKNOWN_ARTIST
+        title = track.get("title", common.UNKNOWN_TITLE)
+        track_str = f"{artist} - {title!r}"
         logging.info(f"Processing item: {track_str}")
         add_token = track.get("feedbackTokens", {}).get("add")
         if add_token:
@@ -685,7 +695,7 @@ def add_all_to_library(ctx: ActionContext, playlist_title_or_id):
                 added_tracks_count += 1
                 logging.info(f"Added {track_str} to your library")
             else:
-                logging.error(f"Failed to add {track_str} to your library")
+                logging.error(f"Failed to add {track_str} to your library", extra=common.SKIP_SENTRY_EXTRA)
         else:
             logging.warning(f"{track_str} is a video and cannot be added to your library")
         update_progress(progress_bar)
@@ -720,10 +730,20 @@ def get_library_playlist_from_title(
     playlist_title_formatted = playlist.get("title")
     logging.info(f"Retrieved playlist named {playlist_title_formatted!r} with {len(playlist.get('tracks'))} tracks.")
     if fail_if_not_owner and not common.can_edit_playlist(playlist):
-        raise ValueError(
-            f"Cannot modify playlist {playlist_title_formatted!r}. You are not the owner of this playlist."
+        raise common.skip_sentry(
+            ValueError(f"Cannot modify playlist {playlist_title_formatted!r}. You are not the owner of this playlist.")
         )
     return playlist
+
+
+def natural_sort_key(value):
+    if not isinstance(value, str):
+        return value
+    return tuple(
+        (0, int(chunk)) if chunk.isdigit() else (1, chunk)
+        for chunk in NATURAL_SORT_NUMBER_PATTERN.split(value)
+        if chunk
+    )
 
 
 def make_sort_key(track, sort_attributes):
@@ -737,6 +757,6 @@ def make_sort_key(track, sort_attributes):
     duration = track.get("duration_seconds", 0)  # noqa: F841
 
     if sort_attributes:
-        return tuple([locals()[attr] for attr in sort_attributes])
+        return tuple([natural_sort_key(locals()[attr]) for attr in sort_attributes])
     else:
-        return artist, album_title, track_title
+        return natural_sort_key(artist), natural_sort_key(album_title), natural_sort_key(track_title)

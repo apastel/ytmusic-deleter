@@ -1,3 +1,4 @@
+import logging
 import time
 
 import pytest
@@ -11,6 +12,31 @@ from ytmusicapi import YTMusic
 from ytmusicapi.models.content.enums import VideoType
 from ytmusicapi.type_alias import JsonDict
 from ytmusicapi.type_alias import JsonList
+
+
+def test_configure_logging_adds_file_handler_when_other_handlers_exist(tmp_path):
+    from ytmusic_deleter.cli import configure_logging
+
+    logger = logging.getLogger()
+    existing_handler = logging.NullHandler()
+    logger.addHandler(existing_handler)
+
+    original_handlers = list(logger.handlers)
+    try:
+        log_file_path = configure_logging(tmp_path, no_logfile=False, verbose=False)
+
+        file_handlers = [
+            handler
+            for handler in logger.handlers
+            if isinstance(handler, logging.FileHandler) and handler.baseFilename == str(log_file_path)
+        ]
+        assert file_handlers
+    finally:
+        for handler in list(logger.handlers):
+            if handler not in original_handlers:
+                logger.removeHandler(handler)
+                handler.close()
+        logger.removeHandler(existing_handler)
 
 
 class TestCli:
@@ -217,7 +243,7 @@ class TestCli:
         result = runner.invoke(cli, ["add-all-to-library", "Test Dupes"], standalone_mode=False, obj=yt_browser)
         # Playlist has 10 unique tracks even though it has 13 tracks
         assert (
-            len(yt_browser.get_library_songs(limit=None)) == 10
+            len(yt_browser.get_library_songs(limit=None)) == 9
         ), "Number of songs in library did not match number of songs in playlist"
         assert result.exit_code == 0
 

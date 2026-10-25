@@ -2,9 +2,9 @@ import atexit
 import logging
 import re
 import sys
+import traceback
 import webbrowser
 from pathlib import Path
-from time import strftime
 
 import error_reporter
 import requests
@@ -45,6 +45,7 @@ from PySide6.QtWidgets import QStyle
 from report_preview_dialog import DebugReportPreviewDialog
 from settings_dialog import SettingsDialog
 from ytmusic_deleter import common
+from ytmusic_deleter.cli import configure_logging
 from ytmusicapi.auth.types import AuthType
 
 from common import APP_DATA_PATH
@@ -137,17 +138,26 @@ class InternalCommandWorker(QObject):
             elif command == "delete-all":
                 actions.delete_all(context)
             elif command == "sort-playlist":
-                # sort-playlist expects: ['sort-playlist', playlist_title,
-                # '--shuffle' or '--reverse' or '--custom-sort attr1 attr2']
+                # sort-playlist expects playlist title(s), followed by options.
                 if len(cmd_args) < 1:
                     raise ValueError("sort-playlist requires a playlist title")
-                playlist_titles = [cmd_args[0]]
-                shuffle = "--shuffle" in cmd_args or "-s" in cmd_args
-                reverse = "--reverse" in cmd_args or "-r" in cmd_args
+                playlist_titles = []
                 custom_sort = []
-                for i, arg in enumerate(cmd_args):
+                i = 0
+                while i < len(cmd_args):
+                    arg = cmd_args[i]
                     if arg in ["--custom-sort", "-c"] and i + 1 < len(cmd_args):
                         custom_sort.append(cmd_args[i + 1])
+                        i += 2
+                    elif arg in ["--shuffle", "-s", "--reverse", "-r"]:
+                        i += 1
+                    else:
+                        playlist_titles.append(arg)
+                        i += 1
+                if not playlist_titles:
+                    raise ValueError("sort-playlist requires a playlist title")
+                shuffle = "--shuffle" in cmd_args or "-s" in cmd_args
+                reverse = "--reverse" in cmd_args or "-r" in cmd_args
                 actions.sort_playlist(context, shuffle, tuple(playlist_titles), tuple(custom_sort), reverse)
             elif command == "remove-duplicates":
                 # remove-duplicates expects: ['remove-duplicates', playlist_title, '--exact' or '--fuzzy', '--score-cutoff N']
@@ -224,19 +234,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         Path(self.credential_dir).mkdir(parents=True, exist_ok=True)
         self.account_photo_dir.mkdir(parents=True, exist_ok=True)
 
-        # Initialize a logger
-        self.log_file_path = Path(self.log_dir) / f"ytmusic-deleter-gui_{strftime('%Y-%m-%d')}.log"
-        logging.basicConfig(
-            level=logging.DEBUG if self.verbose_logging else logging.INFO,
-            format="[%(asctime)s] %(message)s",
-            datefmt="%Y-%m-%d %H:%M:%S",
-            handlers=[
-                logging.FileHandler(self.log_file_path, delay=True),
-                logging.StreamHandler(sys.stdout),
-            ],
+        # Initialize logging using the same log file as the CLI.
+        self.log_file_path = configure_logging(
+            self.log_dir, no_logfile=False, verbose=self.verbose_logging, stream=sys.stdout
         )
-        # Add a handler for unhandled exceptions
-        sys.excepthook = self.log_unhandled_exception
 
         # Initailize UI from generated files
         self.setupUi(self)
@@ -330,17 +331,17 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             # Check that credential is still valid
             try:
                 self.ytmusic.get_library_playlists(limit=1)
-            except TypeError as e:
-                self.message("Auth file is invalid or expired. Please sign in again.")
+            except Exception as e:
+                self.message("Your credentials are invalid or may be expired. Try signing out and signing back in.")
                 # Show error dialog to the user
                 QMessageBox.critical(
                     self,
                     "Authentication Error",
-                    "Auth file is invalid or expired. Please sign in again.",
+                    "Your credentials are invalid or may be expired. Try signing out and signing back in.",
                 )
                 self.sign_out()
                 raise ytmusicapi.exceptions.YTMusicUserError(
-                    "Auth file is invalid or expired. Please sign in again."
+                    "Your credentials are invalid or may be expired. Try signing out and signing back in."
                 ) from e
         except ytmusicapi.exceptions.YTMusicUserError:
             # User is not signed in
@@ -351,24 +352,26 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         # Display account name in popover
         try:
             account_info: dict = self.ytmusic.get_account_info()
-        except Exception as e:
-            message = "Failed to get user's account info. Clearing login state then log back in."
-            self.message(message + "\n" + str(e))
-            logging.exception(message, e)
-            self.sign_out()
-            return False
+        except Exception:
+            message = "Failed to get user's account info. Displaying generic account info instead."
+            self.message(message)
+            account_info = {
+                "accountName": "Unknown User",
+            }
+
         account_name = account_info["accountName"]
         self.accountNameLabel.setText(account_name)
-        channel_handle = account_info["channelHandle"]
-        if channel_handle:
-            self.channelHandleLabel.setText(f"({channel_handle})")
-        else:
-            self.channelHandleLabel.setText("")
+        channel_handle = account_info.get("channelHandle")
+        self.channelHandleLabel.setText(f"({channel_handle})" if channel_handle else "")
 
-        # Display account photo
-        response = requests.get(account_info["accountPhotoUrl"])
-        pixmap = QPixmap()
-        pixmap.loadFromData(response.content)
+        # Display account photo or stock photo
+        if account_info.get("accountPhotoUrl"):
+            response = requests.get(account_info["accountPhotoUrl"])
+            pixmap = QPixmap()
+            pixmap.loadFromData(response.content)
+        else:
+            pixmap = QPixmap(get_resource_path("icons/person.png"))
+
         pixmap = pixmap.scaled(
             self.accountPhotoButton.size(),
             Qt.AspectRatioMode.KeepAspectRatio,
@@ -574,7 +577,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self._internal_worker.finished.connect(self._internal_thread.quit)
         self._internal_worker.finished.connect(self.process_finished)
         self._internal_worker.error.connect(self._on_internal_error)
-        self._internal_worker.output.connect(self.message)
+        self._internal_worker.output.connect(self._on_internal_output)
         self._internal_worker.progress_changed.connect(self._on_internal_progress)
         self._internal_thread.finished.connect(self._internal_thread.deleteLater)
         self._internal_thread.start()
@@ -594,6 +597,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                     self.progress_dialog.itemLine.setText(desc)
             except Exception:
                 pass
+
+    @Slot(str)
+    def _on_internal_output(self, msg: str):
+        self.message(msg, log=False)
 
     @Slot(str)
     def _on_internal_error(self, err_msg: str):
@@ -643,11 +650,22 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.message("Process finished.")
         self.p = None
 
-    def message(self, msg, exc_info=None):
+    def message(self, msg, exc_info=None, log=True, extra=None):
         msg = msg.rstrip()  # Remove extra newlines
         self.consoleTextArea.appendPlainText(msg)
+        if not log or not msg:
+            return
+
+        logging_extra = extra or {}
+        if isinstance(exc_info, tuple) and len(exc_info) >= 2:
+            exc_value = exc_info[1]
+            if getattr(exc_value, common.SKIP_SENTRY_ATTR, False):
+                logging_extra = {**logging_extra, **common.SKIP_SENTRY_EXTRA}
+
         if exc_info:
-            logging.exception("Unhandled exception occurred", exc_info=exc_info)
+            logging.error(msg, exc_info=exc_info, extra=logging_extra or None)
+        else:
+            logging.info(msg, extra=logging_extra or None)
 
     def get_percent_complete(self, output):
         """
@@ -687,26 +705,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             self.credential_dir / (common.OAUTH_FILENAME if self.oauth_enabled else common.BROWSER_FILENAME)
         )
 
-    def log_unhandled_exception(self, exc_type, exc_value, exc_traceback):
-        self.message(
-            "Unhandled exception occurred, check the logs or click 'Report a Problem'",
-            exc_info=(exc_type, exc_value, exc_traceback),
-        )
-
     def on_report_issue_clicked(self):
         # Read the app log file
-        log_preview = ""
-        if self.log_file_path.exists():
-            try:
-                with open(self.log_file_path, encoding="latin-1", errors="replace") as f:
-                    log_preview = f.read()
-                self.message(f"Read {len(log_preview)} bytes from log file for error report.")
-            except Exception as e:
-                self.message(f"Failed to read log file: {e}")
-                log_preview = f"Error reading log file: {e}"
-        else:
-            self.message(f"Log file not found at {self.log_file_path}")
-            log_preview = "Log file not found"
+        log_preview = error_reporter.read_app_log(self.log_file_path)
+        self.message(f"Read {len(log_preview)} bytes from log file for error report.")
 
         dialog = DebugReportPreviewDialog(log_preview)
         if dialog.exec() == QDialog.DialogCode.Accepted:
@@ -744,11 +746,19 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             progress = ProgressWorkerDialog("Building and sending debug report", self)
             progress.run(send_report, on_report_sent)
 
+    def add_debug_context_to_sentry_event(self, event, hint):
+        yt_auth: ytmusicapi.YTMusic | None = self.ytmusic if hasattr(self, "ytmusic") else None
+        app_log = error_reporter.read_app_log(self.log_file_path)
+        return error_reporter.add_debug_context_to_sentry_event(event, hint, yt_auth, app_log)
+
 
 class AppContext:
     def __init__(self):
 
         self.app = QApplication(sys.argv)
+        self.window = None
+        sys.excepthook = self.log_unhandled_exception
+
         icon_path = get_resource_path("icons/Icon.ico")
         app_icon = QIcon(icon_path)
         self.app.setWindowIcon(app_icon)
@@ -762,7 +772,29 @@ class AppContext:
                 dsn=PUBLIC_SETTINGS.sentry_dsn,
                 release=PUBLIC_SETTINGS.version,
                 environment="production",
+                before_send=self.window.add_debug_context_to_sentry_event,
             )
+
+    def log_unhandled_exception(self, exc_type, exc_value, exc_traceback):
+        exc_info = (exc_type, exc_value, exc_traceback)
+        message = "An unexpected error occurred. Check the details below for troubleshooting."
+
+        if self.window is not None and hasattr(self.window, "consoleTextArea"):
+            self.window.message(message, exc_info=exc_info)
+        else:
+            logging.error(message, exc_info=exc_info)
+
+        dialog = QMessageBox()
+        dialog.setIcon(QMessageBox.Icon.Critical)
+        dialog.setWindowTitle("Application Error")
+        dialog.setText(message)
+        dialog.setInformativeText(
+            "If this keeps happening, try uninstalling YTMusic Deleter and removing its user data before reinstalling. "
+            "On Windows, choose 'Delete user data' in the uninstaller. "
+            f"User data folder: {APP_DATA_PATH}"
+        )
+        dialog.setDetailedText("".join(traceback.format_exception(*exc_info)))
+        dialog.exec()
 
     def run(self):
         self.app.setStyle("Fusion")

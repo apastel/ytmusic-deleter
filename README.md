@@ -10,9 +10,9 @@
 [![Discord](https://img.shields.io/discord/1156973782741827686?logo=discord)](https://discord.gg/8TCX6Q8hrh)
 
 YTMusic Deleter is an installable program for performing batch delete operations on your YouTube Music library, since
-currently there is no built-in option to do this. This tool is faster than browser-based / Javscript-based tools because
+currently there is no built-in option to do this. It also has additional features for playlist management, like sorting and removing duplicates. This tool is faster than browser-based tools because
 it uses the YouTube Music API to make rapid requests against your library instead of doing the deletion manually in your browser.
-It also has additional features for playlist management, like sorting and removing duplicates.
+
 
 If this project helped you and you want to thank me, you can <a href="https://www.buymeacoffee.com/jewbix.cube">get me a beer!</a>
 

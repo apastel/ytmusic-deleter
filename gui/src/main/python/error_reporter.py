@@ -1,8 +1,11 @@
 import datetime
+import hashlib
 import json
 import re
 import uuid
 from collections import deque
+from pathlib import Path
+from typing import Any
 from typing import TYPE_CHECKING
 
 import requests
@@ -12,6 +15,9 @@ from ytmusicapi import YTMusic
 
 if TYPE_CHECKING:
     from main import MainWindow
+
+
+SENTRY_REPORTED_SIGNATURES: set[str] = set()
 
 
 class YTMusicAPILogger:
@@ -59,6 +65,143 @@ def logged_send_request(self, endpoint, body, additionalParams=""):
 YTMusic._send_request = logged_send_request
 
 
+def safe_count(func, *args, **kwargs):
+    """Safely get count from a YTMusic function, return error string on failure.
+
+    Some YTMusic APIs return a dict with a "tracks" key instead of a list,
+    so we special-case that format here.
+    """
+    try:
+        result = func(*args, **kwargs)
+        # If the result is a dict containing a tracks list, count that instead
+        if isinstance(result, dict) and "tracks" in result:
+            return len(result.get("tracks", []))
+        return len(result)
+    except Exception as e:
+        return f"Error: {e}"
+
+
+def collect_debug_context(yt_auth: YTMusic | None) -> dict[str, Any]:
+    request_logs = ytmusic_logger.get_request_logs()
+
+    playlist_count = safe_count(yt_auth.get_library_playlists, limit=None) if yt_auth else "unknown"
+    upload_count = safe_count(yt_auth.get_library_upload_songs, limit=None) if yt_auth else "unknown"
+    liked_count = safe_count(yt_auth.get_liked_songs, limit=None) if yt_auth else "unknown"
+    library_count = safe_count(yt_auth.get_library_songs, limit=None) if yt_auth else "unknown"
+
+    return {
+        "library stats": {
+            "playlist count": playlist_count,
+            "upload count": upload_count,
+            "liked songs count": liked_count,
+            "library songs count": library_count,
+        },
+        "total_requests": len(request_logs),
+        "signin_type": (
+            (yt_auth.auth_type.name if hasattr(yt_auth, "auth_type") else "unknown") if yt_auth else "Not signed in"
+        ),
+        "os": platform.name,
+        "account_info": safe_get_account_info(yt_auth),
+    }
+
+
+def safe_get_account_info(yt_auth: YTMusic | None):
+    if not yt_auth:
+        return "Not signed in"
+    try:
+        return yt_auth.get_account_info()
+    except Exception as e:
+        return f"Error: {e}"
+
+
+def read_app_log(log_file_path: Path) -> str:
+    if not log_file_path.exists():
+        return f"Log file not found at {log_file_path}"
+    try:
+        with open(log_file_path, encoding="latin-1", errors="replace") as f:
+            return f.read()
+    except Exception as e:
+        return f"Error reading log file: {e}"
+
+
+def should_skip_sentry_event(hint: dict[str, Any]) -> bool:
+    log_record = hint.get("log_record")
+    return bool(log_record and getattr(log_record, "skip_sentry", False))
+
+
+def get_sentry_event_signature(event: dict[str, Any], hint: dict[str, Any]) -> str:
+    exc_info = hint.get("exc_info")
+    if exc_info:
+        exc_type, exc_value, _ = exc_info
+        payload = {
+            "type": f"{exc_type.__module__}.{exc_type.__qualname__}",
+            "value": str(exc_value),
+        }
+    else:
+        exception_values = event.get("exception", {}).get("values", [])
+        if exception_values:
+            exception = exception_values[-1]
+            payload = {
+                "type": exception.get("type", "unknown"),
+                "value": exception.get("value", ""),
+            }
+        else:
+            logentry = event.get("logentry", {})
+            payload = {
+                "type": event.get("logger", "message"),
+                "value": event.get("message") or logentry.get("formatted") or logentry.get("message") or "",
+            }
+
+    signature = json.dumps(payload, sort_keys=True, default=str)
+    return hashlib.sha256(signature.encode("utf-8")).hexdigest()
+
+
+def is_sentry_event_over_instance_limit(event: dict[str, Any], hint: dict[str, Any]) -> bool:
+    signature = get_sentry_event_signature(event, hint)
+    if signature in SENTRY_REPORTED_SIGNATURES:
+        return True
+
+    SENTRY_REPORTED_SIGNATURES.add(signature)
+    return False
+
+
+def add_debug_context_to_sentry_event(
+    event: dict[str, Any],
+    hint: dict[str, Any],
+    yt_auth: YTMusic | None,
+    app_log: str,
+):
+    """Attach debug-report diagnostics to an automatic Sentry event."""
+    if should_skip_sentry_event(hint) or is_sentry_event_over_instance_limit(event, hint):
+        return None
+
+    try:
+        from sentry_sdk.attachments import Attachment
+
+        request_logs = ytmusic_logger.get_request_logs()
+        event.setdefault("extra", {}).update(collect_debug_context(yt_auth))
+
+        attachments = hint.setdefault("attachments", [])
+        attachments.append(
+            Attachment(
+                bytes=json.dumps(request_logs, indent=2).encode("utf-8"),
+                filename="ytmusicapi-request-logs.json",
+                content_type="application/json",
+            )
+        )
+        attachments.append(
+            Attachment(
+                bytes=app_log.encode("utf-8"),
+                filename="ytmusic-deleter-app-logs.txt",
+                content_type="text/plain",
+            )
+        )
+    except Exception as e:
+        event.setdefault("extra", {})["debug_report_context_error"] = str(e)
+
+    return event
+
+
 def send_debug_report(
     parent_widget: "MainWindow",
     yt_auth: YTMusic | None,
@@ -77,26 +220,7 @@ def send_debug_report(
     """
 
     request_logs = ytmusic_logger.get_request_logs()
-
-    def safe_count(func, *args, **kwargs):
-        """Safely get count from a YTMusic function, return error string on failure
-
-        Some YTMusic APIs return a dict with a "tracks" key instead of a list,
-        so we special-case that format here.
-        """
-        try:
-            result = func(*args, **kwargs)
-            # If the result is a dict containing a tracks list, count that instead
-            if isinstance(result, dict) and "tracks" in result:
-                return len(result.get("tracks", []))
-            return len(result)
-        except Exception as e:
-            return f"Error: {e}"
-
-    playlist_count = safe_count(yt_auth.get_library_playlists, limit=None) if yt_auth else "unknown"
-    upload_count = safe_count(yt_auth.get_library_upload_songs, limit=None) if yt_auth else "unknown"
-    liked_count = safe_count(yt_auth.get_liked_songs, limit=None) if yt_auth else "unknown"
-    library_count = safe_count(yt_auth.get_library_songs, limit=None) if yt_auth else "unknown"
+    debug_context = collect_debug_context(yt_auth)
 
     # Build the event payload manually
     event_id = uuid.uuid4().hex
@@ -113,18 +237,7 @@ def send_debug_report(
         "release": PUBLIC_SETTINGS.version,
         "environment": PUBLIC_SETTINGS.environment,
         "extra": {
-            "library stats": {
-                "playlist count": playlist_count,
-                "upload count": upload_count,
-                "liked songs count": liked_count,
-                "library songs count": library_count,
-            },
-            "total_requests": len(request_logs),
-            "signin_type": (
-                (yt_auth.auth_type.name if hasattr(yt_auth, "auth_type") else "unknown") if yt_auth else "Not signed in"
-            ),
-            "os": platform.name,
-            "account_info": yt_auth.get_account_info() if yt_auth else "Not signed in",
+            **debug_context,
             "description": user_description,
             "contact": user_contact,
         },
