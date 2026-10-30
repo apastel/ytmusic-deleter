@@ -137,11 +137,6 @@ jobs:
       with:
         name: ytmusic-deleter_${{ steps.release-version.outputs.version }}_amd64.deb
 
-    - name: Download macOS 14 installer
-      uses: actions/download-artifact@v8
-      with:
-        name: YTMusic_Deleter-${{ steps.release-version.outputs.version }}-MacOS-14-Installer_arm.dmg
-
     - name: Download macOS 15 installer
       uses: actions/download-artifact@v8
       with:
@@ -161,6 +156,5 @@ jobs:
         --repo '${{ github.repository }}' \
         YTMusic_Deleter-${{ steps.release-version.outputs.version }}-Windows-Installer.exe \
         ytmusic-deleter_${{ steps.release-version.outputs.version }}_amd64.deb \
-        YTMusic_Deleter-${{ steps.release-version.outputs.version }}-MacOS-14-Installer_arm.dmg \
         YTMusic_Deleter-${{ steps.release-version.outputs.version }}-MacOS-15-Installer_arm.dmg \
         YTMusic_Deleter-${{ steps.release-version.outputs.version }}-MacOS-26-Installer_arm.dmg
