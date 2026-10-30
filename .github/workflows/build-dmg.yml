@@ -24,7 +24,7 @@ jobs:
   build:
     strategy:
       matrix:
-        os: [macos-15, macos-26]
+        os: [macos-15, macos-26, macos-27]
     runs-on: ${{ matrix.os }}
     outputs:
       installer-version: ${{ steps.create_installer.outputs.version }}
@@ -129,6 +129,8 @@ jobs:
           MAC_VERSION=15
         elif [[ "${{ matrix.os }}" == "macos-26" ]]; then
           MAC_VERSION=26
+        elif [[ "${{ matrix.os }}" == "macos-27" ]]; then
+          MAC_VERSION=27
         fi
         FILE_NAME="YTMusic_Deleter-${{ steps.create_installer.outputs.version }}-MacOS-$MAC_VERSION-Installer_arm.dmg"
         mv ./mac-installer-to-be-renamed.dmg "./$FILE_NAME"
@@ -146,7 +148,7 @@ jobs:
   verify:
     strategy:
       matrix:
-        os: [macos-15, macos-26]
+        os: [macos-15, macos-26, macos-27]
     runs-on: ${{ matrix.os }}
     needs: build
     steps:
@@ -154,7 +156,7 @@ jobs:
       - name: Download Artifact
         uses: actions/download-artifact@v8
         with:
-          name: YTMusic_Deleter-${{ needs.build.outputs.installer-version }}-MacOS-${{ fromJson('{"macos-15":"15","macos-26":"26"}')[matrix.os] }}-Installer_arm.dmg
+          name: YTMusic_Deleter-${{ needs.build.outputs.installer-version }}-MacOS-${{ fromJson('{"macos-15":"15","macos-26":"26","macos-27":"27"}')[matrix.os] }}-Installer_arm.dmg
 
       - name: Attach app image
         run: |
@@ -164,6 +166,8 @@ jobs:
             MAC_VERSION=15
           elif [[ "${{ matrix.os }}" == "macos-26" ]]; then
             MAC_VERSION=26
+          elif [[ "${{ matrix.os }}" == "macos-27" ]]; then
+            MAC_VERSION=27
           fi
           hdiutil attach ./YTMusic_Deleter-${{ needs.build.outputs.installer-version }}-MacOS-$MAC_VERSION-Installer_arm.dmg
 

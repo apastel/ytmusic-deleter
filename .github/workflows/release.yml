@@ -147,6 +147,11 @@ jobs:
       with:
         name: YTMusic_Deleter-${{ steps.release-version.outputs.version }}-MacOS-26-Installer_arm.dmg
 
+    - name: Download macOS 27 installer
+      uses: actions/download-artifact@v8
+      with:
+        name: YTMusic_Deleter-${{ steps.release-version.outputs.version }}-MacOS-27-Installer_arm.dmg
+
     - name: Upload executable installers to Github Release
       env:
         GITHUB_TOKEN: ${{ github.token }}
@@ -157,4 +162,5 @@ jobs:
         YTMusic_Deleter-${{ steps.release-version.outputs.version }}-Windows-Installer.exe \
         ytmusic-deleter_${{ steps.release-version.outputs.version }}_amd64.deb \
         YTMusic_Deleter-${{ steps.release-version.outputs.version }}-MacOS-15-Installer_arm.dmg \
-        YTMusic_Deleter-${{ steps.release-version.outputs.version }}-MacOS-26-Installer_arm.dmg
+        YTMusic_Deleter-${{ steps.release-version.outputs.version }}-MacOS-26-Installer_arm.dmg \
+        YTMusic_Deleter-${{ steps.release-version.outputs.version }}-MacOS-27-Installer_arm.dmg
