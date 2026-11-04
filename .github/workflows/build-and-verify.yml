@@ -17,7 +17,7 @@ on:
     branches: [ main ]
   workflow_dispatch:
   schedule:
-    - cron: '0 10 * * *'
+    - cron: '0 10 * * 3'
 
 concurrency:
   group: build-and-verify-${{ github.ref_name }}
