@@ -177,7 +177,7 @@ def sort_playlist(ctx: click.Context, shuffle, playlist_titles, custom_sort, rev
 
 
 @cli.command()
-@click.argument("playlist_title")
+@click.argument("playlist_titles", nargs=-1, required=True)
 @click.option("--exact", "-e", is_flag=True, help="Only remove exact duplicates")
 @click.option("--fuzzy", "-f", is_flag=True, help="Use fuzzy matching")
 @click.option(
@@ -187,10 +187,10 @@ def sort_playlist(ctx: click.Context, shuffle, playlist_titles, custom_sort, rev
     help="When combined with the --fuzzy flag, this optional integer argument between 0 and 100 is used when finding matches in the YTM online catalog. No matches with a score less than this number will be added to your library. Defaults to 90",  # noqa: B950
 )
 @click.pass_context
-def remove_duplicates(ctx: click.Context, playlist_title, exact, fuzzy, score_cutoff):
-    """Delete all duplicates in a given playlist"""
+def remove_duplicates(ctx: click.Context, playlist_titles, exact, fuzzy, score_cutoff):
+    """Delete all duplicates in given playlist(s)"""
     context = actions.ActionContext(ctx.obj["YT_AUTH"], static_progress=ctx.obj["STATIC_PROGRESS"])
-    return actions.remove_duplicates(context, playlist_title, exact, fuzzy, score_cutoff)
+    return actions.remove_duplicates(context, playlist_titles, exact, fuzzy, score_cutoff)
 
 
 @cli.command
