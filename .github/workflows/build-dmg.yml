@@ -23,6 +23,7 @@ defaults:
 jobs:
   build:
     strategy:
+      fail-fast: false
       matrix:
         os: [macos-15, macos-26, xcode-27]
     runs-on: ${{ matrix.os }}
@@ -48,8 +49,6 @@ jobs:
       with:
         path: ${{ steps.pdm-cache.outputs.dir }}
         key: ${{ runner.os }}-${{ matrix.os }}-pdm-${{ hashFiles('**/pdm.lock') }}
-        restore-keys: |
-          ${{ runner.os }}-${{ matrix.os }}-pdm-
 
     - name: Install dependencies
       run: |
